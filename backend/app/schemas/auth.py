@@ -2,11 +2,11 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 class UserBase(BaseModel):
-    username: str
-    full_name: Optional[str] = None
+    username: str = Field(..., min_length=3, max_length=150)
+    full_name: Optional[str] = Field(None, max_length=200)
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(..., min_length=8, max_length=128)
 
 class UserResponse(UserBase):
     id: int
