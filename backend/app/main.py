@@ -41,6 +41,37 @@ app.include_router(medications.router, prefix=settings.API_V1_STR)
 app.include_router(alerts.router, prefix=settings.API_V1_STR)
 app.include_router(inference.router, prefix=settings.API_V1_STR)
 
+from .database import SessionLocal
+from .models.farm import Farm
+from .models.auth import User
+from .routers.auth import get_password_hash
+
+@app.on_event("startup")
+def seed_database():
+    db = SessionLocal()
+    try:
+        # Seed default farm
+        if db.query(Farm).count() == 0:
+            default_farm = Farm(name="Prime Nest Poultry", location="Lusaka, Zambia")
+            db.add(default_farm)
+            db.commit()
+            print("Successfully seeded database with default farm 'Prime Nest Poultry'")
+            
+        # Seed default user
+        if db.query(User).filter(User.username == "operator").count() == 0:
+            default_user = User(
+                username="operator",
+                hashed_password=get_password_hash("prime_nest_2026"),
+                full_name="Evans Kabwe"
+            )
+            db.add(default_user)
+            db.commit()
+            print("Successfully seeded database with default user 'operator' (password: prime_nest_2026)")
+    except Exception as e:
+        print(f"Error seeding database: {e}")
+    finally:
+        db.close()
+
 @app.get("/")
 def read_root():
     return {
