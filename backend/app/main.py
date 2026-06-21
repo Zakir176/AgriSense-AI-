@@ -41,6 +41,11 @@ app.include_router(medications.router, prefix=settings.API_V1_STR)
 app.include_router(alerts.router, prefix=settings.API_V1_STR)
 app.include_router(inference.router, prefix=settings.API_V1_STR)
 
+from fastapi.staticfiles import StaticFiles
+import os
+os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
+
 from .database import SessionLocal
 from .models.farm import Farm
 from .models.auth import User
