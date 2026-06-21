@@ -1,0 +1,44 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Python caching & environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Local environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Build outputs
+dist/
+dist-ssr/
+*.local
+
+# Editor configs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Project uploads
+backend/uploads/
+uploads/

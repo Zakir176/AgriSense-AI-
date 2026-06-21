@@ -1,0 +1,147 @@
+AgriSense AI
+Intelligent Multi-Modal Agricultural Monitoring & Management Platform
+System Architecture Document
+Phase 1 — Prototype, ZICTA ICT Innovation Programme 2026
+Prepared by: Zakir Hussein Motala (Developer)
+Document version 1.0  |  June 2026
+
+Table of Contents
+
+
+
+1. Architectural Overview
+1.1 Goals
+Deliver a credible, demoable Phase 1 prototype within a 7-week solo-developer window
+Keep the core data model and API stable so Phase 2 can swap in real ML services without breaking the frontend
+Reuse the developer's existing, proven stack (Vue 3 + Python/FastAPI) rather than introducing new unfamiliar tools under time pressure
+Make the boundary between “real” and “demo-scoped” components explicit at the architecture level, not just in product copy
+1.2 Architectural Style
+AgriSense AI Phase 1 uses a classic three-tier web architecture: a Vue 3 single-page application (presentation tier), a FastAPI REST service (application/logic tier), and PostgreSQL (data tier). AI/ML components are isolated behind a dedicated internal module boundary (the “Inference Service”) so they can be swapped, scaled out to their own process, or replaced entirely in Phase 2 without touching the core CRUD logic.
+1.3 High-Level Component Diagram
+┌─────────────────────────────────────────────────────────┐│                      CLIENT (Browser)                    ││              Vue 3 + Vite SPA  (Vercel)                  │└───────────────────────────┬───────────────────────────────┘                            │ HTTPS / REST (JSON)┌───────────────────────────▼───────────────────────────────┐│                  FASTAPI APPLICATION (Railway)            ││  ┌───────────────┐ ┌────────────────┐ ┌─────────────────┐ ││  │  Farm/Batch    │ │  Alerts &      │ │  Inference       │ ││  │  Feed/Water    │ │  Rules Engine  │ │  Service         │ ││  │  Growth/Meds   │ │  (rule-based)  │ │  (CV model       │ ││  │  CRUD modules  │ │                │ │   wrapper)       │ ││  └───────┬───────┘ └────────┬───────┘ └────────┬─────────┘ │└──────────┼──────────────────┼──────────────────┼───────────┘           │                  │                  │┌──────────▼──────────────────▼──────┐  ┌─────────▼─────────┐│         PostgreSQL Database          │  │  Pretrained CV     ││   (farms, batches, readings, meds,    │  │  model (YOLOv8n /  ││    alerts, media references)          │  │  similar, run on   ││                                       │  │  uploaded clips)   │└───────────────────────────────────────┘  └────────────────────┘
+The Inference Service is intentionally a thin wrapper module, not deeply embedded in business logic. This is the key architectural decision protecting the 7-week timeline: if AI work falls behind, the rest of the system still functions and demos cleanly without it (see Non-Functional Requirement 4.3 in the SRS).
+
+2. Component Breakdown
+2.1 Frontend (Vue 3 SPA)
+Module
+Responsibility
+Notes
+Dashboard View
+Landing view: active alerts, summary cards per batch
+Primary judge-facing screen
+Batch Management
+Create/view/archive batches
+Simple forms + list
+Feed & Water Log
+Entry form + time-series chart
+Chart.js or Recharts-equivalent
+Growth Tracker
+Weight entry + growth chart per batch
+Same charting approach as above
+Medication Log
+Entry form + history table per batch
+Linked to batch ID
+AI Visual Monitor
+Upload clip, trigger inference, display results
+Clearly labelled as “uploaded footage” in UI copy
+Audio Insight (illustrative)
+Static library of pre-tagged sample clips
+Clearly labelled “research-stage” in UI copy
+2.2 Backend (FastAPI)
+Service/Router
+Responsibility
+/farms, /batches
+CRUD for farm and batch entities
+/readings
+Create/list feed & water readings; computes rolling averages for FR-2.4
+/growth
+Create/list weight samples; computes growth rate for FR-3.2/3.3
+/medications
+Create/list medication entries and outcomes
+/alerts
+Rule engine output; list/acknowledge alerts
+/inference/video
+Accepts uploaded clip, calls Inference Service, returns structured result
+Routing/module names above will be finalized during implementation but reflect the stable resource boundaries the data model is built around.
+2.3 Inference Service (AI Boundary Module)
+This module exists specifically to keep Phase 1's “demo-scoped” AI honest and isolated. It exposes one simple internal interface — given a video file, return a structured result (e.g. bird count estimate, movement score, flagged low-activity windows) — regardless of what's running underneath.
+Phase 1 implementation: a pretrained, off-the-shelf object detection/tracking model (e.g. YOLOv8n or MediaPipe) run against the uploaded clip — genuine inference, not hardcoded output, but not custom-trained on Prime Nest data
+Audio module: NOT a live inference path in Phase 1 — served as static pre-tagged sample data from the database, with UI copy that says so
+Phase 2 swap-in point: this module's interface is designed so a custom-trained model or live camera/audio pipeline can replace the implementation without changing any caller code
+2.4 Data Tier (PostgreSQL)
+A single relational schema serves all modules. Schema is intentionally simple for Phase 1 — normalized enough to avoid rework, not over-engineered for scale that isn't needed yet.
+
+3. Data Model
+3.1 Core Entities (Simplified ER Overview)
+Farm ──1:N── Batch ──1:N── FeedWaterReading                │                ├──1:N── GrowthSample                │                ├──1:N── MedicationEntry                │                └──1:N── AlertBatch ──1:N── MediaClip  (uploaded video for inference)MediaClip ──1:1── InferenceResult
+3.2 Key Entity Fields
+Entity
+Key Fields
+Farm
+id, name, location
+Batch
+id, farm_id, start_date, bird_count, breed, status (active/archived)
+FeedWaterReading
+id, batch_id, date, feed_kg, water_litres, flagged_abnormal (bool)
+GrowthSample
+id, batch_id, date, avg_weight_g, sample_size
+MedicationEntry
+id, batch_id, date, medicine_type, dosage, outcome_note
+Alert
+id, batch_id, type, message, severity, created_at, acknowledged (bool)
+MediaClip
+id, batch_id, file_url, uploaded_at
+InferenceResult
+id, media_clip_id, bird_count_est, movement_score, low_activity_windows (json)
+
+4. Key System Flows
+4.1 Daily Feed/Water Entry → Alert Flow
+1. User submits feed/water reading via frontend form2. POST /readings stores the reading3. Rules engine computes 7-day rolling average for the batch4. If deviation > threshold (default 20%):     → reading flagged abnormal     → Alert record created5. Dashboard polls/fetches /alerts and surfaces it to the user
+4.2 AI Visual Monitoring Flow
+1. User uploads a short video clip via the AI Visual Monitor view2. Frontend POSTs file to /inference/video3. Backend stores clip as MediaClip, passes file to Inference Service4. Inference Service runs pretrained detection/tracking model5. Structured result (bird count est., movement score, flagged windows)   stored as InferenceResult and returned to frontend6. Frontend renders result with explicit “uploaded footage, Phase 1” label
+
+5. Deployment Architecture
+Component
+Platform
+Notes
+Frontend (Vue 3 SPA)
+Vercel
+Matches developer's existing deployment pattern
+Backend (FastAPI)
+Railway
+Matches developer's existing deployment pattern
+Database
+Railway PostgreSQL
+Managed instance, no separate ops overhead
+Pretrained CV model
+Runs in-process within backend or as a lightweight sidecar
+No GPU infra required for Phase 1 model size
+This mirrors the deployment pattern already used successfully on the Tajweed Recitation Coach project (Vue + Vite + Tailwind on Vercel; FastAPI + PostgreSQL on Railway), minimizing new operational risk during a time-constrained build.
+
+6. Future Evolution Path (Phase 2+)
+This section exists so that Phase 1 architectural decisions are visibly compatible with the full original vision — useful both for ZICTA judges assessing technical roadmap credibility, and for Evans understanding what “next” looks like.
+Phase 1 (this document)
+Phase 2+ (future)
+Pretrained CV model on uploaded clips
+Custom-trained model on live camera feed, fine-tuned on Prime Nest farm data
+No live audio path; illustrative samples only
+Real-time audio capture + trained distress-sound classifier
+Rule-based alert thresholds
+Statistical/ML-based anomaly detection trained on accumulated farm data
+Single farm (Prime Nest)
+Multi-tenant platform for multiple farms/cooperatives
+No billing
+Subscription billing tier, per original business model
+Because the Inference Service (Section 2.3) is architecturally isolated behind a stable interface, and the data model (Section 3) already has the entities needed (MediaClip, InferenceResult, Alert), this evolution is additive — it does not require rebuilding the dashboard, data model, or core CRUD logic built in Phase 1.
+
+7. Architectural Risks & Mitigations
+Risk
+Mitigation
+Pretrained CV model gives poor/confusing results on real farm footage
+Test early with the first farm clip received; fall back to simpler presence/motion detection if needed
+Solo developer falls behind due to academic workload
+Inference Service isolation (Section 2.3) means core CRUD dashboard alone is still a credible demo even if AI work slips
+No farm data received in time for realistic demo
+Use placeholder/synthetic data as fallback, clearly flagged in Appendix A of the SRS as an open dependency
+Time pressure leads to scope creep back toward full original proposal
+SRS Section 1.4 (In/Out table) is the single source of truth for what's being built; revisit before adding anything not listed there

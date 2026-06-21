@@ -1,0 +1,257 @@
+AgriSense AI
+Intelligent Multi-Modal Agricultural Monitoring & Management Platform
+Software Requirements Specification (SRS)
+Phase 1 — Prototype, ZICTA ICT Innovation Programme 2026
+Prepared for: Evans Kabwe — Apex Youth Initiative / Prime Nest Poultry Farm
+Document version 1.0  |  June 2026
+
+Table of Contents
+
+
+
+1. Introduction
+1.1 Purpose
+This Software Requirements Specification (SRS) defines the functional and non-functional requirements for AgriSense AI Phase 1 — the prototype version of an intelligent agricultural monitoring platform being developed for entry into the 2026 ZICTA ICT Innovation Programme. It is intended to give a shared, accurate reference for what will be built, by whom, and by when, so that all stakeholders evaluate the same scope.
+1.2 Scope
+AgriSense AI is a multi-modal monitoring platform for poultry farms, piloted at Prime Nest Poultry Farm. The long-term vision (as described in the ZICTA proposal) includes computer-vision-based behavior tracking, audio-based disease detection, feed/water tracking, growth monitoring, medication logging, and predictive analytics.
+This document specifies the Phase 1 prototype only: the subset of that vision that is achievable by a single developer, alongside full-time academic commitments, within the build window ending at the ZICTA Final Pitching Event. Section 1.4 defines exactly what is in and out of scope for this phase, and this distinction is the most important part of the document.
+1.3 Intended Audience
+Evans Kabwe — project owner, Apex Youth Initiative / Prime Nest Poultry Farm
+Zakir Hussein Motala — sole developer
+ZICTA ICT Innovation Programme evaluators/judges
+1.4 Project Scope: In / Out for Phase 1
+This section exists to prevent scope misunderstanding between the proposal document and what is actually demoed. Anything marked “Simulated/Deferred” is explicitly NOT live production AI in Phase 1 — it is either rule-based logic or inference run on pre-collected sample data, clearly disclosed as such.
+Capability
+Phase 1 Status
+Notes
+Farm management dashboard
+Fully built
+Vue 3 SPA, real CRUD against live backend
+Feed & water tracking
+Fully built
+Manual data entry, real persistence
+Growth monitoring
+Fully built
+Weekly weight sampling, batch tracking
+Medication & treatment records
+Fully built
+Logging + outcome linkage
+Smart alerts
+Fully built
+Rule/threshold-based, not ML
+AI visual monitoring
+Demo-scoped
+Pretrained model run on recorded farm footage, not live camera feed
+Audio disease detection
+Simulated / Deferred
+Presented as R&D-stage; pre-tagged sample clips, disclosed as such if asked
+Predictive analytics engine
+Simulated / Deferred
+Basic trend charts + rule-based recommendations only
+Multi-farm / multi-tenant scaling
+Out of scope
+Single farm (Prime Nest) only in Phase 1
+Subscription billing
+Out of scope
+Business-model item, not a Phase 1 build target
+
+1.5 Definitions, Acronyms, Abbreviations
+Term
+Definition
+SRS
+Software Requirements Specification
+CV
+Computer Vision
+ZICTA
+Zambia Information and Communications Technology Authority
+Batch
+A group of chickens raised together, tracked as one unit for growth/health purposes
+Inference
+Running a pretrained AI model on new input data to produce a prediction
+1.6 References
+ZICTA ICT Innovation Programme Proposal — AgriSense AI (submitted by Evans Kabwe, 2026)
+ZICTA ICT Innovation Programme Cohort Schedule, March–September 2026
+
+2. Overall Description
+2.1 Product Perspective
+AgriSense AI Phase 1 is a standalone web application: a Vue 3 single-page frontend backed by a FastAPI service and a PostgreSQL database. It is a new system with no existing infrastructure to integrate with. It is designed so that the Phase 1 rule-based and demo-scoped components can later be replaced by genuine production ML services without a frontend or data-model rewrite (see Architecture Document, Section 6: Future Evolution Path).
+2.2 Product Functions (Summary)
+Record and view daily feed and water consumption per batch
+Record weekly sampled chicken weights and view growth trends per batch
+Log medication and treatments administered, linked to batches
+Generate threshold-based alerts (e.g. feed consumption drop, abnormal water intake)
+Run AI-based visual inference on uploaded/recorded farm video to flag inactivity or abnormal movement
+Present a basic analytics view with trend charts and rule-based recommendations
+Present an early-stage / illustrative view of audio-based distress detection, clearly labelled as a research-stage feature
+2.3 User Classes and Characteristics
+User Class
+Description
+Technical Skill
+Farm Operator (Evans / farm staff)
+Primary day-to-day user; enters feed/water/growth/medication data, views alerts
+Low — needs a simple, guided UI
+Programme Evaluator (ZICTA judges)
+Views demo during pitching event; assesses technical credibility and impact
+Variable
+Developer (Zakir)
+Builds, deploys, and maintains the system
+High
+
+2.4 Operating Environment
+Frontend: modern browser (Chrome, Edge, Safari) on desktop or mobile
+Backend: FastAPI (Python 3.11+), deployed on Railway or similar PaaS
+Database: PostgreSQL
+Hosting: Vercel (frontend) and Railway (backend), consistent with the developer's existing deployment experience
+2.5 Design and Implementation Constraints
+Single developer, part-time around a full-time academic course load with weekly assessments
+No dedicated hardware (camera/microphone) procured for Phase 1 — video/audio inputs are pre-recorded samples supplied by the farm, not a live IoT feed
+Hard external deadline: ZICTA Final Pitching Event (see Project Schedule, Section 2.7)
+No budget for paid ML training infrastructure — Phase 1 AI components use free-tier or open pretrained models only
+2.6 Assumptions and Dependencies
+Evans/the farm will supply at least one short video clip of chickens and baseline feed/water figures for realistic demo data (see open dependency tracker, Appendix A)
+ZICTA workshop dates and the pitching event date do not shift from the published 2026 cohort schedule
+Internet connectivity is available at the farm and pitching venue for any live-hosted components
+2.7 Project Schedule Context
+Phase 1 development runs from late June 2026 to the ZICTA Final Pitching Event (7–11 August 2026). This window includes the developer's ongoing weekly academic assessments and two further ZICTA programme workshops (Technical Development Workshop 1, 14–16 July; Business Development Workshop, 27–31 July). University exams begin 23 August 2026, after the pitching event, and are therefore a post-pitch constraint rather than a build-time constraint. A detailed week-by-week build schedule is maintained separately and updated as the programme progresses.
+
+3. Functional Requirements
+Requirements are grouped by module and identified with a unique ID (FR-x.x) for traceability. Priority: Must = required for the Phase 1 demo to be credible; Should = improves the demo but can be cut under time pressure; Could = nice-to-have if time remains.
+3.1 Farm & Batch Management
+ID
+Requirement
+Priority
+FR-1.1
+The system shall allow a user to create a batch record with start date, initial bird count, and breed/type.
+Must
+FR-1.2
+The system shall allow a user to view a list of all active and historical batches.
+Must
+FR-1.3
+The system shall allow a user to close/archive a batch.
+Should
+3.2 Feed & Water Tracking
+ID
+Requirement
+Priority
+FR-2.1
+The system shall allow a user to log daily feed quantity (kg) per batch.
+Must
+FR-2.2
+The system shall allow a user to log daily water consumption (litres) per batch.
+Must
+FR-2.3
+The system shall display feed and water consumption as a time-series chart per batch.
+Must
+FR-2.4
+The system shall flag a consumption entry as abnormal if it deviates from the batch's 7-day rolling average by a configurable threshold (default 20%).
+Should
+3.3 Growth Monitoring
+ID
+Requirement
+Priority
+FR-3.1
+The system shall allow a user to record sampled bird weights for a batch on a given date.
+Must
+FR-3.2
+The system shall calculate and display average weight and growth rate per batch over time.
+Must
+FR-3.3
+The system shall flag a batch as underperforming if its growth rate falls below an expected reference curve by a configurable margin.
+Could
+3.4 Medication & Treatment Records
+ID
+Requirement
+Priority
+FR-4.1
+The system shall allow a user to log a medication entry with medicine type, dosage, date administered, and target batch.
+Must
+FR-4.2
+The system shall allow a user to view medication history per batch.
+Must
+FR-4.3
+The system shall allow a user to record an outcome note against a past medication entry for future reference.
+Should
+3.5 Smart Alerts
+ID
+Requirement
+Priority
+FR-5.1
+The system shall generate an alert when feed or water consumption is flagged abnormal per FR-2.4.
+Must
+FR-5.2
+The system shall generate an alert when a growth-rate threshold is breached per FR-3.3.
+Could
+FR-5.3
+The system shall display all active alerts on a dashboard view, sorted by recency.
+Must
+FR-5.4
+The system shall allow a user to acknowledge/dismiss an alert.
+Should
+3.6 AI Visual Monitoring (Demo-Scoped)
+ID
+Requirement
+Priority
+FR-6.1
+The system shall accept an uploaded video clip (pre-recorded, not live stream) of a coop for analysis.
+Must
+FR-6.2
+The system shall run a pretrained object-detection/tracking model on the uploaded clip to identify bird presence and movement.
+Must
+FR-6.3
+The system shall flag periods of unusually low movement/activity within the analyzed clip as a potential inactivity indicator.
+Should
+FR-6.4
+The system shall clearly label this feature in the UI as operating on uploaded footage, not a live camera feed, in Phase 1.
+Must
+3.7 Audio-Based Detection (Illustrative Only)
+ID
+Requirement
+Priority
+FR-7.1
+The system shall present a small library of pre-tagged sample audio clips illustrating normal vs. distress sounds.
+Should
+FR-7.2
+The system shall clearly label this module as a research-stage / future capability, not a live detection feature, in Phase 1.
+Must
+3.8 Analytics & Insights
+ID
+Requirement
+Priority
+FR-8.1
+The system shall display feed-efficiency and growth trend charts across batches.
+Should
+FR-8.2
+The system shall generate simple rule-based recommendation text (e.g. “Feed consumption dropped 22% — check for illness”) based on flagged alerts.
+Could
+
+4. Non-Functional Requirements
+4.1 Performance
+Dashboard pages shall load within 3 seconds on a standard broadband or 4G connection.
+Video inference (FR-6.2) may run asynchronously; result shall be available within a reasonable processing window communicated to the user (e.g. “Analyzing — results in ~30s”), not necessarily real-time.
+4.2 Usability
+The UI shall be usable by a non-technical farm operator without training, consistent with the existing established Vue/Tailwind design conventions used in the developer's prior projects.
+All AI/demo-scoped features (Sections 3.6, 3.7) shall carry a visible UI label distinguishing them from fully production-ready features, per the disclosure principle in Section 1.4.
+4.3 Reliability
+Core CRUD features (Sections 3.1–3.5) shall not depend on any external AI service being available; the dashboard must function fully if the AI modules are offline.
+4.4 Security
+Basic authentication shall gate access to the dashboard (single farm-operator account is sufficient for Phase 1).
+All data in transit shall use HTTPS.
+4.5 Maintainability
+Code shall be organized to allow Phase 2 replacement of rule-based logic with trained models without restructuring the data model (see Architecture Document).
+4.6 Portability
+The system shall run on any standard modern browser without browser-specific code.
+
+Appendix A: Open Dependency Tracker
+Items required from Evans / the farm to make the Phase 1 demo credible. To be updated as items are received.
+Item
+Needed By
+Status
+Short video clip of coop (1–2 min)
+Early build phase
+Pending
+Baseline feed/water figures (rough, real)
+Early build phase
+Pending
+Sign-off on Phase 1 scope (this document)
+Before build starts
+Pending
