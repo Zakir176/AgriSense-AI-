@@ -180,6 +180,10 @@ export const api = {
         method: 'POST',
         body: formData
       })
+    },
+    list(batchId = null) {
+      const url = batchId ? `/inference/clips?batch_id=${batchId}` : '/inference/clips'
+      return request(url)
     }
   }
 }

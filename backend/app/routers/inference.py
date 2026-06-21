@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from sqlalchemy.orm import Session
+from typing import List, Optional
 import os
 import shutil
 import uuid
@@ -60,3 +61,10 @@ def upload_video_for_inference(
     db.commit()
     db.refresh(db_media_clip)
     return db_media_clip
+
+@router.get("/clips", response_model=List[MediaClipResponse])
+def list_inference_clips(batch_id: Optional[int] = None, db: Session = Depends(get_db)):
+    query = db.query(MediaClip)
+    if batch_id is not None:
+        query = query.filter(MediaClip.batch_id == batch_id)
+    return query.order_by(MediaClip.uploaded_at.desc()).all()
