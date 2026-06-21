@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-[#f4f7f4] text-gray-850 dark:bg-[#0f1412] dark:text-gray-150 flex font-sans transition-colors duration-200">
+  <div class="h-screen bg-[#f4f7f4] text-gray-850 dark:bg-[#0f1412] dark:text-gray-150 flex font-sans transition-colors duration-200">
     <!-- Render raw router-view for blank layout pages (like Login) -->
-    <router-view v-if="isBlankLayout" />
+    <router-view v-if="isBlankLayout" class="flex-1 h-full" />
 
     <!-- Standard Dashboard App Layout -->
     <div v-else class="flex w-full">
@@ -52,7 +52,7 @@
             <span class="text-xl font-extrabold tracking-wider text-primary-600 dark:text-primary-400">AGRISENSE AI</span>
           </div>
           <div class="hidden md:block text-sm text-gray-500 dark:text-gray-400">
-            Site: <span class="text-gray-850 dark:text-gray-200 font-semibold">Prime Nest Poultry</span>
+            Site: <span class="text-gray-850 dark:text-gray-200 font-semibold">{{ store.currentFarm ? store.currentFarm.name : 'Loading...' }}</span>
           </div>
           
           <div class="flex items-center space-x-4">
@@ -90,8 +90,10 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { api } from './services/api'
+import { store } from './services/store'
 
 const route = useRoute()
 const router = useRouter()
@@ -116,11 +118,58 @@ const toggleTheme = () => {
   applyTheme()
 }
 
+const initApp = async () => {
+  if (isBlankLayout.value) return
+
+  const token = localStorage.getItem('agrisense_token')
+  if (!token) {
+    router.push({ name: 'Login' })
+    return
+  }
+
+  try {
+    // 1. Verify token
+    await api.auth.getMe()
+
+    // 2. Fetch farms
+    const farms = await api.farms.list()
+    if (farms && farms.length > 0) {
+      store.currentFarm = farms[0]
+      
+      // 3. Fetch batches for the farm
+      const batches = await api.batches.list(store.currentFarm.id)
+      store.batchesList = batches
+      
+      // 4. Set first active batch as active
+      const active = batches.find(b => b.status === 'active')
+      if (active) {
+        store.activeBatch = active
+      } else if (batches.length > 0) {
+        // Fallback to first batch if no active one exists
+        store.activeBatch = batches[0]
+      }
+    }
+  } catch (error) {
+    console.error('Session initialization failed:', error)
+    localStorage.removeItem('agrisense_token')
+    router.push({ name: 'Login' })
+  }
+}
+
+// Watch layout state: when user logs in and transitions from blank layout to main dashboard
+watch(isBlankLayout, (newBlank) => {
+  if (!newBlank) {
+    initApp()
+  }
+})
+
 onMounted(() => {
   // Respect user preference, default to light mode (false) if none exists
   const savedTheme = localStorage.getItem('theme')
   isDark.value = savedTheme === 'dark'
   applyTheme()
+  
+  initApp()
 })
 
 const navItems = [
@@ -143,6 +192,9 @@ const isRouteActive = (path) => {
 
 const handleLogout = () => {
   localStorage.removeItem('agrisense_token')
+  store.currentFarm = null
+  store.activeBatch = null
+  store.batchesList = []
   router.push({ name: 'Login' })
 }
 </script>
