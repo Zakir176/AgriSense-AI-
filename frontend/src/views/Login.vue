@@ -142,8 +142,8 @@
             </div>
 
             <!-- Heading -->
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">Welcome back</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Sign in to your operator dashboard</p>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">{{ isRegistering ? 'Create account' : 'Welcome back' }}</h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ isRegistering ? 'Register a new operator account' : 'Sign in to your operator dashboard' }}</p>
 
             <!-- Error alert -->
             <Transition
@@ -173,7 +173,7 @@
               leave-to-class="opacity-0"
             >
               <div
-                v-if="showForgotTip"
+                v-if="showForgotTip && !isRegistering"
                 class="mt-5 bg-primary-50 dark:bg-primary-950/20 border border-primary-200/70 dark:border-primary-900/40 text-primary-800 dark:text-primary-300 text-xs px-4 py-3 rounded-2xl flex items-start space-x-2.5"
               >
                 <span class="material-icons-outlined text-[18px] shrink-0 text-primary-500 dark:text-primary-400">tips_and_updates</span>
@@ -184,7 +184,44 @@
               </div>
             </Transition>
 
-            <form @submit.prevent="handleLogin" class="mt-7 space-y-4">
+            <!-- Success alert (registration) -->
+            <Transition
+              enter-active-class="transition-all duration-300 ease-out"
+              enter-from-class="opacity-0 -translate-y-2"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition-all duration-200 ease-in"
+              leave-from-class="opacity-100"
+              leave-to-class="opacity-0"
+            >
+              <div
+                v-if="successMessage"
+                class="mt-5 bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-200 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-sm px-4 py-3 rounded-2xl flex items-start space-x-2.5"
+              >
+                <span class="material-icons-outlined text-[18px] shrink-0 mt-0.5">check_circle</span>
+                <span>{{ successMessage }}</span>
+              </div>
+            </Transition>
+
+            <form @submit.prevent="isRegistering ? handleRegister() : handleLogin()" class="mt-7 space-y-4">
+
+              <!-- Full Name (register only) -->
+              <div v-if="isRegistering" class="space-y-1.5">
+                <label for="fullName" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Full Name</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                    <span class="material-icons-outlined text-[18px]">badge</span>
+                  </span>
+                  <input
+                    v-model="fullName"
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    autocomplete="name"
+                    class="block w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700/80 placeholder-gray-350 dark:placeholder-gray-600 text-gray-900 dark:text-white rounded-xl bg-gray-50 dark:bg-[#111816] focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-sm"
+                    placeholder="Enter your full name"
+                  />
+                </div>
+              </div>
 
               <!-- Username -->
               <div class="space-y-1.5">
@@ -201,7 +238,7 @@
                     required
                     autocomplete="username"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700/80 placeholder-gray-350 dark:placeholder-gray-600 text-gray-900 dark:text-white rounded-xl bg-gray-50 dark:bg-[#111816] focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-sm"
-                    placeholder="Enter your username"
+                    placeholder="Choose a username"
                   />
                 </div>
               </div>
@@ -234,8 +271,8 @@
                 </div>
               </div>
 
-              <!-- Remember + Forgot -->
-              <div class="flex items-center justify-between pt-1">
+              <!-- Remember + Forgot (login only) -->
+              <div v-if="!isRegistering" class="flex items-center justify-between pt-1">
                 <label class="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -271,22 +308,37 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                   </svg>
-                  <span>Authenticating…</span>
+                  <span>{{ isRegistering ? 'Creating account…' : 'Authenticating…' }}</span>
                 </template>
                 <template v-else>
-                  <span>Sign In</span>
-                  <span class="material-icons-outlined text-[17px]">arrow_forward</span>
+                  <span>{{ isRegistering ? 'Create Account' : 'Sign In' }}</span>
+                  <span class="material-icons-outlined text-[17px]">{{ isRegistering ? 'person_add' : 'arrow_forward' }}</span>
                 </template>
               </button>
             </form>
 
-            <!-- Demo credentials -->
-            <div class="mt-7 pt-5 border-t border-gray-100 dark:border-gray-800/60 text-center">
-              <p class="text-[11px] text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-wider font-semibold">Demo Account</p>
-              <div class="inline-flex items-center gap-2 bg-gray-50 dark:bg-[#111816] border border-gray-200/80 dark:border-gray-800/60 px-3.5 py-2 rounded-xl font-mono text-[11px] text-gray-600 dark:text-gray-400">
-                <span><b class="text-gray-800 dark:text-gray-200">operator</b></span>
-                <span class="text-gray-300 dark:text-gray-700">/</span>
-                <span><b class="text-gray-800 dark:text-gray-200">prime_nest_2026</b></span>
+            <!-- Toggle + Demo credentials -->
+            <div class="mt-7 pt-5 border-t border-gray-100 dark:border-gray-800/60 text-center space-y-4">
+              <!-- Mode toggle -->
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ isRegistering ? 'Already have an account?' : "Don't have an account?" }}
+                <button
+                  type="button"
+                  @click="toggleMode"
+                  class="font-bold text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 transition-colors focus:outline-none ml-1"
+                >
+                  {{ isRegistering ? 'Sign in' : 'Sign up' }}
+                </button>
+              </p>
+
+              <!-- Demo credentials (login mode only) -->
+              <div v-if="!isRegistering">
+                <p class="text-[11px] text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-wider font-semibold">Demo Account</p>
+                <div class="inline-flex items-center gap-2 bg-gray-50 dark:bg-[#111816] border border-gray-200/80 dark:border-gray-800/60 px-3.5 py-2 rounded-xl font-mono text-[11px] text-gray-600 dark:text-gray-400">
+                  <span><b class="text-gray-800 dark:text-gray-200">operator</b></span>
+                  <span class="text-gray-300 dark:text-gray-700">/</span>
+                  <span><b class="text-gray-800 dark:text-gray-200">prime_nest_2026</b></span>
+                </div>
               </div>
             </div>
           </div>
@@ -306,12 +358,15 @@ const router = useRouter()
 // Form state
 const username = ref('')
 const password = ref('')
+const fullName = ref('')
 const showPassword = ref(false)
 const rememberMe = ref(false)
 const errorMessage = ref('')
+const successMessage = ref('')
 const isLoading = ref(false)
 const loginSuccess = ref(false)
 const showForgotTip = ref(false)
+const isRegistering = ref(false)
 
 // Theme
 const isDark = ref(false)
@@ -356,9 +411,18 @@ const triggerForgotTip = () => {
   setTimeout(() => { showForgotTip.value = false }, 7000)
 }
 
+// Mode toggle
+const toggleMode = () => {
+  isRegistering.value = !isRegistering.value
+  errorMessage.value = ''
+  successMessage.value = ''
+  loginSuccess.value = false
+}
+
 // Login handler
 const handleLogin = async () => {
   errorMessage.value = ''
+  successMessage.value = ''
   isLoading.value = true
   try {
     await api.auth.login(username.value, password.value)
@@ -369,6 +433,27 @@ const handleLogin = async () => {
       errorMessage.value = 'Cannot reach the server. Please ensure the backend is running on port 8000.'
     } else {
       errorMessage.value = error.message || 'Login failed. Please check your credentials.'
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Register handler
+const handleRegister = async () => {
+  errorMessage.value = ''
+  successMessage.value = ''
+  isLoading.value = true
+  try {
+    await api.auth.register(username.value, password.value, fullName.value)
+    loginSuccess.value = true
+    successMessage.value = 'Account created successfully!'
+    setTimeout(() => router.push({ name: 'Dashboard' }), 800)
+  } catch (error) {
+    if (error.message && error.message.toLowerCase().includes('fetch')) {
+      errorMessage.value = 'Cannot reach the server. Please ensure the backend is running on port 8000.'
+    } else {
+      errorMessage.value = error.message || 'Registration failed. Please try again.'
     }
   } finally {
     isLoading.value = false
