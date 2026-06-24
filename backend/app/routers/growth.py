@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from ..database import get_db
 from ..models.growth import GrowthSample
-from ..schemas.growth import GrowthSampleCreate, GrowthSampleResponse, GrowthRateSummary
+from ..schemas.growth import GrowthSampleCreate, GrowthSampleResponse, GrowthRateSummary, GrowthSampleUpdate
 
 router = APIRouter(prefix="/growth", tags=["Growth"])
 
@@ -60,3 +60,26 @@ def get_growth_summary(batch_id: int, db: Session = Depends(get_db)):
             )
         )
     return summaries
+
+@router.put("/{sample_id}", response_model=GrowthSampleResponse)
+def update_growth_sample(sample_id: int, sample: GrowthSampleUpdate, db: Session = Depends(get_db)):
+    db_sample = db.query(GrowthSample).filter(GrowthSample.id == sample_id).first()
+    if not db_sample:
+        raise HTTPException(status_code=404, detail="Growth sample not found")
+    
+    update_data = sample.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_sample, key, value)
+    
+    db.commit()
+    db.refresh(db_sample)
+    return db_sample
+
+@router.delete("/{sample_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_growth_sample(sample_id: int, db: Session = Depends(get_db)):
+    db_sample = db.query(GrowthSample).filter(GrowthSample.id == sample_id).first()
+    if not db_sample:
+        raise HTTPException(status_code=404, detail="Growth sample not found")
+    db.delete(db_sample)
+    db.commit()
+    return
