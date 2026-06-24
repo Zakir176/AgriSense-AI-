@@ -56,6 +56,16 @@ export const api = {
     
     getMe() {
       return request('/auth/me')
+    },
+
+    async register(username, password, fullName) {
+      // Create the account
+      await request('/auth/register', {
+        method: 'POST',
+        body: { username, password, full_name: fullName || null }
+      })
+      // Auto-login after successful registration
+      return this.login(username, password)
     }
   },
 
@@ -111,6 +121,17 @@ export const api = {
     },
     getSummary(batchId) {
       return request(`/readings/summary/${batchId}`)
+    },
+    update(id, data) {
+      return request(`/readings/${id}`, {
+        method: 'PUT',
+        body: data
+      })
+    },
+    delete(id) {
+      return request(`/readings/${id}`, {
+        method: 'DELETE'
+      })
     }
   },
 
@@ -128,6 +149,17 @@ export const api = {
     },
     getSummary(batchId) {
       return request(`/growth/summary/${batchId}`)
+    },
+    update(id, data) {
+      return request(`/growth/${id}`, {
+        method: 'PUT',
+        body: data
+      })
+    },
+    delete(id) {
+      return request(`/growth/${id}`, {
+        method: 'DELETE'
+      })
     }
   },
 
@@ -147,6 +179,11 @@ export const api = {
       return request(`/medications/${id}`, {
         method: 'PUT',
         body: data
+      })
+    },
+    delete(id) {
+      return request(`/medications/${id}`, {
+        method: 'DELETE'
       })
     }
   },
