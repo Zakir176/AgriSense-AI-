@@ -16,11 +16,13 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# CORS configuration
+# CORS — NOTE: allow_credentials=True requires explicit origins; "*" is NOT
+# allowed by browsers when credentials are included in the request.
 origins = [
-    "http://localhost:5173", # Vue local development
-    "http://localhost:3000",
-    "*" # Dynamic Vercel / Railway
+    "http://localhost:5173",    # Vue dev server (Vite)
+    "http://localhost:3000",    # Alternative local dev
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
 ]
 
 app.add_middleware(
