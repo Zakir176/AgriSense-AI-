@@ -10,6 +10,7 @@ class FeedWaterReading(Base):
     date = Column(Date, nullable=False)
     feed_kg = Column(Float, nullable=False)
     water_litres = Column(Float, nullable=False)
+    mortality_count = Column(Integer, default=0)
     flagged_abnormal = Column(Boolean, default=False)
 
     batch = relationship("Batch", back_populates="readings")
