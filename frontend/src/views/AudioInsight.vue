@@ -2,70 +2,98 @@
   <div class="space-y-6">
 
     <!-- ─── Header ─── -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
       <div>
         <div class="flex items-center space-x-2">
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Audio Insights</h1>
-          <span class="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-900">Research Preview</span>
+          <AgriBadge variant="warning" icon="science">Research Preview</AgriBadge>
         </div>
-        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+        <p class="mt-0.5 text-sm text-gray-550 dark:text-gray-400">
           Acoustic library analyzing bird behavior distress signals and vocalization frequencies.
         </p>
       </div>
     </div>
 
+    <!-- Live Recording / Microphone Status Panel -->
+    <div class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up delay-75">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-650 dark:text-red-400 flex items-center justify-center">
+          <span class="material-icons-outlined animate-pulse text-[20px]">settings_voice</span>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            Mic Cluster #1 (House A-Central)
+            <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/35">
+              <span class="relative flex h-1.5 w-1.5 shrink-0">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-650"></span>
+              </span>
+              <span class="text-[9px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">Live Recording</span>
+            </div>
+          </h2>
+          <p class="text-xs text-gray-500 mt-0.5">Capturing telemetry vocalizations for real-time analysis.</p>
+        </div>
+      </div>
+      <!-- Quick distress overview status -->
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold text-gray-500">Distress Analysis Status:</span>
+        <AgriBadge variant="success" icon="check">Normal (No Pathogen Risk)</AgriBadge>
+      </div>
+    </div>
+
     <!-- Alert Box emphasizing Illustrative/Research preview status -->
-    <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl p-4 flex items-start space-x-3 text-amber-850 dark:text-amber-300 text-sm">
-      <span class="material-icons-outlined text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5">science</span>
+    <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl p-4 flex items-start space-x-3 text-amber-850 dark:text-amber-300 text-xs font-semibold animate-fade-in-up delay-100">
+      <span class="material-icons-outlined text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">science</span>
       <div>
-        <span class="font-semibold">Research Stage Feature:</span> This module illustrates acoustic distress indicators. Real-time, continuous microphone cluster integration is slated for Phase 2.
+        <span class="font-bold">Research Stage Telemetry:</span> This module plays synthesized acoustic distress indicators. Real-time microphone arrays and live FFT decibel readings are scheduled for Phase 2.
       </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
       <!-- ─── Left Pane: Soundboard ─── -->
-      <div class="lg:col-span-1 space-y-4">
-        <div class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm space-y-4">
-          <div class="flex items-center justify-between">
+      <div class="lg:col-span-1 space-y-4 animate-fade-in-up delay-150">
+        <AgriCard>
+          <template #header>
             <h2 class="text-sm font-bold text-gray-900 dark:text-white">Acoustic Samples Library</h2>
-            <span class="text-[10px] font-bold text-gray-400 uppercase">4 Profiles</span>
-          </div>
+            <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">4 Profiles</span>
+          </template>
 
           <div class="space-y-3">
             <div
               v-for="s in samples"
               :key="s.id"
               @click="selectSample(s)"
-              class="w-full text-left p-4 rounded-xl border transition cursor-pointer flex items-center justify-between group"
+              class="w-full text-left p-4.5 rounded-xl border transition cursor-pointer flex items-center justify-between group active-press"
               :class="selectedSample?.id === s.id
-                ? 'border-primary-500 bg-primary-50/10 dark:bg-primary-950/5'
-                : 'border-gray-200 dark:border-gray-850 hover:border-gray-300 dark:hover:border-gray-700'"
+                ? 'border-primary-500 bg-primary-50/20 dark:bg-primary-950/10'
+                : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'"
             >
-              <div class="space-y-1">
-                <p class="text-xs font-bold text-gray-950 dark:text-white group-hover:text-primary-500 transition">{{ s.title }}</p>
-                <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ s.frequencyRange }}</p>
+              <div class="space-y-1 pr-2 truncate">
+                <p class="text-xs font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition truncate">{{ s.title }}</p>
+                <p class="text-[10px] text-gray-450 dark:text-gray-500 font-mono">{{ s.frequencyRange }}</p>
               </div>
-              <div class="flex items-center gap-2">
-                <span
-                  class="text-[9px] font-extrabold px-1.5 py-0.5 rounded"
-                  :class="s.severity === 'Normal' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30' : (s.severity === 'Warning' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/30' : 'bg-red-50 text-red-700 dark:bg-red-950/30')"
+              <div class="flex items-center gap-2 shrink-0">
+                <AgriBadge
+                  :variant="s.severity === 'Normal' ? 'success' : (s.severity === 'Warning' ? 'warning' : 'critical')"
+                  :pulse="s.severity === 'Critical'"
+                  size="xs"
                 >
                   {{ s.severity }}
-                </span>
-                <button class="h-8 w-8 rounded-full bg-gray-50 group-hover:bg-primary-500/20 dark:bg-gray-850 flex items-center justify-center transition">
-                  <span class="material-icons-outlined text-sm text-gray-650 dark:text-gray-400 group-hover:text-primary-500 transition">
+                </AgriBadge>
+                <div class="h-8 w-8 rounded-full bg-gray-50 group-hover:bg-primary-500/15 dark:bg-darkbg-100 flex items-center justify-center transition">
+                  <span class="material-icons-outlined text-sm text-gray-600 dark:text-gray-450 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition leading-none">
                     {{ isPlaying && selectedSample?.id === s.id ? 'pause' : 'play_arrow' }}
                   </span>
-                </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </AgriCard>
       </div>
 
       <!-- ─── Right Pane: Oscilloscope & Spectral Details ─── -->
-      <div class="lg:col-span-2 space-y-6">
+      <div class="lg:col-span-2 space-y-6 animate-fade-in-up delay-200">
 
         <div v-if="!selectedSample" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-16 text-center flex flex-col items-center justify-center h-full min-h-[400px]">
           <span class="material-icons-outlined text-5xl text-gray-300 dark:text-gray-700 mb-3 animate-pulse">settings_voice</span>
@@ -77,42 +105,43 @@
 
         <template v-else>
           <!-- Dynamic Spectrogram/Waveform Player -->
-          <div class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-5 space-y-4">
-            <div class="flex items-center justify-between">
+          <AgriCard>
+            <template #header>
               <div>
                 <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ selectedSample.title }} Analysis</h3>
-                <p class="text-[10px] text-gray-400 dark:text-gray-500">Spectral signature: {{ selectedSample.frequencyRange }}</p>
+                <p class="text-[10px] text-gray-450 dark:text-gray-500">Spectral signature: {{ selectedSample.frequencyRange }}</p>
               </div>
-              <button
+              <AgriButton
+                variant="primary"
+                size="sm"
+                :icon="isPlaying ? 'pause' : 'volume_up'"
                 @click="togglePlayback"
-                class="bg-primary-600 hover:bg-primary-500 text-white font-bold px-4 py-2 rounded-xl shadow-sm flex items-center gap-1.5 text-xs transition"
               >
-                <span class="material-icons-outlined text-sm">{{ isPlaying ? 'pause' : 'volume_up' }}</span>
                 {{ isPlaying ? 'Mute Sample' : 'Listen Synthesized' }}
-              </button>
-            </div>
+              </AgriButton>
+            </template>
 
             <!-- Waveform Canvas -->
             <div class="bg-gray-950 rounded-2xl h-44 overflow-hidden border border-gray-900 flex items-center justify-center relative shadow-inner">
               <canvas ref="waveCanvas" class="w-full h-full"></canvas>
               <!-- Bouncing decibel meter -->
-              <div class="absolute bottom-3 right-4 bg-black/60 text-white text-[9px] font-bold tracking-widest px-2 py-0.5 rounded uppercase flex items-center gap-1">
+              <div class="absolute bottom-3 right-4 bg-black/60 text-white text-[9px] font-bold tracking-widest px-2.5 py-1 rounded uppercase flex items-center gap-1 select-none">
                 <span class="h-1.5 w-1.5 rounded-full bg-primary-400" :class="isPlaying ? 'animate-ping' : ''"></span>
                 {{ isPlaying ? 'Dynamic Oscillator' : 'Idle Spectrum' }}
               </div>
             </div>
 
             <!-- Analytics Dashboard -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-              <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-100 dark:border-gray-850 rounded-xl p-4 space-y-1">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+              <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-150 dark:border-gray-850 rounded-xl p-4 space-y-1">
                 <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Distress Probability</p>
                 <div class="text-2xl font-black tabular-nums" :class="getSeverityTextClass(selectedSample.severity)">
                   {{ selectedSample.distressProb }}%
                 </div>
-                <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">Calculated via frequency weighting</p>
+                <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">Calculated via frequency weight</p>
               </div>
 
-              <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-100 dark:border-gray-850 rounded-xl p-4 space-y-1">
+              <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-150 dark:border-gray-850 rounded-xl p-4 space-y-1">
                 <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Dominant Peak</p>
                 <div class="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
                   {{ selectedSample.dominantPeak }}
@@ -120,7 +149,7 @@
                 <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">Excitation threshold limit</p>
               </div>
 
-              <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-100 dark:border-gray-850 rounded-xl p-4 space-y-1">
+              <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-150 dark:border-gray-850 rounded-xl p-4 space-y-1">
                 <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Flock Cohesion</p>
                 <div class="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
                   {{ selectedSample.cohesion }}%
@@ -128,25 +157,29 @@
                 <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">Spatial correlation metrics</p>
               </div>
             </div>
-          </div>
+          </AgriCard>
 
           <!-- Recommendations & Clinical Notes -->
-          <div class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm space-y-4">
-            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-              <span class="material-icons-outlined text-[16px] text-primary-600 dark:text-primary-400 font-semibold">health_and_safety</span>
+          <div
+            class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm space-y-4 animate-scale-in"
+            :class="selectedSample.severity === 'Critical' ? 'border-red-250 dark:border-red-950 bg-red-50/5' : ''"
+          >
+            <h4 class="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"
+              :class="selectedSample.severity === 'Critical' ? 'text-status-danger' : 'text-primary-650 dark:text-primary-400'">
+              <span class="material-icons-outlined text-[16px] font-semibold">health_and_safety</span>
               Clinical Diagnostics & Action Plan
             </h4>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
               <div class="space-y-2">
                 <h5 class="font-bold text-gray-900 dark:text-white text-xs">Vocalization Details</h5>
-                <p class="text-xs text-gray-600 dark:text-gray-450 leading-relaxed">
+                <p class="text-xs text-gray-600 dark:text-gray-450 leading-relaxed font-semibold">
                   {{ selectedSample.description }}
                 </p>
               </div>
               <div class="space-y-2">
                 <h5 class="font-bold text-gray-900 dark:text-white text-xs">Management Instructions</h5>
-                <ul class="text-xs text-gray-650 dark:text-gray-400 space-y-1.5 list-disc pl-4">
+                <ul class="text-xs text-gray-650 dark:text-gray-400 space-y-2 list-disc pl-4 font-semibold">
                   <li v-for="(inst, i) in selectedSample.instructions" :key="i">{{ inst }}</li>
                 </ul>
               </div>
@@ -161,6 +194,11 @@
 
 <script setup>
 import { ref, onUnmounted, nextTick } from 'vue'
+
+// Design System components
+import AgriCard from '../components/ui/AgriCard.vue'
+import AgriBadge from '../components/ui/AgriBadge.vue'
+import AgriButton from '../components/ui/AgriButton.vue'
 
 // ── Synthesized Sound Profiles ────────────────
 const samples = [
@@ -271,25 +309,20 @@ const playSound = () => {
   gainNode = audioCtx.createGain()
 
   oscillator.type = selectedSample.value.waveType
-  // Set frequency based on profile
   oscillator.frequency.setValueAtTime(selectedSample.value.baseFreq, audioCtx.currentTime)
 
-  // Modulate frequency to simulate natural bird call fluctuations
   const modulationSpeed = selectedSample.value.id === 'thermal' ? 25 : (selectedSample.value.id === 'healthy' ? 8 : 12)
   const modulationDepth = selectedSample.value.id === 'thermal' ? 200 : (selectedSample.value.id === 'healthy' ? 30 : 70)
   
   const now = audioCtx.currentTime
   for (let i = 0; i < 60; i++) {
     const t = now + i * 0.1
-    // Generate organic chirping sounds
     const freqMod = Math.sin(i * (modulationSpeed / 10)) * modulationDepth
     oscillator.frequency.setValueAtTime(selectedSample.value.baseFreq + freqMod, t)
   }
 
-  // Set gain/volume low to prevent user hearing loud beeps
   gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime)
   
-  // Connect and start
   oscillator.connect(gainNode)
   gainNode.connect(audioCtx.destination)
   oscillator.start()
@@ -329,7 +362,6 @@ const startAnimation = () => {
   const canvas = waveCanvas.value
   canvasCtx = canvas.getContext('2d')
 
-  // Set canvas size
   canvas.width = canvas.parentElement.clientWidth
   canvas.height = canvas.parentElement.clientHeight
 
@@ -341,11 +373,9 @@ const startAnimation = () => {
     const width = canvas.width
     const height = canvas.height
 
-    // Background fill
-    canvasCtx.fillStyle = '#090d10'
+    canvasCtx.fillStyle = '#141416'
     canvasCtx.fillRect(0, 0, width, height)
 
-    // Grid lines
     canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.03)'
     canvasCtx.lineWidth = 1
     for (let i = 1; i < 8; i++) {
@@ -363,14 +393,12 @@ const startAnimation = () => {
       canvasCtx.stroke()
     }
 
-    // Oscilloscope wave trace
     canvasCtx.beginPath()
     canvasCtx.lineWidth = 2
     canvasCtx.strokeStyle = selectedSample.value.severity === 'Normal'
-      ? '#10b981'
-      : (selectedSample.value.severity === 'Warning' ? '#f59e0b' : '#ef4444')
+      ? '#2d6a4f'
+      : (selectedSample.value.severity === 'Warning' ? '#f4a261' : '#e76f51')
 
-    // Control parameters based on selected sound profile
     const amp = isPlaying.value ? 45 : 8
     const freq = selectedSample.value.id === 'thermal' ? 0.08 : (selectedSample.value.id === 'healthy' ? 0.02 : 0.04)
 
@@ -378,22 +406,17 @@ const startAnimation = () => {
       let y = height / 2
       if (isPlaying.value) {
         if (selectedSample.value.id === 'healthy') {
-          // Normal: Smooth sine waves
           y += Math.sin(x * freq + phase) * amp * (0.8 + 0.2 * Math.sin(phase * 0.5))
         } else if (selectedSample.value.id === 'thermal') {
-          // Thermal: High-pitch rapid chirp pulses
           y += Math.sin(x * freq + phase) * amp * (Math.sin(x * 0.005 + phase * 0.2) > 0.4 ? 1 : 0.1)
         } else if (selectedSample.value.id === 'feeding') {
-          // Feeding: Rhythmic envelope bursts
           y += Math.sin(x * freq + phase) * amp * Math.cos(x * 0.01 + phase * 0.05)
         } else {
-          // Respiratory: Raspy sawtooth noise bursts
           const noise = (Math.random() - 0.5) * 12
           const sawtooth = ((x * freq + phase) % 2) - 1
           y += (sawtooth * amp) + noise
         }
       } else {
-        // Idle: flat gentle thermal noise
         y += (Math.random() - 0.5) * 2 + Math.sin(x * 0.01 + phase) * 2
       }
 
@@ -406,7 +429,6 @@ const startAnimation = () => {
 
     canvasCtx.stroke()
 
-    // Shift wave phase
     phase += isPlaying.value ? 0.25 : 0.03
     animationFrameId = requestAnimationFrame(draw)
   }
@@ -416,9 +438,14 @@ const startAnimation = () => {
 
 // ── Formatting ──────────────────────────
 const getSeverityTextClass = (sev) => {
-  if (sev === 'Normal') return 'text-emerald-500'
-  if (sev === 'Warning') return 'text-amber-500'
-  return 'text-red-500'
+  if (sev === 'Normal') return 'text-primary-600 dark:text-primary-400'
+  if (sev === 'Warning') return 'text-status-warning'
+  return 'text-status-danger'
+}
+
+const getStaggerDelayClass = (idx) => {
+  const delays = [50, 100, 150, 200]
+  return `delay-${delays[idx] || 200}`
 }
 
 onUnmounted(() => {
