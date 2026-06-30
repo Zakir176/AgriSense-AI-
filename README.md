@@ -141,7 +141,6 @@ This populates the database with:
 - **3 alerts** (critical, warning, info)
 
 #### Start the API server
-
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
