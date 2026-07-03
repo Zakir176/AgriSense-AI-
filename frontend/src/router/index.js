@@ -8,8 +8,15 @@ import AIVisualMonitor from '../views/AIVisualMonitor.vue'
 import AudioInsight from '../views/AudioInsight.vue'
 import Analytics from '../views/Analytics.vue'
 import Login from '../views/Login.vue'
+import Landing from '../views/Landing.vue'
 
 const routes = [
+  {
+    path: '/',
+    name: 'Landing',
+    component: Landing,
+    meta: { requiresAuth: false, layout: 'blank' }
+  },
   {
     path: '/login',
     name: 'Login',
@@ -17,7 +24,7 @@ const routes = [
     meta: { requiresAuth: false, layout: 'blank' }
   },
   {
-    path: '/',
+    path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
     meta: { requiresAuth: true }
@@ -76,6 +83,10 @@ router.beforeEach((to, from) => {
   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
     // If not authenticated, redirect to Login
     return { name: 'Login' }
+  }
+  // Redirect authenticated operators to Dashboard if visiting Landing or Login
+  if ((to.name === 'Landing' || to.name === 'Login') && isAuthenticated) {
+    return { name: 'Dashboard' }
   }
 })
 
