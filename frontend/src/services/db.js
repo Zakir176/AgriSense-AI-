@@ -1,12 +1,29 @@
 import { openDB } from 'idb'
 
-const DB_NAME = 'agrisense-db'
 const DB_VERSION = 1
 const STORE_API_CACHE = 'api-cache'
 const STORE_SYNC_QUEUE = 'sync-queue'
 
+const getDBName = () => {
+  const token = localStorage.getItem('agrisense_token')
+  if (!token) return 'agrisense-db-default'
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    }).join(''))
+    const payload = JSON.parse(jsonPayload)
+    const username = payload.sub || 'default'
+    return `agrisense-db-${username}`
+  } catch (e) {
+    return 'agrisense-db-default'
+  }
+}
+
 const initDB = async () => {
-  return openDB(DB_NAME, DB_VERSION, {
+  const dbName = getDBName()
+  return openDB(dbName, DB_VERSION, {
     upgrade(db) {
       if (!db.objectStoreNames.contains(STORE_API_CACHE)) {
         // Cache for GET requests (key is URL)
