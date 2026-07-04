@@ -6,5 +6,6 @@ export const store = reactive({
   activeBatch: null,
   batchesList: [],
   alertsList: [],
-  farmsList: []
+  farmsList: [],
+  latestInferenceResult: null
 })
