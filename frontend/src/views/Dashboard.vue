@@ -44,12 +44,16 @@
 
       <AgriStatCard
         label="Total Birds"
-        :value="totalBirds"
+        :value="liveCountValue"
         icon="egg"
         icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
         :loading="loading"
-        :subtext="store.activeBatch ? `Focus: ${store.activeBatch.bird_count?.toLocaleString()} · ${store.activeBatch.breed}` : 'No active batch'"
+        :trend="populationTrendText"
+        :trend-direction="populationTrendDirection"
+        :trend-good="populationTrendGood"
+        :subtext="populationSubtext"
         class="animate-fade-in-up delay-100"
+        :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': hasPopulationAlert }"
       />
 
       <!-- Active Alerts Card (Pulsing critical warning if counts exist) -->
@@ -324,7 +328,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { store } from '../services/store'
 import { api } from '../services/api'
 import { useAnimations } from '../composables/useAnimations'
@@ -353,6 +357,53 @@ const totalBirds = computed(() =>
     .filter(b => b.status === 'active')
     .reduce((sum, b) => sum + (b.bird_count || 0), 0)
 )
+
+const cumulativeMortality = computed(() => {
+  return recentReadings.value.reduce((sum, r) => sum + (r.mortality_count || 0), 0)
+})
+
+const expectedChickenCount = computed(() => {
+  if (!store.activeBatch) return 0
+  return Math.max(0, store.activeBatch.bird_count - cumulativeMortality.value)
+})
+
+const liveCountValue = computed(() => {
+  if (store.latestInferenceResult && store.latestInferenceResult.bird_count_est !== null) {
+    return store.latestInferenceResult.bird_count_est
+  }
+  return expectedChickenCount.value
+})
+
+const populationTrendText = computed(() => {
+  if (!store.latestInferenceResult) return 'Expected'
+  const diff = expectedChickenCount.value - store.latestInferenceResult.bird_count_est
+  if (diff > 0) return `${diff} Missing`
+  return 'Verified'
+})
+
+const populationTrendDirection = computed(() => {
+  if (store.latestInferenceResult && store.latestInferenceResult.bird_count_est < expectedChickenCount.value) {
+    return 'down'
+  }
+  return 'neutral'
+})
+
+const populationTrendGood = computed(() => {
+  if (!store.latestInferenceResult) return true
+  return store.latestInferenceResult.bird_count_est >= expectedChickenCount.value
+})
+
+const populationSubtext = computed(() => {
+  if (!store.activeBatch) return 'No active batch'
+  if (store.latestInferenceResult) {
+    return `Expected: ${expectedChickenCount.value} · AI Visual: ${store.latestInferenceResult.bird_count_est}`
+  }
+  return `Expected: ${expectedChickenCount.value} · No recent scan`
+})
+
+const hasPopulationAlert = computed(() => {
+  return !!(store.latestInferenceResult && store.latestInferenceResult.bird_count_est < expectedChickenCount.value)
+})
 
 const batchAgeDays = computed(() => {
   if (!store.activeBatch?.start_date) return null
@@ -439,8 +490,17 @@ const fetchDashboardData = async () => {
     if (store.activeBatch?.id) {
       const readings = await api.readings.list(store.activeBatch.id)
       recentReadings.value = readings
+
+      // Load latest visual detection scan
+      const clips = await api.inference.list(store.activeBatch.id)
+      if (clips && clips.length > 0) {
+        store.latestInferenceResult = clips[0].inference_result
+      } else {
+        store.latestInferenceResult = null
+      }
     } else {
       recentReadings.value = []
+      store.latestInferenceResult = null
     }
   } catch (err) {
     console.error('Dashboard fetch error:', err)
@@ -471,6 +531,12 @@ const acknowledgeAll = async () => {
     ackLoading.value = false
   }
 }
+
+watch(() => store.activeBatch, (newVal) => {
+  if (newVal) {
+    fetchDashboardData()
+  }
+})
 
 onMounted(() => {
   fetchDashboardData()
