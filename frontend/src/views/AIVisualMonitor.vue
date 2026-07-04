@@ -173,6 +173,39 @@
                   </div>
                 </div>
 
+                <!-- Discrepancy Status Banner -->
+                <div v-if="selectedClip?.inference_result?.discrepancy_note">
+                  <div
+                    class="border rounded-2xl p-4 flex items-start space-x-3 text-xs"
+                    :class="selectedClip.inference_result.discrepancy_note.includes('missing')
+                      ? (selectedClip.inference_result.discrepancy_note.includes('mortality')
+                        ? 'bg-red-55/15 dark:bg-red-950/20 border-red-200 dark:border-red-900/40 text-red-800 dark:text-red-300'
+                        : 'bg-amber-55/15 dark:bg-amber-950/20 border-amber-255/35 dark:border-amber-900/40 text-amber-850 dark:text-amber-300')
+                      : 'bg-emerald-55/15 dark:bg-emerald-950/15 border-emerald-200/60 dark:border-emerald-900/30 text-emerald-800 dark:text-emerald-350'"
+                  >
+                    <span class="material-icons-outlined shrink-0 mt-0.5"
+                      :class="selectedClip.inference_result.discrepancy_note.includes('missing')
+                        ? (selectedClip.inference_result.discrepancy_note.includes('mortality') ? 'text-red-500' : 'text-amber-500')
+                        : 'text-emerald-500'"
+                    >
+                      {{ selectedClip.inference_result.discrepancy_note.includes('missing') ? 'report_problem' : 'check_circle' }}
+                    </span>
+                    <div class="space-y-1">
+                      <p class="font-bold uppercase tracking-wider text-[10px]">
+                        {{ selectedClip.inference_result.discrepancy_note.includes('missing')
+                          ? (selectedClip.inference_result.discrepancy_note.includes('mortality') ? 'Critical Anomaly: Suspected Mortality' : 'Warning: Population Discrepancy (Undocumented Loss)')
+                          : 'Population Status: Verified' }}
+                      </p>
+                      <p class="text-xs leading-relaxed font-semibold">
+                        {{ selectedClip.inference_result.discrepancy_note }}
+                      </p>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 leading-normal" v-if="selectedClip.inference_result.discrepancy_note.includes('missing')">
+                        Note: The system automatically compared this visual scan against batch parameters (flock size minus daily mortality logs). A notification has been raised in the system alerts queue.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- AI Inference Metrics -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                   <!-- Count Estimate (Animated Number Countup) -->
@@ -266,8 +299,40 @@
                     Reason: {{ w.reason }}
                   </p>
                 </div>
-              </div>
             </div>
+
+            <!-- Active Object Tracking Map -->
+            <AgriCard class="mt-6 animate-fade-in-up" v-if="selectedClip?.inference_result?.tracked_birds">
+              <template #header>
+                <div class="flex items-center justify-between w-full">
+                  <div class="flex items-center gap-2">
+                    <span class="material-icons-outlined text-primary-650 dark:text-primary-400">sensors</span>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">Active Object Tracking Map</h3>
+                  </div>
+                  <div class="flex items-center gap-4 text-[10px] sm:text-xs font-semibold">
+                    <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-emerald-500"></span> Active ({{ activeCount }})</span>
+                    <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-red-500 animate-ping"></span> Inactive/Lethargic ({{ inactiveCount }})</span>
+                  </div>
+                </div>
+              </template>
+              
+              <div class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 gap-1.5 max-h-[220px] overflow-y-auto p-3 border border-gray-150 dark:border-gray-850 rounded-xl bg-gray-50/50 dark:bg-darkbg-100/30 animate-fade-in-up">
+                <div
+                  v-for="b in selectedClip.inference_result.tracked_birds"
+                  :key="b.track_id"
+                  class="h-8 flex flex-col items-center justify-center rounded-lg border text-[10px] font-mono font-bold transition-all relative group cursor-pointer"
+                  :class="b.status === 'inactive'
+                    ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/40 text-red-650 dark:text-red-400 animate-pulse'
+                    : 'bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900/20 text-emerald-600 dark:text-emerald-450 hover:bg-emerald-100/40 dark:hover:bg-emerald-950/30'"
+                >
+                  <!-- Tooltip on hover -->
+                  <span class="absolute bottom-full mb-1.5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-[9px] font-sans font-normal py-1 px-2 rounded opacity-0 pointer-events-none group-hover:opacity-100 transition whitespace-nowrap z-10 shadow-lg leading-normal">
+                    ID #{{ b.track_id }} · {{ b.status === 'inactive' ? `Lethargic (${b.inactivity_duration_sec}s)` : 'Healthy & Active' }}
+                  </span>
+                  <span>#{{ b.track_id }}</span>
+                </div>
+              </div>
+            </AgriCard>
           </template>
 
         </div>
@@ -310,6 +375,14 @@ let progressInterval = null
 // ── Computed ──────────────────────────────
 const activeBatchObj = computed(() => {
   return store.batchesList.find(b => b.id === selectedBatchId.value)
+})
+
+const activeCount = computed(() => {
+  return selectedClip.value?.inference_result?.tracked_birds?.filter(b => b.status === 'active').length || 0
+})
+
+const inactiveCount = computed(() => {
+  return selectedClip.value?.inference_result?.tracked_birds?.filter(b => b.status === 'inactive').length || 0
 })
 
 const batchOptions = computed(() => {
