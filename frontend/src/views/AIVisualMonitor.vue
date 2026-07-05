@@ -299,7 +299,9 @@
                     Reason: {{ w.reason }}
                   </p>
                 </div>
+              </div>
             </div>
+
 
             <!-- Active Object Tracking Map -->
             <AgriCard class="mt-6 animate-fade-in-up" v-if="selectedClip?.inference_result?.tracked_birds">
