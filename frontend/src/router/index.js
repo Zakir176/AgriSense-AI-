@@ -9,6 +9,7 @@ import AudioInsight from '../views/AudioInsight.vue'
 import Analytics from '../views/Analytics.vue'
 import Login from '../views/Login.vue'
 import Landing from '../views/Landing.vue'
+import FarmSettings from '../views/FarmSettings.vue'
 
 const routes = [
   {
@@ -69,6 +70,12 @@ const routes = [
     path: '/analytics',
     name: 'Analytics',
     component: Analytics,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/farm-settings',
+    name: 'FarmSettings',
+    component: FarmSettings,
     meta: { requiresAuth: true }
   }
 ]

@@ -10,3 +10,4 @@ class Farm(Base):
     location = Column(String, nullable=True)
 
     batches = relationship("Batch", back_populates="farm", cascade="all, delete-orphan")
+    user_farms = relationship("UserFarmAssociation", back_populates="farm", cascade="all, delete-orphan")
