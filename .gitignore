@@ -42,3 +42,23 @@ dist-ssr/
 # Project uploads
 backend/uploads/
 uploads/
+
+# Model weights
+*.pt
+
+# Scratch folders
+scratch/
+backend/scratch/
+
+# Temporary Doc extractions
+Docs/files/extracted/
+
+# AI Agent Configs and Rules
+.agent/
+.agents/
+.antigravityrules
+.clinerules
+.codexrules
+.cursorrules
+.traerules
+.windsurfrules
