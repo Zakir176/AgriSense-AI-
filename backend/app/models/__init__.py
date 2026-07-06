@@ -7,6 +7,7 @@ from .medication import MedicationEntry
 from .alert import Alert
 from .media import MediaClip, InferenceResult
 from .auth import User
+from .user_farm import UserFarmAssociation
 
 # Ensure they are loaded to metadata
 __all__ = [
@@ -19,5 +20,6 @@ __all__ = [
     "Alert",
     "MediaClip",
     "InferenceResult",
-    "User"
+    "User",
+    "UserFarmAssociation"
 ]
