@@ -179,7 +179,7 @@
                 <span class="material-icons-outlined text-[18px] shrink-0 text-primary-500 dark:text-primary-400">tips_and_updates</span>
                 <div>
                   <div class="font-semibold mb-0.5">Demo Account</div>
-                  <div>Use <code class="bg-primary-100 dark:bg-primary-900/40 px-1.5 py-0.5 rounded font-mono text-[11px] font-bold">evans</code> / <code class="bg-primary-100 dark:bg-primary-900/40 px-1.5 py-0.5 rounded font-mono text-[11px] font-bold">agrisense2025</code></div>
+                  <div>Use <code class="bg-primary-100 dark:bg-primary-900/40 px-1.5 py-0.5 rounded font-mono text-[11px] font-bold">operator</code> / <code class="bg-primary-100 dark:bg-primary-900/40 px-1.5 py-0.5 rounded font-mono text-[11px] font-bold">prime_nest_2026</code></div>
                 </div>
               </div>
             </Transition>
@@ -357,9 +357,9 @@
               <div v-if="!isRegistering">
                 <p class="text-[11px] text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-wider font-semibold">Demo Account</p>
                 <div class="inline-flex items-center gap-2 bg-gray-50 dark:bg-[#111816] border border-gray-200/80 dark:border-gray-800/60 px-3.5 py-2 rounded-xl font-mono text-[11px] text-gray-600 dark:text-gray-400">
-                  <span><b class="text-gray-800 dark:text-gray-200">evans</b></span>
+                  <span><b class="text-gray-800 dark:text-gray-200">operator</b></span>
                   <span class="text-gray-300 dark:text-gray-700">/</span>
-                  <span><b class="text-gray-800 dark:text-gray-200">agrisense2025</b></span>
+                  <span><b class="text-gray-800 dark:text-gray-200">prime_nest_2026</b></span>
                 </div>
               </div>
             </div>
