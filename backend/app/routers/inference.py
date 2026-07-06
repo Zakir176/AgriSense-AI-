@@ -7,8 +7,12 @@ import uuid
 from ..database import get_db
 from ..config import settings
 from ..models.media import MediaClip, InferenceResult
+from ..models.batch import Batch
+from ..models.auth import User
+from ..models.user_farm import UserFarmAssociation
 from ..schemas.media import MediaClipResponse
 from ..services.inference_service import run_video_inference
+from .auth import get_current_user, get_user_farm
 
 router = APIRouter(prefix="/inference", tags=["Inference"])
 
@@ -16,8 +20,17 @@ router = APIRouter(prefix="/inference", tags=["Inference"])
 def upload_video_for_inference(
     batch_id: int = Form(...),
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
+    batch = db.query(Batch).filter(Batch.id == batch_id).first()
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+        
+    assoc = get_user_farm(batch.farm_id, current_user, db)
+    if assoc.role == "viewer":
+        raise HTTPException(status_code=403, detail="Viewer role does not have permission to upload files/run inference")
+
     # Verify directory exists
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     
@@ -50,11 +63,55 @@ def upload_video_for_inference(
         raise HTTPException(status_code=500, detail=f"Inference execution failed: {e}")
         
     # Create InferenceResult record
+    # Calculate Expected Count based on batch count and readings mortality
+    from ..models.reading import FeedWaterReading
+    from ..models.alert import Alert
+    
+    readings = db.query(FeedWaterReading).filter(FeedWaterReading.batch_id == batch_id).all()
+    cumulative_mortality = sum(r.mortality_count or 0 for r in readings)
+    expected_count = max(0, batch.bird_count - cumulative_mortality)
+    
+    bird_count_est = inf_data["bird_count_est"]
+    tracked_birds = inf_data["tracked_birds"]
+    
+    discrepancy_note = None
+    if bird_count_est < expected_count:
+        missing_count = expected_count - bird_count_est
+        has_inactive = any(b["status"] == "inactive" for b in tracked_birds)
+        if has_inactive:
+            discrepancy_note = f"{missing_count} bird(s) missing. Detected potential mortality (lethargic/dead bird detected in visual)."
+            alert_msg = f"Visual anomaly: {missing_count} bird(s) missing from expected flock. Lethargic/inactive bird detected in visual. Expected: {expected_count}, Detected: {bird_count_est}."
+            new_alert = Alert(
+                batch_id=batch_id,
+                type="mortality",
+                message=alert_msg,
+                severity="critical",
+                acknowledged=False
+            )
+            db.add(new_alert)
+        else:
+            discrepancy_note = f"{missing_count} bird(s) missing. Review for potential undocumented loss or theft."
+            alert_msg = f"Visual anomaly: Population discrepancy detected. {missing_count} bird(s) missing with no signs of inactive/dead birds in visual. Expected: {expected_count}, Detected: {bird_count_est}. Suspected theft or undocumented loss."
+            new_alert = Alert(
+                batch_id=batch_id,
+                type="manual",
+                message=alert_msg,
+                severity="warning",
+                acknowledged=False
+            )
+            db.add(new_alert)
+    elif bird_count_est > expected_count:
+        discrepancy_note = f"Perfect match or higher density scan (Detected: {bird_count_est}, Expected: {expected_count})."
+    else:
+        discrepancy_note = f"Flock count match. Expected & Detected: {expected_count}."
+
     db_inference_result = InferenceResult(
         media_clip_id=db_media_clip.id,
-        bird_count_est=inf_data["bird_count_est"],
+        bird_count_est=bird_count_est,
         movement_score=inf_data["movement_score"],
-        low_activity_windows=inf_data["low_activity_windows"]
+        low_activity_windows=inf_data["low_activity_windows"],
+        tracked_birds=tracked_birds,
+        discrepancy_note=discrepancy_note
     )
     db.add(db_inference_result)
     
@@ -63,8 +120,17 @@ def upload_video_for_inference(
     return db_media_clip
 
 @router.get("/clips", response_model=List[MediaClipResponse])
-def list_inference_clips(batch_id: Optional[int] = None, db: Session = Depends(get_db)):
-    query = db.query(MediaClip)
+def list_inference_clips(batch_id: Optional[int] = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if batch_id is not None:
-        query = query.filter(MediaClip.batch_id == batch_id)
+        batch = db.query(Batch).filter(Batch.id == batch_id).first()
+        if not batch:
+            raise HTTPException(status_code=404, detail="Batch not found")
+        get_user_farm(batch.farm_id, current_user, db)
+        query = db.query(MediaClip).filter(MediaClip.batch_id == batch_id)
+    else:
+        # Return all clips on farms associated with current_user
+        query = db.query(MediaClip).join(Batch).join(UserFarmAssociation, Batch.farm_id == UserFarmAssociation.farm_id).filter(
+            UserFarmAssociation.user_id == current_user.id
+        )
+        
     return query.order_by(MediaClip.uploaded_at.desc()).all()
