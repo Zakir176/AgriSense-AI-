@@ -6,6 +6,8 @@ class InferenceResultBase(BaseModel):
     bird_count_est: Optional[int] = None
     movement_score: Optional[float] = None
     low_activity_windows: Optional[List[Dict[str, Any]]] = None
+    tracked_birds: Optional[List[Dict[str, Any]]] = None
+    discrepancy_note: Optional[str] = None
 
 class InferenceResultCreate(InferenceResultBase):
     media_clip_id: int
