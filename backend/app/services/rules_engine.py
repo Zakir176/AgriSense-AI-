@@ -2,8 +2,9 @@ from sqlalchemy.orm import Session
 from datetime import date, timedelta
 from ..models.reading import FeedWaterReading
 from ..models.alert import Alert
+from ..models.batch import Batch
 
-def check_reading_anomalies(db: Session, batch_id: int, reading_date: date, feed_kg: float, water_litres: float) -> bool:
+def check_reading_anomalies(db: Session, batch_id: int, reading_date: date, feed_kg: float, water_litres: float, mortality_count: int = 0) -> bool:
     """
     Computes 7-day rolling average for the batch prior to the reading_date.
     If the current reading deviates from the average by more than 20%,
@@ -45,6 +46,15 @@ def check_reading_anomalies(db: Session, batch_id: int, reading_date: date, feed
             direction = "dropped" if water_litres < avg_water else "increased"
             messages.append(f"Water consumption {direction} by {water_dev:.1%} (Current: {water_litres}L vs 7d avg: {avg_water:.1f}L)")
             
+    # Mortality check
+    if mortality_count > 0:
+        batch = db.query(Batch).filter(Batch.id == batch_id).first()
+        if batch and batch.bird_count > 0:
+            mortality_pct = mortality_count / batch.bird_count
+            if mortality_pct > 0.005: # > 0.5% in a single day
+                flagged = True
+                messages.append(f"High mortality event: {mortality_count} birds lost ({mortality_pct:.1%} of initial flock)")
+
     if flagged:
         # Trigger an alert
         alert_msg = " | ".join(messages)

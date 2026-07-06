@@ -7,6 +7,7 @@ class FeedWaterReadingBase(BaseModel):
     date: date
     feed_kg: float
     water_litres: float
+    mortality_count: Optional[int] = 0
     flagged_abnormal: Optional[bool] = False
 
 class FeedWaterReadingCreate(FeedWaterReadingBase):
@@ -17,6 +18,7 @@ class FeedWaterReadingUpdate(BaseModel):
     date: Optional[date] = None
     feed_kg: Optional[float] = None
     water_litres: Optional[float] = None
+    mortality_count: Optional[int] = None
     flagged_abnormal: Optional[bool] = None
 
 class FeedWaterReadingResponse(FeedWaterReadingBase):
@@ -29,6 +31,9 @@ class ReadingSummary(BaseModel):
     date: date
     feed_kg: float
     water_litres: float
+    mortality_count: int
+    cumulative_mortality: int
+    feed_conversion_ratio: Optional[float] = None
     feed_rolling_avg_7d: float
     water_rolling_avg_7d: float
     feed_deviation_pct: float

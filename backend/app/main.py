@@ -74,6 +74,21 @@ def seed_database():
             db.add(default_user)
             db.commit()
             print("Successfully seeded database with default user 'operator' (password: prime_nest_2026)")
+
+        # Seed default user-farm relationship
+        from .models.user_farm import UserFarmAssociation
+        user = db.query(User).filter(User.username == "operator").first()
+        farm = db.query(Farm).filter(Farm.name == "Prime Nest Poultry").first()
+        if user and farm:
+            assoc = db.query(UserFarmAssociation).filter(
+                UserFarmAssociation.user_id == user.id,
+                UserFarmAssociation.farm_id == farm.id
+            ).first()
+            if not assoc:
+                assoc = UserFarmAssociation(user_id=user.id, farm_id=farm.id, role="owner")
+                db.add(assoc)
+                db.commit()
+                print("Successfully seeded user-farm association (operator -> Prime Nest Poultry as owner)")
     except Exception as e:
         print(f"Error seeding database: {e}")
     finally:
