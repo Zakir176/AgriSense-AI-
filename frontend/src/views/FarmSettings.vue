@@ -248,6 +248,13 @@ import { store } from '../services/store'
 import { api } from '../services/api'
 import { useToast } from '../composables/useToast'
 
+import AgriButton from '../components/ui/AgriButton.vue'
+import AgriCard from '../components/ui/AgriCard.vue'
+import AgriTable from '../components/ui/AgriTable.vue'
+import AgriBadge from '../components/ui/AgriBadge.vue'
+import AgriModal from '../components/ui/AgriModal.vue'
+import AgriInput from '../components/ui/AgriInput.vue'
+
 const toast = useToast()
 
 // ── State ──────────────────────────────────
@@ -278,17 +285,6 @@ const isOwner = computed(() => {
 const currentRole = computed(() => {
   return store.currentFarm?.role || 'none'
 })
-
-// ── Watchers ──────────────────────────────
-watch(() => store.currentFarm, (newFarmVal) => {
-  if (newFarmVal) {
-    farmForm.value.name = newFarmVal.name
-    farmForm.value.location = newFarmVal.location || ''
-    fetchMembers()
-  } else {
-    members.value = []
-  }
-}, { immediate: true })
 
 // ── Methods ──────────────────────────────
 const fetchMembers = async () => {
@@ -411,9 +407,34 @@ const removeMember = async (member) => {
   }
 }
 
-const switchFarm = (farm) => {
+const switchFarm = async (farm) => {
   store.currentFarm = farm
+  try {
+    const batches = await api.batches.list(farm.id)
+    store.batchesList = batches
+    const active = batches.find(b => b.status === 'active')
+    if (active) {
+      store.activeBatch = active
+    } else if (batches.length > 0) {
+      store.activeBatch = batches[0]
+    } else {
+      store.activeBatch = null
+    }
+  } catch (error) {
+    console.error('Failed to load batches for farm:', error)
+  }
 }
+
+// ── Watchers ──────────────────────────────
+watch(() => store.currentFarm, (newFarmVal) => {
+  if (newFarmVal) {
+    farmForm.value.name = newFarmVal.name
+    farmForm.value.location = newFarmVal.location || ''
+    fetchMembers()
+  } else {
+    members.value = []
+  }
+}, { immediate: true })
 
 const updateOnlineStatus = () => {
   isOffline.value = !navigator.onLine
