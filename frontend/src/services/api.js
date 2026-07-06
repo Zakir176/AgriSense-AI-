@@ -108,7 +108,6 @@ export const api = {
         method: 'POST',
         body: { username, password, full_name: fullName || null }
       })
-      // Auto-login after successful registration
       return this.login(username, password)
     }
   },
@@ -122,6 +121,37 @@ export const api = {
       return request('/farms', {
         method: 'POST',
         body: data
+      })
+    },
+    update(id, data) {
+      return request(`/farms/${id}`, {
+        method: 'PUT',
+        body: data
+      })
+    },
+    delete(id) {
+      return request(`/farms/${id}`, {
+        method: 'DELETE'
+      })
+    },
+    listMembers(farmId) {
+      return request(`/farms/${farmId}/members`)
+    },
+    addMember(farmId, data) {
+      return request(`/farms/${farmId}/members`, {
+        method: 'POST',
+        body: data
+      })
+    },
+    updateMember(farmId, userId, data) {
+      return request(`/farms/${farmId}/members/${userId}`, {
+        method: 'PUT',
+        body: data
+      })
+    },
+    removeMember(farmId, userId) {
+      return request(`/farms/${farmId}/members/${userId}`, {
+        method: 'DELETE'
       })
     }
   },
