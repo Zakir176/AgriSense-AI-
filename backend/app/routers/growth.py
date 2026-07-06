@@ -3,12 +3,24 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from ..database import get_db
 from ..models.growth import GrowthSample
+from ..models.batch import Batch
+from ..models.auth import User
+from ..models.user_farm import UserFarmAssociation
 from ..schemas.growth import GrowthSampleCreate, GrowthSampleResponse, GrowthRateSummary, GrowthSampleUpdate
+from .auth import get_current_user, get_user_farm
 
 router = APIRouter(prefix="/growth", tags=["Growth"])
 
 @router.post("", response_model=GrowthSampleResponse, status_code=status.HTTP_201_CREATED)
-def create_growth_sample(sample: GrowthSampleCreate, db: Session = Depends(get_db)):
+def create_growth_sample(sample: GrowthSampleCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    batch = db.query(Batch).filter(Batch.id == sample.batch_id).first()
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+        
+    assoc = get_user_farm(batch.farm_id, current_user, db)
+    if assoc.role == "viewer":
+        raise HTTPException(status_code=403, detail="Viewer role does not have permission to log growth samples")
+
     # Check if a sample exists for this batch and date
     existing = db.query(GrowthSample).filter(
         GrowthSample.batch_id == sample.batch_id,
@@ -29,14 +41,27 @@ def create_growth_sample(sample: GrowthSampleCreate, db: Session = Depends(get_d
     return db_sample
 
 @router.get("", response_model=List[GrowthSampleResponse])
-def list_growth_samples(batch_id: Optional[int] = None, db: Session = Depends(get_db)):
-    query = db.query(GrowthSample)
+def list_growth_samples(batch_id: Optional[int] = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if batch_id is not None:
-        query = query.filter(GrowthSample.batch_id == batch_id)
-    return query.order_by(GrowthSample.date.desc()).all()
+        batch = db.query(Batch).filter(Batch.id == batch_id).first()
+        if not batch:
+            raise HTTPException(status_code=404, detail="Batch not found")
+        get_user_farm(batch.farm_id, current_user, db)
+        return db.query(GrowthSample).filter(GrowthSample.batch_id == batch_id).order_by(GrowthSample.date.desc()).all()
+        
+    # Return all growth samples on farms associated with current_user
+    return db.query(GrowthSample).join(Batch).join(UserFarmAssociation, Batch.farm_id == UserFarmAssociation.farm_id).filter(
+        UserFarmAssociation.user_id == current_user.id
+    ).order_by(GrowthSample.date.desc()).all()
 
 @router.get("/summary/{batch_id}", response_model=List[GrowthRateSummary])
-def get_growth_summary(batch_id: int, db: Session = Depends(get_db)):
+def get_growth_summary(batch_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    batch = db.query(Batch).filter(Batch.id == batch_id).first()
+    if not batch:
+        return []
+        
+    get_user_farm(batch.farm_id, current_user, db)
+    
     samples = db.query(GrowthSample).filter(
         GrowthSample.batch_id == batch_id
     ).order_by(GrowthSample.date.asc()).all()
@@ -62,10 +87,18 @@ def get_growth_summary(batch_id: int, db: Session = Depends(get_db)):
     return summaries
 
 @router.put("/{sample_id}", response_model=GrowthSampleResponse)
-def update_growth_sample(sample_id: int, sample: GrowthSampleUpdate, db: Session = Depends(get_db)):
+def update_growth_sample(sample_id: int, sample: GrowthSampleUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     db_sample = db.query(GrowthSample).filter(GrowthSample.id == sample_id).first()
     if not db_sample:
         raise HTTPException(status_code=404, detail="Growth sample not found")
+        
+    batch = db.query(Batch).filter(Batch.id == db_sample.batch_id).first()
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+        
+    assoc = get_user_farm(batch.farm_id, current_user, db)
+    if assoc.role == "viewer":
+        raise HTTPException(status_code=403, detail="Viewer role does not have permission to update growth samples")
     
     update_data = sample.model_dump(exclude_unset=True)
     for key, value in update_data.items():
@@ -76,10 +109,19 @@ def update_growth_sample(sample_id: int, sample: GrowthSampleUpdate, db: Session
     return db_sample
 
 @router.delete("/{sample_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_growth_sample(sample_id: int, db: Session = Depends(get_db)):
+def delete_growth_sample(sample_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     db_sample = db.query(GrowthSample).filter(GrowthSample.id == sample_id).first()
     if not db_sample:
         raise HTTPException(status_code=404, detail="Growth sample not found")
+        
+    batch = db.query(Batch).filter(Batch.id == db_sample.batch_id).first()
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+        
+    assoc = get_user_farm(batch.farm_id, current_user, db)
+    if assoc.role == "viewer":
+        raise HTTPException(status_code=403, detail="Viewer role does not have permission to delete growth samples")
+        
     db.delete(db_sample)
     db.commit()
     return
