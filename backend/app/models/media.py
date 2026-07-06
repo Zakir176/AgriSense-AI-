@@ -22,5 +22,7 @@ class InferenceResult(Base):
     bird_count_est = Column(Integer, nullable=True)
     movement_score = Column(Float, nullable=True)
     low_activity_windows = Column(JSON, nullable=True)  # JSON representation of low activity ranges
+    tracked_birds = Column(JSON, nullable=True)  # List of tracked birds with statuses/positions
+    discrepancy_note = Column(String, nullable=True)  # Note regarding missing count checks
 
     media_clip = relationship("MediaClip", back_populates="inference_result")
