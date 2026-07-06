@@ -8,6 +8,7 @@ from passlib.context import CryptContext
 from ..database import get_db
 from ..config import settings
 from ..models.auth import User
+from ..models.user_farm import UserFarmAssociation
 from ..schemas.auth import Token, UserResponse, UserCreate
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -83,3 +84,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+def get_user_farm(farm_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    assoc = db.query(UserFarmAssociation).filter(
+        UserFarmAssociation.user_id == current_user.id,
+        UserFarmAssociation.farm_id == farm_id
+    ).first()
+    if not assoc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have access to this farm"
+        )
+    return assoc
