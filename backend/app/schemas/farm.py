@@ -14,6 +14,23 @@ class FarmUpdate(BaseModel):
 
 class FarmResponse(FarmBase):
     id: int
+    role: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class FarmMemberAdd(BaseModel):
+    username: str
+    role: str
+
+class FarmMemberUpdate(BaseModel):
+    role: str
+
+class FarmMemberResponse(BaseModel):
+    user_id: int
+    username: str
+    full_name: Optional[str] = None
+    role: str
 
     class Config:
         from_attributes = True
