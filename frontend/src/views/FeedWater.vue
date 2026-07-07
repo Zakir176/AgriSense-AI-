@@ -43,46 +43,54 @@
 
       <!-- ─── Summary KPIs (Staggered load) ─── -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <AgriStatCard
-          label="Total Readings"
-          :value="readings.length"
-          icon="bar_chart"
-          icon-color-class="bg-blue-50 dark:bg-blue-950/40 text-blue-500"
-          :loading="tableLoading"
-          class="animate-fade-in-up delay-100"
-        />
-        <AgriStatCard
-          label="Latest Feed"
-          :value="readings.length > 0 ? readings[0].feed_kg : 0"
-          :decimals="1"
-          suffix=" kg"
-          icon="restaurant"
-          icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-450"
-          :loading="tableLoading"
-          class="animate-fade-in-up delay-150"
-        />
-        <AgriStatCard
-          label="Latest Water"
-          :value="readings.length > 0 ? readings[0].water_litres : 0"
-          :decimals="1"
-          suffix=" L"
-          icon="water_drop"
-          icon-color-class="bg-cyan-50 dark:bg-cyan-950/40 text-cyan-500"
-          :loading="tableLoading"
-          class="animate-fade-in-up delay-200"
-        />
-        <AgriStatCard
-          label="Flagged Readings"
-          :value="flaggedCount"
-          icon="warning"
-          :icon-color-class="flaggedCount > 0 ? 'bg-red-50 dark:bg-red-950/40 text-red-500' : 'bg-gray-50 dark:bg-darkbg-100 text-gray-400'"
-          :trend="flaggedCount > 0 ? 'Review anomalies' : 'Optimal'"
-          :trend-direction="flaggedCount > 0 ? 'up' : 'neutral'"
-          :trend-good="flaggedCount === 0"
-          :loading="tableLoading"
-          class="animate-fade-in-up delay-250"
-          :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': flaggedCount > 0 }"
-        />
+        <div class="animate-fade-in-up delay-100">
+          <AgriStatCard
+            label="Total Readings"
+            :value="readings.length"
+            icon="bar_chart"
+            icon-color-class="bg-blue-50 dark:bg-blue-950/40 text-blue-500"
+            :loading="tableLoading"
+            class="h-full"
+          />
+        </div>
+        <div class="animate-fade-in-up delay-150">
+          <AgriStatCard
+            label="Latest Feed"
+            :value="readings.length > 0 ? readings[0].feed_kg : 0"
+            :decimals="1"
+            suffix=" kg"
+            icon="restaurant"
+            icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-450"
+            :loading="tableLoading"
+            class="h-full"
+          />
+        </div>
+        <div class="animate-fade-in-up delay-200">
+          <AgriStatCard
+            label="Latest Water"
+            :value="readings.length > 0 ? readings[0].water_litres : 0"
+            :decimals="1"
+            suffix=" L"
+            icon="water_drop"
+            icon-color-class="bg-cyan-50 dark:bg-cyan-950/40 text-cyan-500"
+            :loading="tableLoading"
+            class="h-full"
+          />
+        </div>
+        <div class="animate-fade-in-up delay-250">
+          <AgriStatCard
+            label="Flagged Readings"
+            :value="flaggedCount"
+            icon="warning"
+            :icon-color-class="flaggedCount > 0 ? 'bg-red-50 dark:bg-red-950/40 text-red-500' : 'bg-gray-50 dark:bg-darkbg-100 text-gray-400'"
+            :trend="flaggedCount > 0 ? 'Review anomalies' : 'Optimal'"
+            :trend-direction="flaggedCount > 0 ? 'up' : 'neutral'"
+            :trend-good="flaggedCount === 0"
+            :loading="tableLoading"
+            class="h-full"
+            :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': flaggedCount > 0 }"
+          />
+        </div>
       </div>
 
       <!-- ─── Chart Panel ─── -->
