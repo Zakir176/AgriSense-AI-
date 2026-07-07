@@ -32,55 +32,63 @@
 
     <!-- ─── KPI Cards (Staggered Fade-in) ─── -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      <AgriStatCard
-        label="Active Batches"
-        :value="activeBatchCount"
-        icon="layers"
-        icon-color-class="bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400"
-        :loading="loading"
-        :subtext="`${store.batchesList.length} total batch${store.batchesList.length !== 1 ? 'es' : ''} on farm`"
-        class="animate-fade-in-up delay-50"
-      />
+      <div class="animate-fade-in-up delay-50">
+        <AgriStatCard
+          label="Active Batches"
+          :value="activeBatchCount"
+          icon="layers"
+          icon-color-class="bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400"
+          :loading="loading"
+          :subtext="`${store.batchesList.length} total batch${store.batchesList.length !== 1 ? 'es' : ''} on farm`"
+          class="h-full"
+        />
+      </div>
 
-      <AgriStatCard
-        label="Total Birds"
-        :value="liveCountValue"
-        icon="egg"
-        icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
-        :loading="loading"
-        :trend="populationTrendText"
-        :trend-direction="populationTrendDirection"
-        :trend-good="populationTrendGood"
-        :subtext="populationSubtext"
-        class="animate-fade-in-up delay-100"
-        :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': hasPopulationAlert }"
-      />
+      <div class="animate-fade-in-up delay-100">
+        <AgriStatCard
+          label="Total Birds"
+          :value="liveCountValue"
+          icon="egg"
+          icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
+          :loading="loading"
+          :trend="populationTrendText"
+          :trend-direction="populationTrendDirection"
+          :trend-good="populationTrendGood"
+          :subtext="populationSubtext"
+          class="h-full"
+          :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': hasPopulationAlert }"
+        />
+      </div>
 
       <!-- Active Alerts Card (Pulsing critical warning if counts exist) -->
-      <AgriStatCard
-        label="Active Alerts"
-        :value="unackAlerts.length"
-        icon="notifications_active"
-        :icon-color-class="unackAlerts.length > 0 ? 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400' : 'bg-gray-50 dark:bg-darkbg-100 text-gray-400 dark:text-gray-500'"
-        :loading="loading"
-        :trend="unackAlerts.length > 0 ? 'Action required' : 'All clear'"
-        :trend-direction="unackAlerts.length > 0 ? 'up' : 'neutral'"
-        :trend-good="unackAlerts.length === 0"
-        :subtext="unackAlerts.length > 0 ? 'Unresolved exceptions detected' : 'All systems operating normally'"
-        class="animate-fade-in-up delay-150"
-        :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': unackAlerts.length > 0 }"
-      />
+      <div class="animate-fade-in-up delay-150">
+        <AgriStatCard
+          label="Active Alerts"
+          :value="unackAlerts.length"
+          icon="notifications_active"
+          :icon-color-class="unackAlerts.length > 0 ? 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400' : 'bg-gray-50 dark:bg-darkbg-100 text-gray-400 dark:text-gray-500'"
+          :loading="loading"
+          :trend="unackAlerts.length > 0 ? 'Action required' : 'All clear'"
+          :trend-direction="unackAlerts.length > 0 ? 'up' : 'neutral'"
+          :trend-good="unackAlerts.length === 0"
+          :subtext="unackAlerts.length > 0 ? 'Unresolved exceptions detected' : 'All systems operating normally'"
+          class="h-full"
+          :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': unackAlerts.length > 0 }"
+        />
+      </div>
 
-      <AgriStatCard
-        label="Batch Age"
-        :value="batchAgeDays !== null ? batchAgeDays : 0"
-        prefix="Day "
-        icon="calendar_today"
-        icon-color-class="bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400"
-        :loading="loading"
-        :subtext="store.activeBatch ? `Started ${formatDate(store.activeBatch.start_date)}` : 'No active batch'"
-        class="animate-fade-in-up delay-200"
-      />
+      <div class="animate-fade-in-up delay-200">
+        <AgriStatCard
+          label="Batch Age"
+          :value="batchAgeDays !== null ? batchAgeDays : 0"
+          prefix="Day "
+          icon="calendar_today"
+          icon-color-class="bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400"
+          :loading="loading"
+          :subtext="store.activeBatch ? `Started ${formatDate(store.activeBatch.start_date)}` : 'No active batch'"
+          class="h-full"
+        />
+      </div>
     </div>
 
     <!-- ─── Body grid: Alerts + Batch Info ─── -->
