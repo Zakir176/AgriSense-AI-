@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between animate-scale-in"
+    class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
   >
     <!-- Skeleton Loading -->
     <div v-if="loading" class="space-y-3">
