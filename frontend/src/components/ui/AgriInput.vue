@@ -29,7 +29,7 @@
         :disabled="disabled"
         :required="required"
         @input="$emit('update:modelValue', $event.target.value)"
-        class="w-full text-sm font-medium transition-all duration-205 rounded-xl border outline-none bg-white dark:bg-darkbg-50/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-650 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-darkbg-100"
+        class="w-full text-sm font-medium transition-all duration-205 rounded-xl border outline-none bg-white dark:bg-darkbg-50/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-650 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-darkbg-100 py-2.5"
         :class="[
           icon ? 'pl-10.5' : 'pl-4',
           error ? 'pr-10.5' : 'pr-4',
