@@ -168,6 +168,78 @@
             </div>
           </AgriCard>
         </div>
+
+        <!-- ─── Spatial Health Trends Section ─── -->
+        <div class="space-y-4 animate-fade-in-up delay-450">
+          <div class="flex items-center gap-2">
+            <span class="material-icons-outlined text-primary-600 dark:text-primary-400">hub</span>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Spatial Health Trends</h2>
+            <span v-if="spatialTrendsLoading" class="text-[10px] text-gray-400 dark:text-gray-500 italic">Loading...</span>
+          </div>
+
+          <!-- Spatial KPI Cards -->
+          <div v-if="spatialTrendsData.length > 0" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <AgriStatCard
+              label="Avg Clustering Density"
+              :value="avgClusteringDensity"
+              :decimals="1"
+              suffix="%"
+              icon="grain"
+              icon-color-class="bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400"
+              :trend="clusteringTrendLabel"
+              trend-direction="neutral"
+              :trend-good="avgClusteringDensity < 50"
+              subtext="Lower = more evenly spread flock"
+              class="animate-fade-in-up delay-100"
+            />
+            <AgriStatCard
+              label="Peak Temperature"
+              :value="peakTemperature"
+              :decimals="1"
+              suffix="°C"
+              icon="thermostat"
+              icon-color-class="bg-orange-50 dark:bg-orange-950/40 text-orange-500 dark:text-orange-400"
+              :trend="peakTemperature > 31 ? 'Heat Warning' : 'Normal Range'"
+              trend-direction="neutral"
+              :trend-good="peakTemperature <= 31"
+              subtext="Optimal: 24–30 °C (varies by age)"
+              class="animate-fade-in-up delay-150"
+            />
+            <AgriStatCard
+              label="High-Risk Days"
+              :value="highRiskDays"
+              icon="warning_amber"
+              icon-color-class="bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400"
+              :trend="highRiskDays === 0 ? 'All Clear' : `${highRiskDays} day(s) > 65%`"
+              trend-direction="neutral"
+              :trend-good="highRiskDays === 0"
+              subtext="Days with clustering density > 65%"
+              class="animate-fade-in-up delay-200"
+            />
+          </div>
+
+          <!-- Dual-Axis Trend Chart -->
+          <AgriCard padding="none">
+            <template #header>
+              <div class="flex items-center gap-2">
+                <span class="material-icons-outlined text-gray-500 dark:text-gray-400">insights</span>
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Clustering Density vs. Barn Temperature (30-Day Window)</h3>
+              </div>
+            </template>
+            <div class="p-5">
+              <div v-if="spatialTrendsData.length === 0" class="h-72 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500 text-center px-6">
+                <div>
+                  <span class="material-icons-outlined text-3xl block mb-2">hub</span>
+                  Upload coop footage on the AI Visual Monitor page to generate spatial health trend data.
+                </div>
+              </div>
+              <div v-else class="h-72 flex items-center justify-center">
+                <canvas ref="spatialCanvas"></canvas>
+              </div>
+            </div>
+          </AgriCard>
+        </div>
+
       </template>
     </template>
   </div>
@@ -198,10 +270,16 @@ const weightSamples = ref([])
 const otherBatches = ref([])
 const suggestions = ref([])
 
+// Spatial Trends
+const spatialTrendsData = ref([])
+const spatialTrendsLoading = ref(false)
+
 const fcrCanvas = ref(null)
 const growthCanvas = ref(null)
+const spatialCanvas = ref(null)
 let fcrChartInstance = null
 let growthChartInstance = null
+let spatialChartInstance = null
 
 // ── Computed ──────────────────────────────
 const activeBatchObj = computed(() => {
@@ -261,6 +339,37 @@ const growthData = computed(() => {
   return [...weightSamples.value].sort((a,b) => new Date(a.date) - new Date(b.date))
 })
 
+// ── Spatial Trend Computed ─────────────────
+const avgClusteringDensity = computed(() => {
+  const withData = spatialTrendsData.value.filter(d => d.clustering_density_pct !== null)
+  if (withData.length === 0) return 0
+  return withData.reduce((s, d) => s + d.clustering_density_pct, 0) / withData.length
+})
+
+const peakTemperature = computed(() => {
+  const withTemp = spatialTrendsData.value.filter(d => d.temperature_celsius !== null)
+  if (withTemp.length === 0) return 0
+  return Math.max(...withTemp.map(d => d.temperature_celsius))
+})
+
+const highRiskDays = computed(() => {
+  return spatialTrendsData.value.filter(d => d.huddling_risk === 'high').length
+})
+
+const clusteringTrendLabel = computed(() => {
+  const withData = spatialTrendsData.value.filter(d => d.clustering_density_pct !== null)
+  if (withData.length < 4) return 'Insufficient data'
+  const mid = Math.floor(withData.length / 2)
+  const firstHalf = withData.slice(0, mid)
+  const secondHalf = withData.slice(mid)
+  const avg1 = firstHalf.reduce((s, d) => s + d.clustering_density_pct, 0) / firstHalf.length
+  const avg2 = secondHalf.reduce((s, d) => s + d.clustering_density_pct, 0) / secondHalf.length
+  const delta = avg2 - avg1
+  if (delta > 5) return `Rising +${delta.toFixed(1)}%`
+  if (delta < -5) return `Falling ${delta.toFixed(1)}%`
+  return 'Stable'
+})
+
 // ── Data Loading ───────────────────────────
 const loadAllData = async () => {
   if (!selectedBatchId.value) return
@@ -282,6 +391,10 @@ const loadAllData = async () => {
     const advice = await api.analytics.getRecommendations(batchId)
     suggestions.value = advice
 
+    // Add huddling recommendations based on spatial data
+    await loadSpatialTrends(batchId)
+    appendHuddlingRecommendations()
+
     await nextTick()
     renderFcrComparisonChart()
     renderGrowthVelocityChart()
@@ -289,6 +402,53 @@ const loadAllData = async () => {
     console.error('Failed to load analytics data:', err)
   } finally {
     loading.value = false
+    // Spatial chart needs to render after loading=false so the canvas
+    // element is actually in the DOM (it's behind a v-if on loading)
+    await nextTick()
+    renderSpatialTrendsChart()
+  }
+}
+
+const loadSpatialTrends = async (batchId) => {
+  spatialTrendsLoading.value = true
+  try {
+    const data = await api.spatialTrends.get(batchId)
+    spatialTrendsData.value = data || []
+  } catch (err) {
+    console.warn('Spatial trends not available:', err)
+    spatialTrendsData.value = []
+  } finally {
+    spatialTrendsLoading.value = false
+  }
+}
+
+const appendHuddlingRecommendations = () => {
+  const data = spatialTrendsData.value
+  if (data.length === 0) return
+
+  const latest = data[data.length - 1]
+  const highDays = data.filter(d => d.huddling_risk === 'high').length
+
+  if (latest.clustering_density_pct !== null && latest.clustering_density_pct > 65) {
+    suggestions.value.push({
+      type: 'danger',
+      title: 'Critical Huddling Detected',
+      message: `Latest clustering density is ${latest.clustering_density_pct}% (threshold: 65%). Birds are tightly packed — check for heat stress, poor ventilation, or feeder access issues. ${highDays} day(s) have exceeded the high-risk threshold.`
+    })
+  } else if (latest.clustering_density_pct !== null && latest.clustering_density_pct > 50) {
+    suggestions.value.push({
+      type: 'warning',
+      title: 'Elevated Huddling Activity',
+      message: `Clustering density is at ${latest.clustering_density_pct}%, approaching the 65% risk threshold. Monitor ventilation and feeder distribution to prevent overcrowding.`
+    })
+  }
+
+  if (latest.temperature_celsius !== null && latest.temperature_celsius > 31) {
+    suggestions.value.push({
+      type: 'warning',
+      title: 'High Barn Temperature',
+      message: `Barn temperature recorded at ${latest.temperature_celsius}°C. Optimal range is 24–30°C. Consider increasing ventilation or activating cooling systems.`
+    })
   }
 }
 
@@ -430,6 +590,196 @@ const renderGrowthVelocityChart = () => {
   })
 }
 
+// ── Spatial Trends Chart ───────────────────
+const renderSpatialTrendsChart = () => {
+  if (spatialChartInstance) spatialChartInstance.destroy()
+  if (!spatialCanvas.value || spatialTrendsData.value.length === 0) return
+
+  const data = spatialTrendsData.value
+  const labels = data.map(d => formatDateShort(d.date))
+  const clusteringVals = data.map(d => d.clustering_density_pct)
+  const dispersionVals = data.map(d => d.spatial_dispersion_index)
+  const temperatureVals = data.map(d => d.temperature_celsius)
+
+  const isDark = document.documentElement.classList.contains('dark')
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'
+  const textColor = isDark ? '#9ca3af' : '#6b7280'
+
+  // Build gradient for clustering density fill
+  const ctx = spatialCanvas.value.getContext('2d')
+  const gradient = ctx.createLinearGradient(0, 0, 0, 300)
+  if (isDark) {
+    gradient.addColorStop(0, 'rgba(239, 68, 68, 0.3)')  // red top
+    gradient.addColorStop(0.4, 'rgba(245, 158, 11, 0.2)') // amber mid
+    gradient.addColorStop(1, 'rgba(34, 197, 94, 0.05)')  // green bottom
+  } else {
+    gradient.addColorStop(0, 'rgba(239, 68, 68, 0.2)')
+    gradient.addColorStop(0.4, 'rgba(245, 158, 11, 0.12)')
+    gradient.addColorStop(1, 'rgba(34, 197, 94, 0.03)')
+  }
+
+  spatialChartInstance = new Chart(spatialCanvas.value, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Clustering Density %',
+          data: clusteringVals,
+          borderColor: isDark ? '#f87171' : '#dc2626',
+          backgroundColor: gradient,
+          borderWidth: 2.5,
+          tension: 0.4,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: isDark ? '#f87171' : '#dc2626',
+          pointBorderColor: isDark ? '#1f2937' : '#ffffff',
+          pointBorderWidth: 2,
+          yAxisID: 'y',
+          order: 2
+        },
+        {
+          label: 'Spatial Dispersion',
+          data: dispersionVals,
+          borderColor: isDark ? '#a78bfa' : '#7c3aed',
+          borderWidth: 1.5,
+          borderDash: [6, 3],
+          tension: 0.4,
+          fill: false,
+          pointRadius: 3,
+          pointBackgroundColor: isDark ? '#a78bfa' : '#7c3aed',
+          pointBorderWidth: 0,
+          yAxisID: 'y',
+          order: 3
+        },
+        {
+          label: 'Temperature °C',
+          data: temperatureVals,
+          borderColor: isDark ? '#fbbf24' : '#d97706',
+          borderWidth: 2,
+          tension: 0.35,
+          fill: false,
+          pointRadius: 3,
+          pointBackgroundColor: isDark ? '#fbbf24' : '#d97706',
+          pointBorderColor: isDark ? '#1f2937' : '#ffffff',
+          pointBorderWidth: 1.5,
+          yAxisID: 'y1',
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: { right: 10 }
+      },
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+            color: textColor,
+            font: { size: 10, family: 'Inter' },
+            usePointStyle: true,
+            pointStyleWidth: 10,
+            padding: 16
+          }
+        },
+        tooltip: {
+          backgroundColor: isDark ? '#1f2937' : '#ffffff',
+          titleColor: isDark ? '#f3f4f6' : '#111827',
+          bodyColor: isDark ? '#d1d5db' : '#374151',
+          borderColor: isDark ? '#374151' : '#e5e7eb',
+          borderWidth: 1,
+          padding: 12,
+          displayColors: true,
+          callbacks: {
+            afterBody(tooltipItems) {
+              const idx = tooltipItems[0].dataIndex
+              const point = spatialTrendsData.value[idx]
+              if (point) {
+                return `Huddling Risk: ${point.huddling_risk.toUpperCase()}`
+              }
+              return ''
+            }
+          }
+        },
+        // High-risk threshold annotation line at 65%
+        annotation: undefined  // We draw it manually via plugin below
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: textColor, font: { size: 10, family: 'Inter' } }
+        },
+        y: {
+          type: 'linear',
+          position: 'left',
+          min: 0,
+          max: 100,
+          title: {
+            display: true,
+            text: 'Clustering / Dispersion %',
+            color: textColor,
+            font: { size: 10, family: 'Inter' }
+          },
+          grid: { color: gridColor },
+          ticks: { color: textColor, font: { size: 10, family: 'Inter' } }
+        },
+        y1: {
+          type: 'linear',
+          position: 'right',
+          min: 20,
+          max: 40,
+          title: {
+            display: true,
+            text: 'Temperature °C',
+            color: isDark ? '#fbbf24' : '#d97706',
+            font: { size: 10, family: 'Inter' }
+          },
+          grid: { drawOnChartArea: false },
+          ticks: {
+            color: isDark ? '#fbbf24' : '#d97706',
+            font: { size: 10, family: 'Inter' }
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'huddlingThresholdLine',
+      afterDraw(chart) {
+        const yScale = chart.scales.y
+        const xScale = chart.scales.x
+        if (!yScale || !xScale) return
+
+        const yPixel = yScale.getPixelForValue(65)
+        const ctx = chart.ctx
+        ctx.save()
+        ctx.setLineDash([6, 4])
+        ctx.strokeStyle = isDark ? 'rgba(239, 68, 68, 0.4)' : 'rgba(239, 68, 68, 0.35)'
+        ctx.lineWidth = 1.5
+        ctx.beginPath()
+        ctx.moveTo(xScale.left, yPixel)
+        ctx.lineTo(xScale.right, yPixel)
+        ctx.stroke()
+
+        // Label
+        ctx.setLineDash([])
+        ctx.fillStyle = isDark ? 'rgba(239, 68, 68, 0.7)' : 'rgba(239, 68, 68, 0.6)'
+        ctx.font = '9px Inter'
+        ctx.textAlign = 'right'
+        ctx.fillText('High Risk (65%)', xScale.right - 4, yPixel - 5)
+        ctx.restore()
+      }
+    }]
+  })
+}
+
 // ── Formatting ──────────────────────────
 const formatDateShort = (dateStr) => {
   const options = { month: 'short', day: 'numeric' }
@@ -482,5 +832,6 @@ onMounted(() => {
 onUnmounted(() => {
   if (fcrChartInstance) fcrChartInstance.destroy()
   if (growthChartInstance) growthChartInstance.destroy()
+  if (spatialChartInstance) spatialChartInstance.destroy()
 })
 </script>
