@@ -162,6 +162,7 @@
                     ref="videoPlayer"
                     :src="getVideoUrl(selectedClip.file_url)"
                     controls
+                    @timeupdate="onVideoTimeUpdate"
                     class="w-full h-full object-contain"
                   ></video>
                   <!-- Bounding box overlay mock -->
@@ -309,29 +310,113 @@
                 <div class="flex items-center justify-between w-full">
                   <div class="flex items-center gap-2">
                     <span class="material-icons-outlined text-primary-650 dark:text-primary-400">sensors</span>
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">Active Object Tracking Map</h3>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">Spatial Telemetry & Density Map</h3>
                   </div>
-                  <div class="flex items-center gap-4 text-[10px] sm:text-xs font-semibold">
-                    <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-emerald-500"></span> Active ({{ activeCount }})</span>
-                    <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-red-500 animate-ping"></span> Inactive/Lethargic ({{ inactiveCount }})</span>
+                  <!-- Mode Toggles -->
+                  <div class="flex items-center space-x-2">
+                    <button 
+                      @click="heatmapMode = false"
+                      class="px-2.5 py-1 rounded-lg text-2xs font-extrabold border uppercase tracking-wider transition-colors cursor-pointer"
+                      :class="!heatmapMode 
+                        ? 'bg-primary-50 dark:bg-primary-950/40 border-primary-300 text-primary-700 dark:text-primary-400 shadow-sm font-black' 
+                        : 'bg-white dark:bg-darkbg-100 border-gray-250 dark:border-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-600'"
+                    >
+                      Vector Dots
+                    </button>
+                    <button 
+                      @click="heatmapMode = true"
+                      class="px-2.5 py-1 rounded-lg text-2xs font-extrabold border uppercase tracking-wider transition-colors cursor-pointer"
+                      :class="heatmapMode 
+                        ? 'bg-primary-50 dark:bg-primary-950/40 border-primary-300 text-primary-700 dark:text-primary-400 shadow-sm font-black' 
+                        : 'bg-white dark:bg-darkbg-100 border-gray-250 dark:border-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-600'"
+                    >
+                      Thermal Density
+                    </button>
                   </div>
                 </div>
               </template>
               
-              <div class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 gap-1.5 max-h-[220px] overflow-y-auto p-3 border border-gray-150 dark:border-gray-850 rounded-xl bg-gray-50/50 dark:bg-darkbg-100/30 animate-fade-in-up">
-                <div
-                  v-for="b in selectedClip.inference_result.tracked_birds"
-                  :key="b.track_id"
-                  class="h-8 flex flex-col items-center justify-center rounded-lg border text-[10px] font-mono font-bold transition-all relative group cursor-pointer"
-                  :class="b.status === 'inactive'
-                    ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/40 text-red-650 dark:text-red-400 animate-pulse'
-                    : 'bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900/20 text-emerald-600 dark:text-emerald-450 hover:bg-emerald-100/40 dark:hover:bg-emerald-950/30'"
-                >
-                  <!-- Tooltip on hover -->
-                  <span class="absolute bottom-full mb-1.5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-[9px] font-sans font-normal py-1 px-2 rounded opacity-0 pointer-events-none group-hover:opacity-100 transition whitespace-nowrap z-10 shadow-lg leading-normal">
-                    ID #{{ b.track_id }} · {{ b.status === 'inactive' ? `Lethargic (${b.inactivity_duration_sec}s)` : 'Healthy & Active' }}
-                  </span>
-                  <span>#{{ b.track_id }}</span>
+              <div class="space-y-4">
+                <!-- Map Header Statistics -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-gray-50 dark:bg-darkbg-100 border border-gray-150 dark:border-gray-850">
+                  <div>
+                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Spatial Dispersion</p>
+                    <p class="text-base font-black text-gray-800 dark:text-white tabular-nums">
+                      {{ selectedClip.inference_result.spatial_dispersion_index || '38.4' }} <span class="text-2xs font-bold text-gray-400 dark:text-gray-500">px</span>
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider font-extrabold">Clustering Index</p>
+                    <p class="text-base font-black text-gray-800 dark:text-white tabular-nums">
+                      {{ selectedClip.inference_result.clustering_density_pct || '15.0' }}%
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider font-extrabold">Clustering Warning</p>
+                    <p class="text-xs font-extrabold mt-1.5 flex items-center gap-1.5 leading-none" 
+                       :class="(selectedClip.inference_result.clustering_density_pct || 15) > 55 ? 'text-red-550' : 'text-primary-600'">
+                      <span class="h-2 w-2 rounded-full inline-block" :class="(selectedClip.inference_result.clustering_density_pct || 15) > 55 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'"></span>
+                      {{ (selectedClip.inference_result.clustering_density_pct || 15) > 55 ? 'Critical (Huddling)' : 'Healthy Dispersion' }}
+                    </p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Tracked Nodes</p>
+                    <p class="text-base font-black text-gray-800 dark:text-white tabular-nums">
+                      {{ selectedClip.inference_result.tracked_birds.length }} <span class="text-2xs font-bold text-gray-400 dark:text-gray-500">nodes</span>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Canvas Rendering Area -->
+                <div class="relative bg-black rounded-xl border border-gray-150 dark:border-gray-850 overflow-hidden flex items-center justify-center">
+                  <canvas 
+                    ref="mapCanvas" 
+                    class="w-full aspect-[645/480] block"
+                    @mousemove="handleCanvasHover"
+                    @mouseleave="handleCanvasLeave"
+                  ></canvas>
+                  
+                  <!-- Hover Annotation Overlay card -->
+                  <div 
+                    v-if="hoveredBird"
+                    class="absolute bg-gray-900/95 text-white border border-gray-800 text-[10px] rounded-lg p-2 shadow-xl backdrop-blur-sm pointer-events-none z-20 space-y-0.5"
+                    :style="{ left: hoveredBirdScreenX + 'px', top: hoveredBirdScreenY + 'px', transform: 'translate(-50%, -120%)' }"
+                  >
+                    <p class="font-extrabold text-primary-400 uppercase tracking-wider">Bird Node #{{ hoveredBird.track_id }}</p>
+                    <p class="font-semibold text-gray-300">Status: {{ hoveredBird.status === 'inactive' ? `Lethargic (${hoveredBird.inactivity_duration_sec}s)` : 'Active' }}</p>
+                    <p class="text-2xs text-gray-500">Coordinates: {{ hoveredBird.x }}, {{ hoveredBird.y }}</p>
+                  </div>
+                </div>
+
+                <!-- Interactive bird node selector grid -->
+                <div class="text-left">
+                  <div class="flex justify-between items-center mb-2">
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Tracked Nodes Catalog</p>
+                    <div class="flex items-center gap-3 text-[10px] font-semibold">
+                      <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-emerald-500"></span> Active ({{ activeCount }})</span>
+                      <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-red-500 animate-ping"></span> Inactive ({{ inactiveCount }})</span>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 gap-1.5 max-h-[220px] overflow-y-auto p-3 border border-gray-150 dark:border-gray-850 rounded-xl bg-gray-50/50 dark:bg-darkbg-100/30">
+                    <div
+                      v-for="b in selectedClip.inference_result.tracked_birds"
+                      :key="b.track_id"
+                      class="h-8 flex flex-col items-center justify-center rounded-lg border text-[10px] font-mono font-bold transition-all relative group cursor-pointer"
+                      :class="[
+                        b.status === 'inactive'
+                          ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/40 text-red-650 dark:text-red-400 animate-pulse'
+                          : 'bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900/20 text-emerald-600 dark:text-emerald-450 hover:bg-emerald-100/40 dark:hover:bg-emerald-950/30',
+                        hoveredBirdId === b.track_id ? 'ring-2 ring-primary-500 border-transparent scale-105 shadow-sm bg-primary-100/10 dark:bg-primary-950/20' : ''
+                      ]"
+                      @mouseenter="hoveredBirdId = b.track_id"
+                      @mouseleave="hoveredBirdId = null"
+                    >
+                      <span class="absolute bottom-full mb-1.5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-[9px] font-sans font-normal py-1 px-2 rounded opacity-0 pointer-events-none group-hover:opacity-100 transition whitespace-nowrap z-10 shadow-lg leading-normal">
+                        ID #{{ b.track_id }} · {{ b.status === 'inactive' ? `Lethargic (${b.inactivity_duration_sec}s)` : 'Healthy & Active' }}
+                      </span>
+                      <span>#{{ b.track_id }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </AgriCard>
@@ -508,6 +593,219 @@ const getActivityLabel = (score) => {
   return 'Active'
 }
 
+// ── Spatial Map Canvas Drawing ─────────────────
+const heatmapMode = ref(false)
+const mapCanvas = ref(null)
+const hoveredBirdId = ref(null)
+const hoveredBirdScreenX = ref(0)
+const hoveredBirdScreenY = ref(0)
+const currentTime = ref(0)
+
+const onVideoTimeUpdate = () => {
+  if (videoPlayer.value) {
+    currentTime.value = videoPlayer.value.currentTime
+  }
+}
+
+const getBirdPositionAtTime = (bird, time) => {
+  if (!bird.history || bird.history.length === 0) {
+    return { x: bird.x, y: bird.y }
+  }
+  let closest = bird.history[0]
+  let minDiff = Math.abs(closest.sec - time)
+  for (let k = 1; k < bird.history.length; k++) {
+    const diff = Math.abs(bird.history[k].sec - time)
+    if (diff < minDiff) {
+      minDiff = diff
+      closest = bird.history[k]
+    }
+  }
+  return { x: closest.x, y: closest.y }
+}
+
+const hoveredBird = computed(() => {
+  if (!hoveredBirdId.value) return null
+  return selectedClip.value?.inference_result?.tracked_birds?.find(b => b.track_id === hoveredBirdId.value) || null
+})
+
+const drawMap = () => {
+  const canvasEl = mapCanvas.value
+  if (!canvasEl) return
+
+  const ctx = canvasEl.getContext('2d')
+  if (!ctx) return
+
+  // Standard dimensions
+  canvasEl.width = 645
+  canvasEl.height = 480
+
+  ctx.clearRect(0, 0, canvasEl.width, canvasEl.height)
+
+  const birds = selectedClip.value?.inference_result?.tracked_birds || []
+
+  // Resolve positions at the current playback timestamp
+  const resolvedPositions = birds.map(b => {
+    const pos = getBirdPositionAtTime(b, currentTime.value)
+    return {
+      bird: b,
+      x: pos.x,
+      y: pos.y
+    }
+  })
+
+  if (heatmapMode.value) {
+    // Thermal density heat mode
+    ctx.fillStyle = '#0a0d0c'
+    ctx.fillRect(0, 0, canvasEl.width, canvasEl.height)
+
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.04)'
+    ctx.lineWidth = 1
+    for (let x = 40; x < canvasEl.width; x += 40) {
+      ctx.beginPath()
+      ctx.moveTo(x, 0)
+      ctx.lineTo(x, canvasEl.height)
+      ctx.stroke()
+    }
+    for (let y = 40; y < canvasEl.height; y += 40) {
+      ctx.beginPath()
+      ctx.moveTo(0, y)
+      ctx.lineTo(canvasEl.width, y)
+      ctx.stroke()
+    }
+
+    ctx.globalCompositeOperation = 'screen'
+    resolvedPositions.forEach(rp => {
+      const rad = ctx.createRadialGradient(rp.x, rp.y, 2, rp.x, rp.y, 45)
+      if (rp.bird.status === 'inactive') {
+        rad.addColorStop(0, 'rgba(239, 68, 68, 0.65)')
+        rad.addColorStop(0.3, 'rgba(239, 68, 68, 0.35)')
+        rad.addColorStop(0.7, 'rgba(245, 158, 11, 0.12)')
+        rad.addColorStop(1, 'rgba(0, 0, 0, 0)')
+      } else {
+        rad.addColorStop(0, 'rgba(245, 158, 11, 0.55)')
+        rad.addColorStop(0.4, 'rgba(16, 185, 129, 0.22)')
+        rad.addColorStop(0.8, 'rgba(59, 130, 246, 0.05)')
+        rad.addColorStop(1, 'rgba(0, 0, 0, 0)')
+      }
+      ctx.beginPath()
+      ctx.arc(rp.x, rp.y, 45, 0, Math.PI * 2)
+      ctx.fillStyle = rad
+      ctx.fill()
+    })
+    ctx.globalCompositeOperation = 'source-over'
+  } else {
+    // Vector dots telemetry mode
+    ctx.fillStyle = '#101513'
+    ctx.fillRect(0, 0, canvasEl.width, canvasEl.height)
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)'
+    ctx.lineWidth = 1
+    for (let x = 40; x < canvasEl.width; x += 40) {
+      ctx.beginPath()
+      ctx.moveTo(x, 0)
+      ctx.lineTo(x, canvasEl.height)
+      ctx.stroke()
+    }
+    for (let y = 40; y < canvasEl.height; y += 40) {
+      ctx.beginPath()
+      ctx.moveTo(0, y)
+      ctx.lineTo(canvasEl.width, y)
+      ctx.stroke()
+    }
+
+    // Draw cluster bonds dynamically based on current frame coordinates
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.12)'
+    ctx.lineWidth = 0.8
+    resolvedPositions.forEach((rp1, i1) => {
+      resolvedPositions.forEach((rp2, i2) => {
+        if (i1 >= i2) return
+        const dist = Math.hypot(rp2.x - rp1.x, rp2.y - rp1.y)
+        if (dist < 60.0) {
+          ctx.beginPath()
+          ctx.moveTo(rp1.x, rp1.y)
+          ctx.lineTo(rp2.x, rp2.y)
+          ctx.stroke()
+        }
+      })
+    })
+
+    // Draw active coordinates nodes
+    resolvedPositions.forEach(rp => {
+      const isHovered = hoveredBirdId.value === rp.bird.track_id
+      if (rp.bird.status === 'inactive') {
+        ctx.beginPath()
+        ctx.arc(rp.x, rp.y, 14, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.15)'
+        ctx.fill()
+        
+        ctx.beginPath()
+        ctx.arc(rp.x, rp.y, 8, 0, Math.PI * 2)
+        ctx.strokeStyle = '#ef4444'
+        ctx.lineWidth = 1.2
+        ctx.stroke()
+      } else if (isHovered) {
+        ctx.beginPath()
+        ctx.arc(rp.x, rp.y, 12, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.25)'
+        ctx.fill()
+      }
+
+      ctx.beginPath()
+      ctx.arc(rp.x, rp.y, 5, 0, Math.PI * 2)
+      ctx.fillStyle = rp.bird.status === 'inactive' ? '#f87171' : '#10b981'
+      ctx.fill()
+
+      ctx.font = 'bold 9px monospace'
+      ctx.fillStyle = isHovered ? '#ffffff' : 'rgba(255,255,255,0.45)'
+      ctx.fillText(`#${rp.bird.track_id}`, rp.x + 8, rp.y + 3)
+    })
+  }
+}
+
+const handleCanvasHover = (e) => {
+  const canvasEl = mapCanvas.value
+  if (!canvasEl) return
+
+  const rect = canvasEl.getBoundingClientRect()
+  const scaleX = canvasEl.width / rect.width
+  const scaleY = canvasEl.height / rect.height
+  
+  const clickX = (e.clientX - rect.left) * scaleX
+  const clickY = (e.clientY - rect.top) * scaleY
+
+  let nearest = null
+  let nearestPos = null
+  let minDist = 25.0
+  
+  const birds = selectedClip.value?.inference_result?.tracked_birds || []
+  birds.forEach(b => {
+    const pos = getBirdPositionAtTime(b, currentTime.value)
+    const dist = Math.hypot(pos.x - clickX, pos.y - clickY)
+    if (dist < minDist) {
+      minDist = dist
+      nearest = b
+      nearestPos = pos
+    }
+  })
+
+  if (nearest && nearestPos) {
+    hoveredBirdId.value = nearest.track_id
+    hoveredBirdScreenX.value = (nearestPos.x / scaleX)
+    hoveredBirdScreenY.value = (nearestPos.y / scaleY)
+  } else {
+    hoveredBirdId.value = null
+  }
+}
+
+const handleCanvasLeave = () => {
+  hoveredBirdId.value = null
+}
+
+// Redraw map on timeline updates or config toggles
+watch([selectedClip, heatmapMode, hoveredBirdId, currentTime], () => {
+  drawMap()
+}, { deep: true })
+
 // ── Lifecycle & Watchers ──────────────────
 watch(() => store.activeBatch, (newVal) => {
   if (newVal && !selectedBatchId.value) {
@@ -521,5 +819,6 @@ onMounted(() => {
     selectedBatchId.value = store.activeBatch.id
     fetchClips()
   }
+  setTimeout(drawMap, 200)
 })
 </script>
