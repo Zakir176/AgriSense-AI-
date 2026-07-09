@@ -51,7 +51,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- ─── Left Pane: Soundboard ─── -->
+      <!-- ─── Left Pane: Soundboard & Settings ─── -->
       <div class="lg:col-span-1 space-y-4 animate-fade-in-up delay-150">
         <AgriCard>
           <template #header>
@@ -87,6 +87,41 @@
                   </span>
                 </div>
               </div>
+            </div>
+          </div>
+        </AgriCard>
+
+        <!-- ML Classifier Settings -->
+        <AgriCard>
+          <template #header>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">ML Classifier Settings</h2>
+            <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Adjust</span>
+          </template>
+
+          <div class="space-y-6">
+            <!-- Cough Threshold -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-end">
+                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Respiratory Cough Sensitivity</label>
+                <span class="text-xs font-mono font-bold" :class="audioConfig.cough_threshold_pct < 50 ? 'text-status-danger' : 'text-gray-500'">{{ Math.round(audioConfig.cough_threshold_pct) }}%</span>
+              </div>
+              <input type="range" min="10" max="100" v-model.number="audioConfig.cough_threshold_pct" @change="saveConfig" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary-600">
+              <p class="text-[10px] text-gray-450 dark:text-gray-500">Lower values make the ML model more aggressive at flagging raspy gasps.</p>
+            </div>
+
+            <!-- Chirp Threshold -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-end">
+                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Thermal Chirp Sensitivity</label>
+                <span class="text-xs font-mono font-bold" :class="audioConfig.chirp_threshold_pct < 50 ? 'text-status-danger' : 'text-gray-500'">{{ Math.round(audioConfig.chirp_threshold_pct) }}%</span>
+              </div>
+              <input type="range" min="10" max="100" v-model.number="audioConfig.chirp_threshold_pct" @change="saveConfig" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary-600">
+              <p class="text-[10px] text-gray-450 dark:text-gray-500">Adjust the distress probability limit for high-pitch thermal chirping.</p>
+            </div>
+            
+            <div v-if="offlineMode" class="text-[10px] flex items-center gap-1.5 text-amber-600 dark:text-amber-400 mt-2">
+              <span class="material-icons-outlined text-[14px]">wifi_off</span>
+              Offline: Changes queued for sync
             </div>
           </div>
         </AgriCard>
@@ -193,86 +228,132 @@
 </template>
 
 <script setup>
-import { ref, onUnmounted, nextTick } from 'vue'
+import { ref, onUnmounted, nextTick, computed, onMounted, watch } from 'vue'
+import { api } from '../services/api'
+import { store } from '../services/store'
 
 // Design System components
 import AgriCard from '../components/ui/AgriCard.vue'
 import AgriBadge from '../components/ui/AgriBadge.vue'
 import AgriButton from '../components/ui/AgriButton.vue'
 
-// ── Synthesized Sound Profiles ────────────────
-const samples = [
-  {
-    id: 'healthy',
-    title: 'Baseline Healthy Clucking (Normal)',
-    frequencyRange: '200 Hz - 850 Hz',
-    severity: 'Normal',
-    distressProb: 1.2,
-    dominantPeak: '420 Hz',
-    cohesion: 96,
-    waveType: 'sine',
-    baseFreq: 261.63, // C4
-    description: 'Steady, repetitive low-amplitude chuckles. Birds exhibit uniform spacing, normal posture, and healthy feeding behavior. Signals high flock comfort and well-being.',
-    instructions: [
-      'No immediate operations needed.',
-      'Maintain standard automated feeding schedules.',
-      'Verify water pressure gauges are within baseline ranges.'
-    ]
-  },
-  {
-    id: 'thermal',
-    title: 'High-Pitch Chirping (Thermal Distress)',
-    frequencyRange: '3000 Hz - 5500 Hz',
-    severity: 'Warning',
-    distressProb: 76.8,
-    dominantPeak: '3600 Hz',
-    cohesion: 71,
-    waveType: 'sine',
-    baseFreq: 880.00, // A5
-    description: 'Sharp, loud, rapid high-frequency chirps. Typical indicator of temperature lagging (cold/draft stress causing birds to huddle) or heat spikes (causing panting and dispersal).',
-    instructions: [
-      'Perform house inspection immediately.',
-      'Check heating line / heat pads if age is under 14 days.',
-      'Verify air circulation fans and pad cooling statuses.',
-      'Confirm thermal probes are calibrated correctly.'
-    ]
-  },
-  {
-    id: 'feeding',
-    title: 'Rhythmic Excitement (Feeding Alert)',
-    frequencyRange: '800 Hz - 1800 Hz',
-    severity: 'Normal',
-    distressProb: 14.5,
-    dominantPeak: '1200 Hz',
-    cohesion: 88,
-    waveType: 'triangle',
-    baseFreq: 329.63, // E4
-    description: 'Highly active rhythmic call bursts coinciding with hopper distribution motor cycles. Normal soundscape of flock eating and moving towards feed lanes.',
-    instructions: [
-      'Monitor hopper distribution timers.',
-      'Check that feed line level gauges register normal levels.',
-      'No distress interventions required.'
-    ]
-  },
-  {
-    id: 'respiratory',
-    title: 'Raspy Gasping (Pathology Risk)',
-    frequencyRange: '1500 Hz - 3200 Hz',
-    severity: 'Critical',
-    distressProb: 92.4,
-    dominantPeak: '2400 Hz',
-    cohesion: 48,
-    waveType: 'sawtooth',
-    baseFreq: 110.00, // A2 (low raspy rumble)
-    description: 'Raspy, congested cough noises combined with whistling gasps. Strongly suggests respiratory congestion, ventilation failure, high ammonia density, or viral pathogens.',
-    instructions: [
-      'Immediate physical evaluation recommended.',
-      'Inspect mechanical extraction fans & side air dampers.',
-      'Check ammonia (NH3) gas sensor levels — target < 20 ppm.',
-      'Alert attending veterinary staff for flock swab evaluation.'
-    ]
+const offlineMode = ref(false)
+
+const audioConfig = ref({
+  cough_threshold_pct: 80.0,
+  chirp_threshold_pct: 65.0
+})
+
+const loadConfig = async () => {
+  if (!store.currentFarm?.id) return
+  try {
+    const config = await api.audio.getConfig(store.currentFarm.id)
+    if (config) {
+      audioConfig.value.cough_threshold_pct = config.cough_threshold_pct
+      audioConfig.value.chirp_threshold_pct = config.chirp_threshold_pct
+      offlineMode.value = !!config.offline
+    }
+  } catch (err) {
+    console.error('Failed to load audio config:', err)
   }
-]
+}
+
+const saveConfig = async () => {
+  if (!store.currentFarm?.id) return
+  try {
+    const res = await api.audio.updateConfig(store.currentFarm.id, {
+      cough_threshold_pct: audioConfig.value.cough_threshold_pct,
+      chirp_threshold_pct: audioConfig.value.chirp_threshold_pct
+    })
+    if (res?.offline) {
+      offlineMode.value = true
+    } else {
+      offlineMode.value = false
+    }
+  } catch (err) {
+    console.error('Failed to save audio config:', err)
+  }
+}
+
+onMounted(() => {
+  loadConfig()
+})
+
+// ── Synthesized Sound Profiles ────────────────
+const samples = computed(() => {
+  return [
+    {
+      id: 'healthy',
+      title: 'Baseline Healthy Clucking (Normal)',
+      frequencyRange: '200 Hz - 850 Hz',
+      severity: 'Normal',
+      distressProb: 1.2,
+      dominantPeak: '420 Hz',
+      cohesion: 96,
+      waveType: 'sine',
+      baseFreq: 261.63, // C4
+      description: 'Steady, repetitive low-amplitude chuckles. Birds exhibit uniform spacing, normal posture, and healthy feeding behavior. Signals high flock comfort and well-being.',
+      instructions: [
+        'No immediate operations needed.',
+        'Maintain standard automated feeding schedules.',
+        'Verify water pressure gauges are within baseline ranges.'
+      ]
+    },
+    {
+      id: 'thermal',
+      title: 'High-Pitch Chirping (Thermal Distress)',
+      frequencyRange: '3000 Hz - 5500 Hz',
+      severity: 76.8 >= audioConfig.value.chirp_threshold_pct ? 'Warning' : 'Normal',
+      distressProb: 76.8,
+      dominantPeak: '3600 Hz',
+      cohesion: 71,
+      waveType: 'sine',
+      baseFreq: 880.00, // A5
+      description: 'Sharp, loud, rapid high-frequency chirps. Typical indicator of temperature lagging (cold/draft stress causing birds to huddle) or heat spikes (causing panting and dispersal).',
+      instructions: [
+        'Perform house inspection immediately.',
+        'Check heating line / heat pads if age is under 14 days.',
+        'Verify air circulation fans and pad cooling statuses.',
+        'Confirm thermal probes are calibrated correctly.'
+      ]
+    },
+    {
+      id: 'feeding',
+      title: 'Rhythmic Excitement (Feeding Alert)',
+      frequencyRange: '800 Hz - 1800 Hz',
+      severity: 'Normal',
+      distressProb: 14.5,
+      dominantPeak: '1200 Hz',
+      cohesion: 88,
+      waveType: 'triangle',
+      baseFreq: 329.63, // E4
+      description: 'Highly active rhythmic call bursts coinciding with hopper distribution motor cycles. Normal soundscape of flock eating and moving towards feed lanes.',
+      instructions: [
+        'Monitor hopper distribution timers.',
+        'Check that feed line level gauges register normal levels.',
+        'No distress interventions required.'
+      ]
+    },
+    {
+      id: 'respiratory',
+      title: 'Raspy Gasping (Pathology Risk)',
+      frequencyRange: '1500 Hz - 3200 Hz',
+      severity: 92.4 >= audioConfig.value.cough_threshold_pct ? 'Critical' : 'Warning',
+      distressProb: 92.4,
+      dominantPeak: '2400 Hz',
+      cohesion: 48,
+      waveType: 'sawtooth',
+      baseFreq: 110.00, // A2
+      description: 'Raspy, congested cough noises combined with whistling gasps. Strongly suggests respiratory congestion, ventilation failure, high ammonia density, or viral pathogens.',
+      instructions: [
+        'Immediate physical evaluation recommended.',
+        'Inspect mechanical extraction fans & side air dampers.',
+        'Check ammonia (NH3) gas sensor levels — target < 20 ppm.',
+        'Alert attending veterinary staff for flock swab evaluation.'
+      ]
+    }
+  ]
+})
 
 // ── State ──────────────────────────────────
 const selectedSample = ref(null)
