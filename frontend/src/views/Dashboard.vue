@@ -121,7 +121,7 @@
 
         <!-- Skeleton while loading -->
         <div v-if="loading" class="p-5 space-y-3">
-          <div v-for="n in 3" :key="n" class="h-14 bg-gray-100 dark:bg-gray-800/50 rounded-xl animate-pulse"></div>
+          <AgriSkeleton v-for="n in 3" :key="n" type="card" height="h-14" />
         </div>
 
         <!-- Empty state -->
@@ -179,9 +179,12 @@
               <h2 class="text-sm font-bold text-gray-900 dark:text-white">Active Focus Cohort</h2>
             </div>
           </template>
-          <div v-if="loading" class="p-5 space-y-3">
-            <div v-for="n in 4" :key="n" class="h-5 bg-gray-100 dark:bg-gray-800/50 rounded-md animate-pulse"></div>
-          </div>
+          
+          <template v-if="loading">
+            <div class="p-5 space-y-3">
+              <AgriSkeleton v-for="n in 3" :key="n" type="card" height="h-14" />
+            </div>
+          </template>
           <div v-else-if="!store.activeBatch" class="px-5 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
             No active batch registered. <router-link to="/batches" class="text-primary-600 dark:text-primary-400 font-semibold">Create one →</router-link>
           </div>
@@ -347,6 +350,7 @@ import AgriCard from '../components/ui/AgriCard.vue'
 import AgriBadge from '../components/ui/AgriBadge.vue'
 import AgriStatCard from '../components/ui/AgriStatCard.vue'
 import AgriTable from '../components/ui/AgriTable.vue'
+import AgriSkeleton from '../components/ui/AgriSkeleton.vue'
 
 const { getStaggerDelayClass } = useAnimations()
 
