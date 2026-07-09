@@ -18,7 +18,7 @@ async function request(path, options = {}) {
     options.body = JSON.stringify(options.body)
   }
 
-  // --- OFFLINE INTERCEPTOR ---
+  // --- OFFLINE INTERCEPTOR (FAST PATH) ---
   if (!navigator.onLine) {
     if (!isMutation) {
       // GET: Read from IndexedDB cache
@@ -46,37 +46,70 @@ async function request(path, options = {}) {
     }
   }
 
-  // --- ONLINE BEHAVIOR ---
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers
-  })
+  // --- ONLINE BEHAVIOR (WITH OFFLINE FALLBACK ON FETCH FAILURE) ---
+  try {
+    const response = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers
+    })
 
-  if (!response.ok) {
-    if (response.status === 401 && path !== '/auth/token') {
-      localStorage.removeItem('agrisense_token')
-      window.location.href = '/login'
+    if (!response.ok) {
+      if (response.status === 401 && path !== '/auth/token') {
+        localStorage.removeItem('agrisense_token')
+        window.location.href = '/login'
+      }
+      let errorDetail = 'Request failed'
+      try {
+        const errJson = await response.json()
+        errorDetail = errJson.detail || errorDetail
+      } catch (_) {}
+      throw new Error(typeof errorDetail === 'string' ? errorDetail : JSON.stringify(errorDetail))
     }
-    let errorDetail = 'Request failed'
-    try {
-      const errJson = await response.json()
-      errorDetail = errJson.detail || errorDetail
-    } catch (_) {}
-    throw new Error(typeof errorDetail === 'string' ? errorDetail : JSON.stringify(errorDetail))
+
+    if (response.status === 204) {
+      return null
+    }
+
+    const jsonResponse = await response.json()
+
+    // Cache successful GET requests
+    if (!isMutation) {
+      await setCachedRequest(path, jsonResponse)
+    }
+
+    return jsonResponse
+  } catch (error) {
+    // Catch network connectivity issues (dns fail, backend down, load failed)
+    const isNetworkError = error instanceof TypeError || 
+                          error.message.includes('Failed to fetch') || 
+                          error.message.includes('network') ||
+                          error.message.includes('Load failed')
+
+    if (isNetworkError) {
+      console.warn(`[Network Error] Unreachable backend for ${path}. Falling back to offline cache.`, error)
+      if (!isMutation) {
+        const cached = await getCachedRequest(path)
+        if (cached) {
+          console.log(`[Offline Fallback] Served ${path} from cache`)
+          return cached
+        }
+        throw new Error('Network unreachable and no cached data is available for this request.')
+      } else {
+        let payloadToQueue = options.body
+        if (options.body instanceof URLSearchParams) {
+          payloadToQueue = Object.fromEntries(options.body.entries())
+        } else if (typeof options.body === 'string') {
+          payloadToQueue = JSON.parse(options.body)
+        }
+        await addToSyncQueue(path, options.method, payloadToQueue)
+        console.log(`[Offline Fallback] Queued ${options.method} request to ${path}`)
+        return { success: true, offline: true, id: Date.now() }
+      }
+    }
+
+    // Normal schema validation errors, 400 Bad Request etc. should bubble up
+    throw error
   }
-
-  if (response.status === 204) {
-    return null
-  }
-
-  const jsonResponse = await response.json()
-
-  // Cache successful GET requests
-  if (!isMutation) {
-    await setCachedRequest(path, jsonResponse)
-  }
-
-  return jsonResponse
 }
 
 export const api = {
@@ -431,6 +464,26 @@ export const api = {
           }
         ]
       }
+    }
+  },
+
+  // Spatial Health Trends
+  spatialTrends: {
+    get(batchId) {
+      return request(`/spatial-trends/${batchId}`)
+    }
+  },
+
+  // Audio Insights Config
+  audio: {
+    getConfig(farmId) {
+      return request(`/audio/config/${farmId}`)
+    },
+    updateConfig(farmId, data) {
+      return request(`/audio/config/${farmId}`, {
+        method: 'PUT',
+        body: data
+      })
     }
   }
 }
