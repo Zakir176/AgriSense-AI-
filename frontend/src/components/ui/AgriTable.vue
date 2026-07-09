@@ -7,7 +7,7 @@
           <th
             v-for="header in headers"
             :key="header.value"
-            class="px-6 py-4.5 transition-colors select-none"
+            class="px-6 py-4.5 transition-colors select-none whitespace-nowrap"
             :class="[
               header.align === 'right' ? 'text-right' : header.align === 'center' ? 'text-center' : 'text-left',
               { 'cursor-pointer hover:bg-gray-100/55 dark:hover:bg-darkbg-50/80': header.sortable }
@@ -30,7 +30,7 @@
         <template v-if="loading">
           <tr v-for="rowIndex in 3" :key="rowIndex" class="transition-colors">
             <td v-for="header in headers" :key="header.value" class="px-6 py-4.5">
-              <div class="h-4 bg-gray-100 dark:bg-gray-800/80 rounded-md animate-shimmer" :class="header.align === 'right' ? 'ml-auto w-12' : 'w-24'"></div>
+              <AgriSkeleton type="text" :class="header.align === 'right' ? 'ml-auto w-12' : 'w-24'" />
             </td>
           </tr>
         </template>
@@ -54,7 +54,7 @@
           <td
             v-for="header in headers"
             :key="header.value"
-            class="px-6 py-4 text-gray-755 dark:text-gray-300 font-semibold"
+            class="px-6 py-4 text-gray-755 dark:text-gray-300 font-semibold whitespace-nowrap"
             :class="[
               header.align === 'right' ? 'text-right' : header.align === 'center' ? 'text-center' : 'text-left'
             ]"
@@ -97,6 +97,8 @@ const props = defineProps({
     default: false
   }
 })
+
+import AgriSkeleton from './AgriSkeleton.vue'
 
 const emit = defineEmits(['sort'])
 
