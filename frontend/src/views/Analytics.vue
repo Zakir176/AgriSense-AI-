@@ -34,8 +34,22 @@
     <template v-else>
 
       <!-- ─── Analytics Loading States ─── -->
-      <div v-if="loading" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div v-for="n in 5" :key="n" class="h-24 bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl animate-pulse"></div>
+      <div v-if="loading" class="space-y-6">
+        <!-- KPI Skeleton -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <AgriSkeleton v-for="n in 5" :key="n" type="card" height="h-24" />
+        </div>
+        
+        <!-- Suggestions Skeleton -->
+        <AgriSkeleton type="card" height="h-32" />
+        
+        <!-- Charts Skeleton -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <AgriSkeleton v-for="n in 2" :key="n" type="chart" />
+        </div>
+        
+        <!-- Spatial Health Trends Skeleton -->
+        <AgriSkeleton type="chart" height="h-[350px]" />
       </div>
 
       <template v-else>
@@ -257,6 +271,7 @@ import AgriCard from '../components/ui/AgriCard.vue'
 import AgriStatCard from '../components/ui/AgriStatCard.vue'
 import AgriBadge from '../components/ui/AgriBadge.vue'
 import AgriSelect from '../components/ui/AgriSelect.vue'
+import AgriSkeleton from '../components/ui/AgriSkeleton.vue'
 
 Chart.register(...registerables)
 
