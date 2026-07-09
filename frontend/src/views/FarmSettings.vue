@@ -243,7 +243,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { store } from '../services/store'
 import { api } from '../services/api'
 import { useToast } from '../composables/useToast'
@@ -445,5 +445,10 @@ onMounted(() => {
   fetchMembers()
   window.addEventListener('online', updateOnlineStatus)
   window.addEventListener('offline', updateOnlineStatus)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('online', updateOnlineStatus)
+  window.removeEventListener('offline', updateOnlineStatus)
 })
 </script>
