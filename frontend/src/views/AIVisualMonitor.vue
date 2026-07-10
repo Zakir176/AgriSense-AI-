@@ -346,13 +346,13 @@
                     </p>
                   </div>
                   <div>
-                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider font-extrabold">Clustering Index</p>
+                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Clustering Index</p>
                     <p class="text-base font-black text-gray-800 dark:text-white tabular-nums">
                       {{ selectedClip.inference_result.clustering_density_pct || '15.0' }}%
                     </p>
                   </div>
                   <div>
-                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider font-extrabold">Clustering Warning</p>
+                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Clustering Warning</p>
                     <p class="text-xs font-extrabold mt-1.5 flex items-center gap-1.5 leading-none" 
                        :class="(selectedClip.inference_result.clustering_density_pct || 15) > 55 ? 'text-red-550' : 'text-primary-600'">
                       <span class="h-2 w-2 rounded-full inline-block" :class="(selectedClip.inference_result.clustering_density_pct || 15) > 55 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'"></span>
