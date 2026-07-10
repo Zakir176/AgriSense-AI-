@@ -8,6 +8,7 @@ from .alert import Alert
 from .media import MediaClip, InferenceResult
 from .auth import User
 from .user_farm import UserFarmAssociation
+from .audio import AudioConfig
 
 # Ensure they are loaded to metadata
 __all__ = [
