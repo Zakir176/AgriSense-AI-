@@ -11,6 +11,20 @@
 
 </div>
 
+
+
+---
+
+<div align="center">
+  <img src="Docs/assets/dashboard.jpg" width="800" alt="AgriSense AI Dashboard" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px;">
+  <p><em>Real-time Dashboard showing huddling risk, offline sync status, and farm vitals.</em></p>
+</div>
+
+<div align="center" style="display: flex; justify-content: center; gap: 20px;">
+  <img src="Docs/assets/visual_monitor.jpg" width="400" alt="YOLOv8 Visual Monitor" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+  <img src="Docs/assets/analytics.jpg" width="400" alt="Analytics and Spatial Trends" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+</div>
+
 ---
 
 ## 📖 Overview
