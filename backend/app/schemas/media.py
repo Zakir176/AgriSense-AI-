@@ -8,6 +8,8 @@ class InferenceResultBase(BaseModel):
     low_activity_windows: Optional[List[Dict[str, Any]]] = None
     tracked_birds: Optional[List[Dict[str, Any]]] = None
     discrepancy_note: Optional[str] = None
+    clustering_density_pct: Optional[float] = None
+    spatial_dispersion_index: Optional[float] = None
 
 class InferenceResultCreate(InferenceResultBase):
     media_clip_id: int
