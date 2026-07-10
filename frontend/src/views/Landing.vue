@@ -1,5 +1,18 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-darkbg-100 text-gray-850 dark:text-gray-150 font-sans transition-colors duration-200 relative overflow-x-hidden">
+    <!-- Fullscreen Portal Warp Transition Overlay -->
+    <div 
+      v-if="isWarping" 
+      class="fixed inset-0 flex items-center justify-center bg-black transition-opacity duration-300"
+      style="z-index: 9999;"
+    >
+      <canvas ref="warpCanvas" class="absolute inset-0 w-full h-full"></canvas>
+      <div class="relative z-10 text-center space-y-4">
+        <div class="text-emerald-450 font-mono text-[10px] uppercase tracking-widest animate-pulse">Establishing Quantum Tunnel</div>
+        <div class="text-white text-lg font-black tracking-wider uppercase">Entering AgriSense AI Network...</div>
+      </div>
+    </div>
+
     <!-- Header Spacing -->
     <div class="absolute inset-0 bg-[radial-gradient(#d1e8ce_1.2px,transparent_1.2px)] dark:bg-[radial-gradient(#1a2219_1.2px,transparent_1.2px)] [background-size:28px_28px] opacity-35 pointer-events-none z-0"></div>
 
@@ -35,7 +48,7 @@
           variant="primary"
           size="sm"
           icon="login"
-          @click="navigateToLogin"
+          @click="triggerPortalWarp"
         >
           Operator Portal
         </AgriButton>
@@ -70,7 +83,7 @@
             variant="primary"
             size="lg"
             icon="arrow_forward"
-            @click="navigateToLogin"
+            @click="triggerPortalWarp"
           >
             Launch Farm Portal
           </AgriButton>
@@ -101,13 +114,37 @@
         </div>
       </div>
 
-      <!-- Hero Visuals (Mock Dashboard Frame) -->
-      <div class="lg:col-span-6 relative flex justify-center items-center animate-fade-in-up delay-150">
+      <!-- Hero Visuals (Mock Dashboard Frame / 3D Hub) -->
+      <div class="lg:col-span-6 relative flex flex-col justify-center items-center animate-fade-in-up delay-150">
         <!-- Soft decorative background glow -->
         <div class="absolute w-[450px] h-[450px] bg-primary-200/20 dark:bg-primary-950/15 rounded-full blur-[90px] -z-10"></div>
 
+        <!-- Toggle Tabs -->
+        <div class="flex space-x-2.5 mb-4 bg-gray-100/70 dark:bg-darkbg-50/50 p-1 rounded-xl w-fit border border-gray-200/35 dark:border-gray-800/30 relative z-10 self-start lg:self-center">
+          <button 
+            @click="activeHeroTab = '3d'"
+            class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-left"
+            :class="activeHeroTab === '3d' ? 'bg-white dark:bg-darkbg-50 text-primary-600 dark:text-primary-400 shadow-sm border border-gray-200/50 dark:border-gray-800/60' : 'text-gray-450 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-350'"
+          >
+            <span class="material-icons-outlined text-sm">view_in_ar</span>
+            <span>3D Edge Hub</span>
+          </button>
+          <button 
+            @click="activeHeroTab = 'feed'"
+            class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-left"
+            :class="activeHeroTab === 'feed' ? 'bg-white dark:bg-darkbg-50 text-primary-600 dark:text-primary-400 shadow-sm border border-gray-200/50 dark:border-gray-800/60' : 'text-gray-450 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-350'"
+          >
+            <span class="material-icons-outlined text-sm">videocam</span>
+            <span>Live Vision Feed</span>
+          </button>
+        </div>
+
+        <div v-if="activeHeroTab === '3d'" class="w-full max-w-lg animate-scale-in">
+          <ThreeDProduct :isDark="isDark" />
+        </div>
+
         <!-- Main Mock Card -->
-        <div class="w-full max-w-lg bg-white/80 dark:bg-darkbg-50/80 backdrop-blur-md border border-gray-200 dark:border-gray-800 rounded-3xl p-4 shadow-2xl relative">
+        <div v-else class="w-full max-w-lg bg-white/80 dark:bg-darkbg-50/80 backdrop-blur-md border border-gray-200 dark:border-gray-800 rounded-3xl p-4 shadow-2xl relative animate-scale-in">
           <!-- Banner -->
           <div class="flex items-center justify-between pb-3 border-b border-gray-150 dark:border-gray-800">
             <div class="flex items-center space-x-2">
@@ -267,7 +304,7 @@
               <span class="material-icons-outlined text-primary-500 text-base">analytics</span>
               <span class="text-[11px] font-bold text-gray-450 dark:text-gray-500 uppercase tracking-widest">Smart Rule Simulator Output</span>
             </div>
-            <AgriBadge :variant="selectedPreset.badgeType" :pulse="selectedPreset.badgeType === 'danger' || selectedPreset.badgeType === 'warning'">
+            <AgriBadge :variant="selectedPreset.badgeType" :pulse="selectedPreset.badgeType === 'critical' || selectedPreset.badgeType === 'warning'">
               {{ selectedPreset.status }}
             </AgriBadge>
           </div>
@@ -297,19 +334,74 @@
           <!-- Action recommendation -->
           <div class="p-4 rounded-xl border flex gap-3 text-left items-start transition-all duration-200"
                :class="[
-                 selectedPreset.badgeType === 'danger'
+                 selectedPreset.badgeType === 'critical'
                    ? 'bg-red-50/40 dark:bg-red-950/20 border-red-200 dark:border-red-900/30 text-red-800 dark:text-red-400'
                    : selectedPreset.badgeType === 'warning'
                      ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30 text-amber-800 dark:text-amber-400'
                      : 'bg-emerald-50/45 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/30 text-emerald-800 dark:text-emerald-400'
                ]">
             <span class="material-icons-outlined text-lg mt-0.5">
-              {{ selectedPreset.badgeType === 'danger' ? 'report_problem' : selectedPreset.badgeType === 'warning' ? 'warning' : 'task_alt' }}
+              {{ selectedPreset.badgeType === 'critical' ? 'report_problem' : selectedPreset.badgeType === 'warning' ? 'warning' : 'task_alt' }}
             </span>
             <div>
               <p class="text-[10px] uppercase font-bold tracking-wider">Recommended Action</p>
               <p class="text-xs font-bold mt-0.5 leading-snug">{{ selectedPreset.action }}</p>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sync Portal Gateway Section -->
+    <section id="portal-gateway" class="relative z-10 py-20 max-w-7xl mx-auto px-6 border-t border-gray-250/30 dark:border-gray-800/40">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <!-- Left Side Copy -->
+        <div class="lg:col-span-5 space-y-6 text-left">
+          <div class="inline-flex items-center space-x-2 bg-primary-100/50 dark:bg-primary-950/40 px-3.5 py-1.5 rounded-full border border-primary-200/50 dark:border-primary-900/30 w-fit">
+            <span class="material-icons-outlined text-xs text-primary-500 font-bold">sync_alt</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-primary-700 dark:text-primary-400">Offline DB Sync Pipeline</span>
+          </div>
+          
+          <h2 class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+            Sync Locally, <br class="hidden sm:inline" />
+            Publish Globally
+          </h2>
+          
+          <p class="text-sm text-gray-550 dark:text-gray-400 leading-relaxed">
+            AgriSense AI utilizes high-performance browser caching (IndexedDB) to operate 100% offline. Once connectivity is established, our sync portal acts as a high-speed secure bridge.
+          </p>
+
+          <ul class="space-y-3.5">
+            <li class="flex items-start space-x-3 text-xs font-semibold text-gray-600 dark:text-gray-400">
+              <span class="material-icons-outlined text-primary-500 mt-0.5 text-base font-bold">offline_pin</span>
+              <span>Local storage queue checks and verifies telemetry integrity before pushing.</span>
+            </li>
+            <li class="flex items-start space-x-3 text-xs font-semibold text-gray-650 dark:text-gray-400">
+              <span class="material-icons-outlined text-primary-500 mt-0.5 text-base font-bold">security</span>
+              <span>AES-256 local encryption safeguards your farm yield logs and AI inference data.</span>
+            </li>
+            <li class="flex items-start space-x-3 text-xs font-semibold text-gray-655 dark:text-gray-400">
+              <span class="material-icons-outlined text-primary-500 mt-0.5 text-base font-bold">speed</span>
+              <span>Ultra-low bandwidth protocol handles packet loss on mobile data connections automatically.</span>
+            </li>
+          </ul>
+
+          <div class="pt-4">
+            <AgriButton
+              variant="primary"
+              size="lg"
+              icon="login"
+              @click="triggerPortalWarp"
+            >
+              Enter Operator Portal
+            </AgriButton>
+          </div>
+        </div>
+
+        <!-- Right Side: Interactive Sync Portal Animation -->
+        <div class="lg:col-span-7 flex justify-center">
+          <div class="w-full max-w-lg">
+            <AgriPortal :isDark="isDark" @portal-click="triggerPortalWarp" />
           </div>
         </div>
       </div>
@@ -355,7 +447,7 @@
               variant="outline"
               size="md"
               class="border-gray-700 text-gray-350 hover:bg-gray-800 hover:text-white"
-              @click="navigateToLogin"
+              @click="triggerPortalWarp"
             >
               Sign In
             </AgriButton>
@@ -363,7 +455,7 @@
               variant="primary"
               size="md"
               icon="rocket_launch"
-              @click="navigateToLogin"
+              @click="triggerPortalWarp"
             >
               Get Started
             </AgriButton>
@@ -380,14 +472,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import AgriButton from '../components/ui/AgriButton.vue'
 import AgriBadge from '../components/ui/AgriBadge.vue'
+import ThreeDProduct from '../components/ThreeDProduct.vue'
+import AgriPortal from '../components/AgriPortal.vue'
 
 const router = useRouter()
 
 const isDark = ref(false)
+const activeHeroTab = ref('3d') // '3d' or 'feed'
+
+// Warp Portal transition variables
+const isWarping = ref(false)
+const warpCanvas = ref(null)
+let warpAnimationFrameId = null
 
 const applyTheme = () => {
   if (isDark.value) {
@@ -404,9 +504,121 @@ const toggleTheme = () => {
   applyTheme()
 }
 
-const navigateToLogin = () => {
-  router.push({ name: 'Login' })
+// Fullscreen portal warp speed transition animation
+const triggerPortalWarp = () => {
+  if (isWarping.value) return
+  isWarping.value = true
+  document.body.style.overflow = 'hidden'
+
+  setTimeout(() => {
+    runWarpAnimation()
+  }, 50)
 }
+
+const runWarpAnimation = () => {
+  const canvasEl = warpCanvas.value
+  if (!canvasEl) return
+  
+  const ctx = canvasEl.getContext('2d')
+  if (!ctx) return
+
+  // Size canvas to fullscreen
+  const resizeWarp = () => {
+    canvasEl.width = window.innerWidth * window.devicePixelRatio
+    canvasEl.height = window.innerHeight * window.devicePixelRatio
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+  }
+  resizeWarp()
+
+  const width = window.innerWidth
+  const height = window.innerHeight
+  const cx = width / 2
+  const cy = height / 2
+
+  // Create stars
+  const numStars = 220
+  const stars = []
+  for (let i = 0; i < numStars; i++) {
+    stars.push({
+      x: (Math.random() - 0.5) * width * 2,
+      y: (Math.random() - 0.5) * height * 2,
+      z: Math.random() * width,
+      size: Math.random() * 1.5 + 0.5,
+      color: Math.random() > 0.3 ? '#10b981' : '#3b82f6' // Emerald vs Tech Blue stars
+    })
+  }
+
+  let warpSpeed = 1
+  const maxWarpSpeed = 50
+  const duration = 1300 // Total milliseconds before routing
+  const startTime = Date.now()
+
+  const drawWarp = () => {
+    const elapsed = Date.now() - startTime
+    
+    // Accelerate warp speed exponentially
+    warpSpeed = 1 + Math.pow(elapsed / duration, 3.5) * maxWarpSpeed
+
+    // Clear with semi-transparent black to create trails
+    ctx.fillStyle = `rgba(0, 0, 0, ${0.12 + (elapsed / duration) * 0.48})`
+    ctx.fillRect(0, 0, width, height)
+
+    for (let i = 0; i < numStars; i++) {
+      const star = stars[i]
+      
+      const oldZ = star.z
+      star.z -= warpSpeed
+      
+      if (star.z <= 0) {
+        star.z = width
+        star.x = (Math.random() - 0.5) * width * 2
+        star.y = (Math.random() - 0.5) * height * 2
+        star.size = Math.random() * 1.5 + 0.5
+      }
+
+      const k = 180 / star.z
+      const x = star.x * k + cx
+      const y = star.y * k + cy
+
+      const oldK = 180 / oldZ
+      const oldX = star.x * oldK + cx
+      const oldY = star.y * oldK + cy
+
+      if (x >= 0 && x <= width && y >= 0 && y <= height && oldZ < width) {
+        const alpha = Math.min(1.0, (1.0 - star.z / width) * 0.8)
+        ctx.beginPath()
+        ctx.moveTo(oldX, oldY)
+        ctx.lineTo(x, y)
+        ctx.strokeStyle = star.color === '#10b981' 
+          ? `rgba(52, 211, 153, ${alpha})` 
+          : `rgba(96, 165, 250, ${alpha})`
+        ctx.lineWidth = star.size * (1 + (elapsed / duration) * 1.8) * (180 / star.z) * 0.15
+        ctx.lineCap = 'round'
+        ctx.stroke()
+      }
+    }
+
+    if (elapsed < duration) {
+      warpAnimationFrameId = requestAnimationFrame(drawWarp)
+    } else {
+      ctx.fillStyle = '#000000'
+      ctx.fillRect(0, 0, width, height)
+      
+      document.body.style.overflow = ''
+      isWarping.value = false
+      router.push({ name: 'Login' })
+    }
+  }
+
+  drawWarp()
+}
+
+onBeforeUnmount(() => {
+  if (warpAnimationFrameId) {
+    cancelAnimationFrame(warpAnimationFrameId)
+  }
+  document.body.style.overflow = ''
+})
 
 const scrollToDemo = () => {
   const el = document.getElementById('demo')
@@ -437,7 +649,7 @@ const presets = [
     humidity: '78',
     feed: '1,230',
     status: 'Heat Stress Danger',
-    badgeType: 'danger',
+    badgeType: 'critical',
     desc: 'Temperature registers 34.8°C, which is 6.8°C above target. High relative humidity prevents self-cooling. High clustering hazard warning from YOLO spatial maps.',
     action: 'Activate supplementary tunnel fans. Inspect water spray mist nozzles immediately.'
   },

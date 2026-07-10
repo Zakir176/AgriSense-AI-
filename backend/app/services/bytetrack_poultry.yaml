@@ -1,10 +1,6 @@
-# Ultralytics YOLO 🚀 AGPL-3.0 License - https://ultralytics.com/license
-# Custom ByteTrack tracker defaults for AgriSense AI poultry tracking
-
-tracker_type: bytetrack # (str) Tracker backend: bytetrack
-track_high_thresh: 0.12 # (float) First-stage match threshold; raise for cleaner tracks, lower to keep more
-track_low_thresh: 0.05 # (float) Second-stage threshold for low-score matches; balances recovery vs drift
-new_track_thresh: 0.15 # (float) Start a new track if no match ≥ this; higher reduces false tracks
-track_buffer: 60 # (int) Frames to keep lost tracks alive; higher handles occlusion, increases ID switches risk
-match_thresh: 0.7 # (float) Association similarity threshold (IoU/cost); tune with detector quality
-fuse_score: True # (bool) Fuse detection score with motion/IoU for matching; stabilizes weak detections
+# ByteTrack tracker configuration tailored for heavy poultry occlusion
+tracker_type: bytetrack
+track_thresh: 0.15      # Lower detection threshold to capture partially blocked/occluded chickens
+match_thresh: 0.7       # Higher threshold for Hungarian matching to link low-conf detections to tracks
+track_buffer: 90        # Retain lost track history for 90 frames (3 seconds) to survive feeder/bird blocking
+frame_rate: 30
