@@ -29,7 +29,7 @@
       </div>
 
       <!-- Stat Value (Count up animation) -->
-      <div class="flex items-baseline gap-2">
+      <div class="flex flex-wrap items-baseline gap-2">
         <span class="text-3xl font-black text-gray-900 dark:text-white tracking-tight tabular-nums">
           {{ prefix }}{{ formattedValue }}{{ suffix }}
         </span>

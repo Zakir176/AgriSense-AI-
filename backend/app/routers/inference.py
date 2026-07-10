@@ -111,7 +111,9 @@ def upload_video_for_inference(
         movement_score=inf_data["movement_score"],
         low_activity_windows=inf_data["low_activity_windows"],
         tracked_birds=tracked_birds,
-        discrepancy_note=discrepancy_note
+        discrepancy_note=discrepancy_note,
+        clustering_density_pct=inf_data.get("clustering_density_pct", 0.0),
+        spatial_dispersion_index=inf_data.get("spatial_dispersion_index", 0.0)
     )
     db.add(db_inference_result)
     

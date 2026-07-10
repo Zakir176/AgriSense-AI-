@@ -12,5 +12,6 @@ class FeedWaterReading(Base):
     water_litres = Column(Float, nullable=False)
     mortality_count = Column(Integer, default=0)
     flagged_abnormal = Column(Boolean, default=False)
+    temperature_celsius = Column(Float, nullable=True)
 
     batch = relationship("Batch", back_populates="readings")
