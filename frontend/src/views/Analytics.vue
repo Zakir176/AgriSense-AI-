@@ -264,6 +264,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { store } from '../services/store'
 import { api } from '../services/api'
 import { Chart, registerables } from 'chart.js'
+import { externalTooltipHandler } from '../utils/chartTooltip'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { useAnimations } from '../composables/useAnimations'
 import { useToast } from '../composables/useToast'
@@ -696,6 +697,15 @@ const renderSpatialTrendsChart = () => {
         mode: 'index',
         intersect: false
       },
+      onClick: (e, elements) => {
+        if (elements.length > 0) {
+          const idx = elements[0].index
+          const point = spatialTrendsData.value[idx]
+          if (point) {
+            toast.warning(`Spatial point clicked! Clustering: ${point.clustering_density_pct}%, Huddling Risk: ${point.huddling_risk.toUpperCase()}`)
+          }
+        }
+      },
       plugins: {
         legend: {
           display: true,
@@ -709,23 +719,12 @@ const renderSpatialTrendsChart = () => {
           }
         },
         tooltip: {
-          backgroundColor: isDark ? '#1f2937' : '#ffffff',
-          titleColor: isDark ? '#f3f4f6' : '#111827',
-          bodyColor: isDark ? '#d1d5db' : '#374151',
-          borderColor: isDark ? '#374151' : '#e5e7eb',
-          borderWidth: 1,
-          padding: 12,
-          displayColors: true,
-          callbacks: {
-            afterBody(tooltipItems) {
-              const idx = tooltipItems[0].dataIndex
-              const point = spatialTrendsData.value[idx]
-              if (point) {
-                return `Huddling Risk: ${point.huddling_risk.toUpperCase()}`
-              }
-              return ''
-            }
-          }
+          enabled: false,
+          external: externalTooltipHandler
+        },
+        zoom: {
+          pan: { enabled: true, mode: 'x' },
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
         },
         // High-risk threshold annotation line at 65%
         annotation: undefined  // We draw it manually via plugin below
