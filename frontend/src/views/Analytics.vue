@@ -264,7 +264,10 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { store } from '../services/store'
 import { api } from '../services/api'
 import { Chart, registerables } from 'chart.js'
+import { externalTooltipHandler } from '../utils/chartTooltip'
+import zoomPlugin from 'chartjs-plugin-zoom'
 import { useAnimations } from '../composables/useAnimations'
+import { useToast } from '../composables/useToast'
 
 // Reusable components
 import AgriCard from '../components/ui/AgriCard.vue'
@@ -273,9 +276,10 @@ import AgriBadge from '../components/ui/AgriBadge.vue'
 import AgriSelect from '../components/ui/AgriSelect.vue'
 import AgriSkeleton from '../components/ui/AgriSkeleton.vue'
 
-Chart.register(...registerables)
+Chart.register(...registerables, zoomPlugin)
 
 const { getStaggerDelayClass } = useAnimations()
+const toast = useToast()
 
 // ── State ──────────────────────────────────
 const selectedBatchId = ref(null)
@@ -517,8 +521,24 @@ const renderFcrComparisonChart = () => {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      onClick: (e, elements) => {
+        if (elements.length > 0) {
+          const idx = elements[0].index
+          const label = fcrChartInstance.data.labels[idx]
+          const val = fcrChartInstance.data.datasets[0].data[idx]
+          toast.info(`Clicked data point: Batch ${label} recorded an FCR of ${val}.`)
+        }
+      },
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        tooltip: {
+          enabled: false,
+          external: externalTooltipHandler
+        },
+        zoom: {
+          pan: { enabled: true, mode: 'x' },
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+        }
       },
       scales: {
         x: {
@@ -588,8 +608,24 @@ const renderGrowthVelocityChart = () => {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      onClick: (e, elements) => {
+        if (elements.length > 0) {
+          const idx = elements[0].index
+          const label = growthChartInstance.data.labels[idx]
+          const val = growthChartInstance.data.datasets[0].data[idx]
+          toast.info(`Growth Velocity on ${label}: ${val.toFixed(2)} g/day.`)
+        }
+      },
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        tooltip: {
+          enabled: false,
+          external: externalTooltipHandler
+        },
+        zoom: {
+          pan: { enabled: true, mode: 'x' },
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+        }
       },
       scales: {
         x: {
@@ -693,6 +729,15 @@ const renderSpatialTrendsChart = () => {
         mode: 'index',
         intersect: false
       },
+      onClick: (e, elements) => {
+        if (elements.length > 0) {
+          const idx = elements[0].index
+          const point = spatialTrendsData.value[idx]
+          if (point) {
+            toast.warning(`Spatial point clicked! Clustering: ${point.clustering_density_pct}%, Huddling Risk: ${point.huddling_risk.toUpperCase()}`)
+          }
+        }
+      },
       plugins: {
         legend: {
           display: true,
@@ -706,23 +751,12 @@ const renderSpatialTrendsChart = () => {
           }
         },
         tooltip: {
-          backgroundColor: isDark ? '#1f2937' : '#ffffff',
-          titleColor: isDark ? '#f3f4f6' : '#111827',
-          bodyColor: isDark ? '#d1d5db' : '#374151',
-          borderColor: isDark ? '#374151' : '#e5e7eb',
-          borderWidth: 1,
-          padding: 12,
-          displayColors: true,
-          callbacks: {
-            afterBody(tooltipItems) {
-              const idx = tooltipItems[0].dataIndex
-              const point = spatialTrendsData.value[idx]
-              if (point) {
-                return `Huddling Risk: ${point.huddling_risk.toUpperCase()}`
-              }
-              return ''
-            }
-          }
+          enabled: false,
+          external: externalTooltipHandler
+        },
+        zoom: {
+          pan: { enabled: true, mode: 'x' },
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
         },
         // High-risk threshold annotation line at 65%
         annotation: undefined  // We draw it manually via plugin below

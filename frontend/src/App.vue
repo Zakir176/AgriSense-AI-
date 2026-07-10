@@ -68,7 +68,7 @@
       <!-- Main Content -->
       <div class="flex-1 flex flex-col min-w-0">
         <!-- Top Header Bar -->
-        <header class="h-16 bg-white dark:bg-[#181e1b] border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 transition-colors duration-200">
+        <header class="h-16 bg-white dark:bg-[#181e1b] border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 transition-colors duration-200">
           <div class="flex items-center space-x-3 md:hidden">
             <!-- Mobile Menu Toggle -->
             <button 
@@ -113,6 +113,19 @@
               <span class="material-icons-outlined text-sm animate-spin">sync</span>
               <span>Syncing...</span>
             </div>
+            <!-- Manual Sync Trigger Button -->
+            <button 
+              v-if="syncQueueLength > 0"
+              @click="syncOfflineData" 
+              class="flex items-center space-x-1.5 px-2 md:px-3 py-1.5 bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-900 rounded-lg text-primary-750 dark:text-primary-400 text-xs font-black animate-pulse hover:bg-primary-100 dark:hover:bg-primary-900/50 transition focus:outline-none cursor-pointer"
+              :disabled="isSyncing"
+              aria-label="Pending Sync Queue"
+            >
+              <span class="material-icons-outlined text-sm animate-spin" v-if="isSyncing">sync</span>
+              <span class="material-icons-outlined text-sm" v-else>cloud_upload</span>
+              <span class="hidden sm:inline">Pending Sync ({{ syncQueueLength }})</span>
+              <span class="sm:hidden">{{ syncQueueLength }}</span>
+            </button>
             <!-- Notifications Bell -->
             <div class="relative">
               <button 
@@ -162,8 +175,8 @@
             </button>
 
             <!-- User Panel -->
-            <div class="flex items-center space-x-3 border-l border-gray-200 dark:border-gray-800 pl-4">
-              <div class="flex flex-col text-right">
+            <div class="flex items-center space-x-3 border-l border-gray-200 dark:border-gray-800 pl-3 md:pl-4">
+              <div class="hidden sm:flex flex-col text-right">
                 <span class="text-sm font-semibold text-gray-800 dark:text-white">
                   {{ store.currentUser ? store.currentUser.full_name || store.currentUser.username : 'Guest' }}
                 </span>
@@ -171,7 +184,7 @@
                   {{ store.currentFarm && store.currentFarm.role ? store.currentFarm.role : 'Guest' }}
                 </span>
               </div>
-              <div class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-850 text-primary-700 dark:text-white flex items-center justify-center text-sm font-bold border border-primary-250 dark:border-primary-700">
+              <div class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-850 text-primary-700 dark:text-white flex items-center justify-center text-sm font-bold border border-primary-250 dark:border-primary-700 shrink-0">
                 {{ store.currentUser ? (store.currentUser.full_name || store.currentUser.username).split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '?' }}
               </div>
             </div>
@@ -179,7 +192,7 @@
         </header>
 
         <!-- View Content Area -->
-        <main class="flex-grow p-6 overflow-y-auto max-w-7xl w-full mx-auto relative">
+        <main class="flex-grow p-4 md:p-6 overflow-y-auto max-w-7xl w-full mx-auto relative">
           <router-view v-slot="{ Component }">
             <transition name="fade-slide" mode="out-in">
               <component :is="Component" />
@@ -331,6 +344,16 @@ const acknowledgeAlert = async (id) => {
 // Background Sync Management
 const isOffline = ref(!navigator.onLine)
 const isSyncing = ref(false)
+const syncQueueLength = ref(0)
+
+const updateQueueLength = async () => {
+  try {
+    const queue = await getSyncQueue()
+    syncQueueLength.value = queue.length
+  } catch (error) {
+    console.error('Failed to get sync queue length:', error)
+  }
+}
 
 const handleOnline = async () => {
   isOffline.value = false
@@ -344,6 +367,7 @@ const handleOffline = () => {
 const syncOfflineData = async () => {
   if (isSyncing.value) return
   isSyncing.value = true
+  await updateQueueLength()
   
   try {
     const queue = await getSyncQueue()
@@ -361,6 +385,7 @@ const syncOfflineData = async () => {
             body: item.payload ? JSON.stringify(item.payload) : undefined
           })
           await removeFromSyncQueue(item.id)
+          await updateQueueLength()
           console.log(`[Sync] Successfully synced request ${item.id}`)
         } catch (err) {
           console.error(`[Sync] Failed to sync request ${item.id}:`, err)
@@ -374,6 +399,7 @@ const syncOfflineData = async () => {
     }
   } finally {
     isSyncing.value = false
+    await updateQueueLength()
   }
 }
 
@@ -392,6 +418,8 @@ watch(isBlankLayout, (newBlank) => {
   }
 })
 
+let syncQueueInterval = null
+
 onMounted(async () => {
   // Respect user preference, default to light mode (false) if none exists
   const savedTheme = localStorage.getItem('theme')
@@ -401,10 +429,13 @@ onMounted(async () => {
   await router.isReady()
   initApp()
   
-  // Periodically check for alerts
+  // Periodically check for alerts and sync queue size
   alertsInterval = setInterval(() => {
     fetchAlerts()
   }, 30000)
+
+  await updateQueueLength()
+  syncQueueInterval = setInterval(updateQueueLength, 3000)
 
   // Register online/offline listeners
   window.addEventListener('online', handleOnline)
@@ -418,6 +449,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   clearInterval(alertsInterval)
+  clearInterval(syncQueueInterval)
   window.removeEventListener('online', handleOnline)
   window.removeEventListener('offline', handleOffline)
 })
