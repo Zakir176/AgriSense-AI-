@@ -195,15 +195,38 @@ def interpolate_daily(day_index, jitter_pct=0.07):
     return round(feed, 1), round(water, 1)
 
 
+# ---------------------------------------------------------------------------
+# Temperature profile — realistic barn ambient temps across a 6-week cycle
+# Week 1-2: 30-33°C (brooder heat lamps), Week 3-4: 27-30°C, Week 5-6: 24-28°C
+# ---------------------------------------------------------------------------
+WEEKLY_TEMP_RANGES = {
+    1: (30.0, 33.0),
+    2: (29.5, 32.5),
+    3: (27.0, 30.0),
+    4: (26.5, 29.5),
+    5: (24.5, 28.0),
+    6: (24.0, 27.5),
+}
+
+
+def get_daily_temperature(day_index):
+    """Return a realistic barn temperature for a given day."""
+    week = get_week(day_index)
+    lo, hi = WEEKLY_TEMP_RANGES[week]
+    return round(random.uniform(lo, hi), 1)
+
+
 def build_readings(batch, days, start_date, anomaly_day=None):
     readings = []
     for i in range(days):
         date = start_date + datetime.timedelta(days=i)
         feed, water = interpolate_daily(i)
+        temp = get_daily_temperature(i)
         flagged = False
         if anomaly_day is not None and i == anomaly_day:
             feed  = round(feed  * 0.55, 1)   # ~45% drop
             water = round(water * 0.60, 1)   # ~40% drop
+            temp  = round(temp + 3.5, 1)     # Heat stress spike on anomaly day
             flagged = True
         readings.append(FeedWaterReading(
             batch_id=batch.id,
@@ -211,6 +234,7 @@ def build_readings(batch, days, start_date, anomaly_day=None):
             feed_kg=feed,
             water_litres=water,
             flagged_abnormal=flagged,
+            temperature_celsius=temp,
         ))
     return readings
 
@@ -379,49 +403,89 @@ def seed():
     ])
     db.commit()
 
-    # ── 7. Media Clip & Inference Result (placeholder for CV module) ──────────
-    clip = MediaClip(
-        batch_id=batch_active.id,
-        file_url="/uploads/sample_coop_video.mp4",
-        uploaded_at=datetime.datetime.now(),
-    )
-    db.add(clip)
-    db.commit()
-    db.refresh(clip)
+    # ── 7. Media Clips & Inference Results — multiple snapshots for trends ──
+    # Create inference snapshots across multiple days so the Spatial Health
+    # Trends chart has enough data points to render meaningful lines.
 
-    # Seed 196 tracked birds (1 is inactive, others active)
-    mock_tracked_birds = []
-    for tid in range(1, 197):
-        if tid == 1:
-            inactivity = 75  # > 60 seconds
-            status = "inactive"
+    # Clustering density naturally increases as birds grow larger and the
+    # coop gets more crowded. We simulate a realistic upward trend.
+    SNAPSHOT_SCHEDULE = [
+        # (day_offset, clustering_density_pct, spatial_dispersion_index, bird_count_est)
+        (2,   18.3, 72.1, 200),
+        (5,   24.7, 65.4, 200),
+        (8,   35.2, 58.8, 199),
+        (10,  42.6, 52.3, 199),
+        (13,  51.8, 47.1, 198),
+        (15,  58.4, 43.5, 198),   # Anomaly day — heat stress spike
+        (18,  63.1, 41.9, 197),
+        (20,  68.5, 38.6, 196),
+        (21,  71.2, 36.2, 196),   # Today's latest snapshot
+    ]
+
+    def build_mock_tracked_birds(count, day_offset):
+        """Generate a compact set of tracked birds for a given snapshot."""
+        birds = []
+        for tid in range(1, count + 1):
+            is_inactive = tid == 1 and day_offset >= 18
+            inactivity = 75 if is_inactive else random.randint(0, 12)
+            status = "inactive" if is_inactive else "active"
+            base_x = random.randint(50, 580)
+            base_y = random.randint(50, 420)
+            timeline = []
+            cx, cy = base_x, base_y
+            for f in range(0, 150, 3):
+                if is_inactive:
+                    cx += random.choice([-1, 0, 1])
+                    cy += random.choice([-1, 0, 1])
+                else:
+                    cx += random.randint(-4, 4)
+                    cy += random.randint(-4, 4)
+                cx = max(50, min(580, cx))
+                cy = max(50, min(420, cy))
+                timeline.append({"sec": round(f / 30.0, 2), "x": cx, "y": cy})
+            birds.append({
+                "track_id": tid,
+                "inactivity_duration_sec": inactivity,
+                "status": status,
+                "x": base_x, "y": base_y,
+                "history": timeline
+            })
+        return birds
+
+    for day_offset, clust_pct, disp_idx, bird_est in SNAPSHOT_SCHEDULE:
+        clip_date = active_start + datetime.timedelta(days=day_offset)
+        clip = MediaClip(
+            batch_id=batch_active.id,
+            file_url=f"/uploads/coop_day{day_offset}.mp4",
+            uploaded_at=datetime.datetime.combine(clip_date, datetime.time(10, 0)),
+        )
+        db.add(clip)
+        db.flush()
+
+        missing = 200 - bird_est
+        if missing > 0:
+            disc_note = f"{missing} bird(s) missing. Detected potential mortality."
         else:
-            inactivity = random.randint(0, 12)
-            status = "active"
-        mock_tracked_birds.append({
-            "track_id": tid,
-            "inactivity_duration_sec": inactivity,
-            "status": status,
-            "x": random.randint(50, 580),
-            "y": random.randint(50, 420)
-        })
+            disc_note = f"Flock count match. Expected & Detected: {bird_est}."
 
-    discrepancy_note = "4 bird(s) missing. Detected potential mortality (lethargic/dead bird detected in visual)."
+        tracked = build_mock_tracked_birds(bird_est, day_offset)
 
-    inference = InferenceResult(
-        media_clip_id=clip.id,
-        bird_count_est=196,
-        movement_score=0.81,
-        low_activity_windows=[
-            {"start_sec": 8,  "end_sec": 22, "reason": "Birds clustered near feeder (morning feeding)"},
-            {"start_sec": 45, "end_sec": 60, "reason": "Resting period — normal midday behaviour"},
-        ],
-        tracked_birds=mock_tracked_birds,
-        discrepancy_note=discrepancy_note
-    )
-    db.add(inference)
+        inference = InferenceResult(
+            media_clip_id=clip.id,
+            bird_count_est=bird_est,
+            movement_score=round(random.uniform(0.65, 0.92), 2),
+            low_activity_windows=[
+                {"start_sec": 8, "end_sec": 22, "reason": "Birds clustered near feeder"},
+                {"start_sec": 45, "end_sec": 60, "reason": "Resting period"},
+            ],
+            tracked_birds=tracked,
+            discrepancy_note=disc_note,
+            clustering_density_pct=clust_pct,
+            spatial_dispersion_index=disp_idx,
+        )
+        db.add(inference)
 
-    # Seed the corresponding Alert
+    # Seed the corresponding Alert for the latest snapshot
     db.add(Alert(
         batch_id=batch_active.id,
         type="mortality",
