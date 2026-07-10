@@ -1,5 +1,7 @@
 # AgriSense AI — Frontend
 
+![Frontend Dashboard](../Docs/assets/dashboard.jpg)
+
 Vue 3 SPA built with Vite, Tailwind CSS, and Chart.js.
 
 ## Quick Start
