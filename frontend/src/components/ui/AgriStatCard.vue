@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between animate-scale-in"
+    class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
   >
     <!-- Skeleton Loading -->
     <div v-if="loading" class="space-y-3">
@@ -29,7 +29,7 @@
       </div>
 
       <!-- Stat Value (Count up animation) -->
-      <div class="flex items-baseline gap-2">
+      <div class="flex flex-wrap items-baseline gap-2">
         <span class="text-3xl font-black text-gray-900 dark:text-white tracking-tight tabular-nums">
           {{ prefix }}{{ formattedValue }}{{ suffix }}
         </span>

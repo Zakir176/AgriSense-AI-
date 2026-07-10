@@ -32,55 +32,63 @@
 
     <!-- ─── KPI Cards (Staggered Fade-in) ─── -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      <AgriStatCard
-        label="Active Batches"
-        :value="activeBatchCount"
-        icon="layers"
-        icon-color-class="bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400"
-        :loading="loading"
-        :subtext="`${store.batchesList.length} total batch${store.batchesList.length !== 1 ? 'es' : ''} on farm`"
-        class="animate-fade-in-up delay-50"
-      />
+      <div class="animate-fade-in-up delay-50">
+        <AgriStatCard
+          label="Active Batches"
+          :value="activeBatchCount"
+          icon="layers"
+          icon-color-class="bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400"
+          :loading="loading"
+          :subtext="`${store.batchesList.length} total batch${store.batchesList.length !== 1 ? 'es' : ''} on farm`"
+          class="h-full"
+        />
+      </div>
 
-      <AgriStatCard
-        label="Total Birds"
-        :value="liveCountValue"
-        icon="egg"
-        icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
-        :loading="loading"
-        :trend="populationTrendText"
-        :trend-direction="populationTrendDirection"
-        :trend-good="populationTrendGood"
-        :subtext="populationSubtext"
-        class="animate-fade-in-up delay-100"
-        :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': hasPopulationAlert }"
-      />
+      <div class="animate-fade-in-up delay-100">
+        <AgriStatCard
+          label="Total Birds"
+          :value="liveCountValue"
+          icon="egg"
+          icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
+          :loading="loading"
+          :trend="populationTrendText"
+          :trend-direction="populationTrendDirection"
+          :trend-good="populationTrendGood"
+          :subtext="populationSubtext"
+          class="h-full"
+          :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': hasPopulationAlert }"
+        />
+      </div>
 
       <!-- Active Alerts Card (Pulsing critical warning if counts exist) -->
-      <AgriStatCard
-        label="Active Alerts"
-        :value="unackAlerts.length"
-        icon="notifications_active"
-        :icon-color-class="unackAlerts.length > 0 ? 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400' : 'bg-gray-50 dark:bg-darkbg-100 text-gray-400 dark:text-gray-500'"
-        :loading="loading"
-        :trend="unackAlerts.length > 0 ? 'Action required' : 'All clear'"
-        :trend-direction="unackAlerts.length > 0 ? 'up' : 'neutral'"
-        :trend-good="unackAlerts.length === 0"
-        :subtext="unackAlerts.length > 0 ? 'Unresolved exceptions detected' : 'All systems operating normally'"
-        class="animate-fade-in-up delay-150"
-        :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': unackAlerts.length > 0 }"
-      />
+      <div class="animate-fade-in-up delay-150">
+        <AgriStatCard
+          label="Active Alerts"
+          :value="unackAlerts.length"
+          icon="notifications_active"
+          :icon-color-class="unackAlerts.length > 0 ? 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400' : 'bg-gray-50 dark:bg-darkbg-100 text-gray-400 dark:text-gray-500'"
+          :loading="loading"
+          :trend="unackAlerts.length > 0 ? 'Action required' : 'All clear'"
+          :trend-direction="unackAlerts.length > 0 ? 'up' : 'neutral'"
+          :trend-good="unackAlerts.length === 0"
+          :subtext="unackAlerts.length > 0 ? 'Unresolved exceptions detected' : 'All systems operating normally'"
+          class="h-full"
+          :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': unackAlerts.length > 0 }"
+        />
+      </div>
 
-      <AgriStatCard
-        label="Batch Age"
-        :value="batchAgeDays !== null ? batchAgeDays : 0"
-        prefix="Day "
-        icon="calendar_today"
-        icon-color-class="bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400"
-        :loading="loading"
-        :subtext="store.activeBatch ? `Started ${formatDate(store.activeBatch.start_date)}` : 'No active batch'"
-        class="animate-fade-in-up delay-200"
-      />
+      <div class="animate-fade-in-up delay-200">
+        <AgriStatCard
+          label="Batch Age"
+          :value="batchAgeDays !== null ? batchAgeDays : 0"
+          prefix="Day "
+          icon="calendar_today"
+          icon-color-class="bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400"
+          :loading="loading"
+          :subtext="store.activeBatch ? `Started ${formatDate(store.activeBatch.start_date)}` : 'No active batch'"
+          class="h-full"
+        />
+      </div>
     </div>
 
     <!-- ─── Body grid: Alerts + Batch Info ─── -->
@@ -113,7 +121,7 @@
 
         <!-- Skeleton while loading -->
         <div v-if="loading" class="p-5 space-y-3">
-          <div v-for="n in 3" :key="n" class="h-14 bg-gray-100 dark:bg-gray-800/50 rounded-xl animate-pulse"></div>
+          <AgriSkeleton v-for="n in 3" :key="n" type="card" height="h-14" />
         </div>
 
         <!-- Empty state -->
@@ -171,9 +179,12 @@
               <h2 class="text-sm font-bold text-gray-900 dark:text-white">Active Focus Cohort</h2>
             </div>
           </template>
-          <div v-if="loading" class="p-5 space-y-3">
-            <div v-for="n in 4" :key="n" class="h-5 bg-gray-100 dark:bg-gray-800/50 rounded-md animate-pulse"></div>
-          </div>
+          
+          <template v-if="loading">
+            <div class="p-5 space-y-3">
+              <AgriSkeleton v-for="n in 3" :key="n" type="card" height="h-14" />
+            </div>
+          </template>
           <div v-else-if="!store.activeBatch" class="px-5 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
             No active batch registered. <router-link to="/batches" class="text-primary-600 dark:text-primary-400 font-semibold">Create one →</router-link>
           </div>
@@ -339,6 +350,7 @@ import AgriCard from '../components/ui/AgriCard.vue'
 import AgriBadge from '../components/ui/AgriBadge.vue'
 import AgriStatCard from '../components/ui/AgriStatCard.vue'
 import AgriTable from '../components/ui/AgriTable.vue'
+import AgriSkeleton from '../components/ui/AgriSkeleton.vue'
 
 const { getStaggerDelayClass } = useAnimations()
 
