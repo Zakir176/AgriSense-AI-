@@ -6,21 +6,31 @@
 
     <!-- Standard Dashboard App Layout -->
     <div v-else class="flex w-full">
-      <!-- Mobile Backdrop -->
+      <!-- Sidebar Backdrop (Mobile only) -->
       <div 
-        v-if="isMobileMenuOpen" 
-        class="fixed inset-0 z-40 bg-black/50 md:hidden backdrop-blur-sm" 
-        @click="isMobileMenuOpen = false"
+        v-if="isSidebarOpen" 
+        @click="isSidebarOpen = false" 
+        class="fixed inset-0 bg-black/45 backdrop-blur-xs z-30 md:hidden transition-all duration-200"
       ></div>
 
       <!-- Sidebar -->
       <aside 
-        class="fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 md:relative md:translate-x-0 w-64 flex flex-col bg-white dark:bg-[#181e1b] border-r border-gray-200 dark:border-gray-800 shrink-0"
-        :class="isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'"
+        :class="[
+          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-white dark:bg-[#181e1b] border-r border-gray-200 dark:border-gray-800 shrink-0 transition-transform duration-200 md:static md:translate-x-0',
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        ]"
       >
         <!-- Logo -->
-        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-800">
           <span class="text-xl font-extrabold tracking-wider text-primary-600 dark:text-primary-400">AGRISENSE AI</span>
+          <!-- Mobile Close Button -->
+          <button 
+            @click="isSidebarOpen = false"
+            class="md:hidden p-1.5 rounded-lg border border-gray-150 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-850 transition text-gray-500 dark:text-gray-400 focus:outline-none cursor-pointer"
+            aria-label="Close Sidebar"
+          >
+            <span class="material-icons-outlined text-lg block">close</span>
+          </button>
         </div>
 
         <!-- Navigation Links -->
@@ -60,13 +70,15 @@
         <!-- Top Header Bar -->
         <header class="h-16 bg-white dark:bg-[#181e1b] border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 transition-colors duration-200">
           <div class="flex items-center space-x-3 md:hidden">
+            <!-- Mobile Menu Toggle -->
             <button 
-              @click="isMobileMenuOpen = true"
-              class="p-2 -ml-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none"
+              @click="isSidebarOpen = true"
+              class="p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none cursor-pointer"
+              aria-label="Open Sidebar"
             >
-              <span class="material-icons-outlined">menu</span>
+              <span class="material-icons-outlined text-lg block">menu</span>
             </button>
-            <span class="text-lg font-extrabold tracking-wider text-primary-600 dark:text-primary-400">AGRISENSE AI</span>
+            <span class="text-xl font-extrabold tracking-wider text-primary-600 dark:text-primary-400">AGRISENSE AI</span>
           </div>
           <div class="hidden md:block text-sm text-gray-500 dark:text-gray-400">
             <label for="farm-selector" class="sr-only">Switch Farm</label>
@@ -205,12 +217,11 @@ const router = useRouter()
 
 const isBlankLayout = computed(() => route.meta.layout === 'blank')
 
-// Mobile state
-const isMobileMenuOpen = ref(false)
+// Responsive Mobile Sidebar Management
+const isSidebarOpen = ref(false)
 
-// Close mobile menu on route change
 watch(() => route.path, () => {
-  isMobileMenuOpen.value = false
+  isSidebarOpen.value = false
 })
 
 // Theme management
