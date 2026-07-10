@@ -62,7 +62,12 @@ def get_spatial_trends(
 
     temp_by_date = {}
     for r in readings:
-        temp_by_date[r.date] = r.temperature_celsius
+        d_val = r.date
+        if isinstance(d_val, str):
+            d_val = date.fromisoformat(d_val.split(" ")[0].split("T")[0])
+        elif hasattr(d_val, "date"):
+            d_val = d_val.date()
+        temp_by_date[d_val] = r.temperature_celsius
 
     # ── Gather inference results for this batch ───────────────────────────
     # Join MediaClip → InferenceResult, filter by batch_id
@@ -78,7 +83,13 @@ def get_spatial_trends(
     clustering_by_date = {}
     dispersion_by_date = {}
     for inf, uploaded_at in inference_rows:
-        d = uploaded_at.date() if hasattr(uploaded_at, 'date') else uploaded_at
+        if isinstance(uploaded_at, str):
+            d = date.fromisoformat(uploaded_at.split(" ")[0].split("T")[0])
+        elif hasattr(uploaded_at, "date"):
+            d = uploaded_at.date()
+        else:
+            d = uploaded_at
+            
         if d not in clustering_by_date:
             clustering_by_date[d] = []
             dispersion_by_date[d] = []
