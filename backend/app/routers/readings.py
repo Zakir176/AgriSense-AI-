@@ -134,7 +134,8 @@ def get_readings_summary(batch_id: int, db: Session = Depends(get_db), current_u
                 water_rolling_avg_7d=round(avg_water, 2),
                 feed_deviation_pct=round(feed_dev * 100, 2),
                 water_deviation_pct=round(water_dev * 100, 2),
-                flagged_abnormal=r.flagged_abnormal
+                flagged_abnormal=r.flagged_abnormal,
+                temperature_celsius=r.temperature_celsius
             )
         )
     return summaries
