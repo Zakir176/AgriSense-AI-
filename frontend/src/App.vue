@@ -15,10 +15,8 @@
 
       <!-- Sidebar -->
       <aside 
-        :class="[
-          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-white dark:bg-[#181e1b] border-r border-gray-200 dark:border-gray-800 shrink-0 transition-transform duration-200 md:static md:translate-x-0',
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        ]"
+        class="fixed inset-y-0 left-0 z-40 flex flex-col bg-white dark:bg-[#181e1b] border-r border-gray-200 dark:border-gray-800 overflow-hidden shrink-0 transition-all duration-300 w-64 md:static md:inset-auto md:z-auto"
+        :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-0'"
       >
         <!-- Logo -->
         <div class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-800">
@@ -72,13 +70,14 @@
           <div class="flex items-center space-x-3 md:hidden">
             <!-- Mobile Menu Toggle -->
             <button 
-              @click="isSidebarOpen = true"
+              @click="isSidebarOpen = !isSidebarOpen"
               class="p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none cursor-pointer"
-              aria-label="Open Sidebar"
+              :aria-label="isSidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'"
             >
-              <span class="material-icons-outlined text-lg block">menu</span>
+              <span class="material-icons-outlined text-lg block">{{ isSidebarOpen ? 'menu_open' : 'menu' }}</span>
             </button>
-            <span class="text-xl font-extrabold tracking-wider text-primary-600 dark:text-primary-400">AGRISENSE AI</span>
+            <!-- Mobile-only logo (desktop has logo in sidebar) -->
+            <span class="md:hidden text-xl font-extrabold tracking-wider text-primary-600 dark:text-primary-400">AGRISENSE AI</span>
           </div>
           <div class="hidden md:block text-sm text-gray-500 dark:text-gray-400">
             <label for="farm-selector" class="sr-only">Switch Farm</label>
@@ -218,10 +217,14 @@ const router = useRouter()
 const isBlankLayout = computed(() => route.meta.layout === 'blank')
 
 // Responsive Mobile Sidebar Management
-const isSidebarOpen = ref(false)
+// Open by default on desktop, closed on mobile — resolved in onMounted
+const isSidebarOpen = ref(true)
 
 watch(() => route.path, () => {
-  isSidebarOpen.value = false
+  // Only auto-close on mobile navigation
+  if (window.innerWidth < 768) {
+    isSidebarOpen.value = false
+  }
 })
 
 // Theme management
@@ -425,7 +428,12 @@ onMounted(async () => {
   const savedTheme = localStorage.getItem('theme')
   isDark.value = savedTheme === 'dark'
   applyTheme()
-  
+
+  // Close sidebar by default on mobile screens
+  if (window.innerWidth < 768) {
+    isSidebarOpen.value = false
+  }
+
   await router.isReady()
   initApp()
   
