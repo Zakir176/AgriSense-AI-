@@ -264,7 +264,9 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { store } from '../services/store'
 import { api } from '../services/api'
 import { Chart, registerables } from 'chart.js'
+import zoomPlugin from 'chartjs-plugin-zoom'
 import { useAnimations } from '../composables/useAnimations'
+import { useToast } from '../composables/useToast'
 
 // Reusable components
 import AgriCard from '../components/ui/AgriCard.vue'
@@ -273,9 +275,10 @@ import AgriBadge from '../components/ui/AgriBadge.vue'
 import AgriSelect from '../components/ui/AgriSelect.vue'
 import AgriSkeleton from '../components/ui/AgriSkeleton.vue'
 
-Chart.register(...registerables)
+Chart.register(...registerables, zoomPlugin)
 
 const { getStaggerDelayClass } = useAnimations()
+const toast = useToast()
 
 // ── State ──────────────────────────────────
 const selectedBatchId = ref(null)
