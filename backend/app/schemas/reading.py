@@ -9,6 +9,7 @@ class FeedWaterReadingBase(BaseModel):
     water_litres: float
     mortality_count: Optional[int] = 0
     flagged_abnormal: Optional[bool] = False
+    temperature_celsius: Optional[float] = None
 
 class FeedWaterReadingCreate(FeedWaterReadingBase):
     pass
@@ -20,6 +21,7 @@ class FeedWaterReadingUpdate(BaseModel):
     water_litres: Optional[float] = None
     mortality_count: Optional[int] = None
     flagged_abnormal: Optional[bool] = None
+    temperature_celsius: Optional[float] = None
 
 class FeedWaterReadingResponse(FeedWaterReadingBase):
     id: int
@@ -39,3 +41,5 @@ class ReadingSummary(BaseModel):
     feed_deviation_pct: float
     water_deviation_pct: float
     flagged_abnormal: bool
+    temperature_celsius: Optional[float] = None
+
