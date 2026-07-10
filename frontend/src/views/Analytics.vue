@@ -521,8 +521,24 @@ const renderFcrComparisonChart = () => {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      onClick: (e, elements) => {
+        if (elements.length > 0) {
+          const idx = elements[0].index
+          const label = fcrChartInstance.data.labels[idx]
+          const val = fcrChartInstance.data.datasets[0].data[idx]
+          toast.info(`Clicked data point: Batch ${label} recorded an FCR of ${val}.`)
+        }
+      },
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        tooltip: {
+          enabled: false,
+          external: externalTooltipHandler
+        },
+        zoom: {
+          pan: { enabled: true, mode: 'x' },
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+        }
       },
       scales: {
         x: {
@@ -592,8 +608,24 @@ const renderGrowthVelocityChart = () => {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      onClick: (e, elements) => {
+        if (elements.length > 0) {
+          const idx = elements[0].index
+          const label = growthChartInstance.data.labels[idx]
+          const val = growthChartInstance.data.datasets[0].data[idx]
+          toast.info(`Growth Velocity on ${label}: ${val.toFixed(2)} g/day.`)
+        }
+      },
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        tooltip: {
+          enabled: false,
+          external: externalTooltipHandler
+        },
+        zoom: {
+          pan: { enabled: true, mode: 'x' },
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+        }
       },
       scales: {
         x: {
