@@ -78,7 +78,12 @@ python -m venv venv
 # Windows (PowerShell): .\venv\Scripts\Activate.ps1
 # macOS/Linux: source venv/bin/activate
 
-pip install -r requirements.txt
+# For production / Railway deploy (no ultralytics overhead, falls back to mock inference):
+# pip install -r requirements.txt
+
+# For local dev with real AI inference (YOLOv8):
+pip install -r requirements-full.txt
+
 python seed_data.py  # Seeds pilot farm and realistic daily metrics
 uvicorn app.main:app --reload --port 8000
 ```

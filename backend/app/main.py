@@ -1,7 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+
 from .config import settings
-from .database import engine, Base
+from .database import engine, Base, SessionLocal
+from .models.farm import Farm
+from .models.auth import User
+from .routers.auth import get_password_hash
+from .models.user_farm import UserFarmAssociation
 
 # Import all models to register on Base
 from .models import Base
@@ -10,10 +16,57 @@ from .routers import auth, farms, batches, readings, growth, medications, alerts
 # Auto-create tables (practical for Phase 1 mockup)
 Base.metadata.create_all(bind=engine)
 
+def seed_database():
+    db = SessionLocal()
+    try:
+        # Seed default farm
+        if db.query(Farm).count() == 0:
+            default_farm = Farm(name="Prime Nest Poultry", location="Lusaka, Zambia")
+            db.add(default_farm)
+            db.commit()
+            print("Successfully seeded database with default farm 'Prime Nest Poultry'")
+            
+        # Seed default user
+        if db.query(User).filter(User.username == "operator").count() == 0:
+            default_user = User(
+                username="operator",
+                hashed_password=get_password_hash("prime_nest_2026"),
+                full_name="Evans Kabwe"
+            )
+            db.add(default_user)
+            db.commit()
+            print("Successfully seeded database with default user 'operator' (password: prime_nest_2026)")
+
+        # Seed default user-farm relationship
+        user = db.query(User).filter(User.username == "operator").first()
+        farm = db.query(Farm).filter(Farm.name == "Prime Nest Poultry").first()
+        if user and farm:
+            assoc = db.query(UserFarmAssociation).filter(
+                UserFarmAssociation.user_id == user.id,
+                UserFarmAssociation.farm_id == farm.id
+            ).first()
+            if not assoc:
+                assoc = UserFarmAssociation(user_id=user.id, farm_id=farm.id, role="owner")
+                db.add(assoc)
+                db.commit()
+                print("Successfully seeded user-farm association (operator -> Prime Nest Poultry as owner)")
+    except Exception as e:
+        print(f"Error seeding database: {e}")
+    finally:
+        db.close()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic (move seed_database contents here)
+    seed_database()
+    yield
+    # Shutdown logic (nothing needed for Phase 1)
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan
 )
 
 # CORS — NOTE: allow_credentials=True requires explicit origins; "*" is NOT
@@ -24,6 +77,11 @@ origins = [
     "http://127.0.0.1:5173",
     "http://127.0.0.1:3000",
 ]
+
+# Add production Vercel URL from env if set
+frontend_url = settings.FRONTEND_URL.strip()
+if frontend_url:
+    origins.append(frontend_url)
 
 app.add_middleware(
     CORSMiddleware,
@@ -49,52 +107,6 @@ from fastapi.staticfiles import StaticFiles
 import os
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
-
-from .database import SessionLocal
-from .models.farm import Farm
-from .models.auth import User
-from .routers.auth import get_password_hash
-
-@app.on_event("startup")
-def seed_database():
-    db = SessionLocal()
-    try:
-        # Seed default farm
-        if db.query(Farm).count() == 0:
-            default_farm = Farm(name="Prime Nest Poultry", location="Lusaka, Zambia")
-            db.add(default_farm)
-            db.commit()
-            print("Successfully seeded database with default farm 'Prime Nest Poultry'")
-            
-        # Seed default user
-        if db.query(User).filter(User.username == "operator").count() == 0:
-            default_user = User(
-                username="operator",
-                hashed_password=get_password_hash("prime_nest_2026"),
-                full_name="Evans Kabwe"
-            )
-            db.add(default_user)
-            db.commit()
-            print("Successfully seeded database with default user 'operator' (password: prime_nest_2026)")
-
-        # Seed default user-farm relationship
-        from .models.user_farm import UserFarmAssociation
-        user = db.query(User).filter(User.username == "operator").first()
-        farm = db.query(Farm).filter(Farm.name == "Prime Nest Poultry").first()
-        if user and farm:
-            assoc = db.query(UserFarmAssociation).filter(
-                UserFarmAssociation.user_id == user.id,
-                UserFarmAssociation.farm_id == farm.id
-            ).first()
-            if not assoc:
-                assoc = UserFarmAssociation(user_id=user.id, farm_id=farm.id, role="owner")
-                db.add(assoc)
-                db.commit()
-                print("Successfully seeded user-farm association (operator -> Prime Nest Poultry as owner)")
-    except Exception as e:
-        print(f"Error seeding database: {e}")
-    finally:
-        db.close()
 
 @app.get("/")
 def read_root():
