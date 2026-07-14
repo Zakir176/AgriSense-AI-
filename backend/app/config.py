@@ -5,9 +5,10 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "AgriSense AI API"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
+    FRONTEND_URL: str = ""
     
     # Database
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/agrisense"
+    DATABASE_URL: str = "postgresql://postgres:postgrespassword@localhost:5432/agrisense"
     
     # Auth (Simple operator account)
     SECRET_KEY: str = "change-this-to-a-very-secure-random-secret-key-in-production"
