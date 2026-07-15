@@ -108,6 +108,45 @@ import os
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
+# ── Live RTSP Simulator WebSocket ──────────────────
+from fastapi import WebSocket, WebSocketDisconnect
+import json as _json
+
+@app.websocket("/ws/rtsp-stream/{batch_id}")
+async def rtsp_stream(websocket: WebSocket, batch_id: int):
+    """
+    WebSocket endpoint that streams simulated RTSP video frames
+    with YOLO bounding-box overlays and real-time telemetry JSON.
+    """
+    await websocket.accept()
+    
+    # Resolve expected bird count from the batch
+    db = SessionLocal()
+    try:
+        from .models.batch import Batch
+        from .models.reading import FeedWaterReading
+        batch = db.query(Batch).filter(Batch.id == batch_id).first()
+        if not batch:
+            await websocket.send_json({"error": "Batch not found"})
+            await websocket.close()
+            return
+        readings = db.query(FeedWaterReading).filter(FeedWaterReading.batch_id == batch_id).all()
+        cumulative_mortality = sum(r.mortality_count or 0 for r in readings)
+        expected_count = max(0, batch.bird_count - cumulative_mortality)
+    finally:
+        db.close()
+
+    from .services.rtsp_simulator import RTSPSimulator
+    simulator = RTSPSimulator(expected_count=min(expected_count, 80))  # cap for performance
+
+    try:
+        async for payload in simulator.stream_frames():
+            await websocket.send_json(payload)
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        pass
+
 @app.get("/")
 def read_root():
     return {
@@ -115,3 +154,4 @@ def read_root():
         "docs_url": "/docs",
         "version": settings.VERSION
     }
+
