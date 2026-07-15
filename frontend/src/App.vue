@@ -47,7 +47,7 @@
             <span class="material-icons-outlined text-lg" :class="isRouteActive(item.path) ? 'text-primary-600 dark:text-primary-400' : 'text-gray-450 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-white'">
               {{ item.icon }}
             </span>
-            <span>{{ item.name }}</span>
+            <span>{{ $t('nav.' + item.key) }}</span>
           </router-link>
         </nav>
 
@@ -58,7 +58,7 @@
             class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium text-red-650 hover:bg-red-50 hover:border-red-200/30 dark:text-red-400 dark:hover:bg-red-950/20 border border-transparent dark:hover:border-red-900/30 transition"
           >
             <span class="material-icons-outlined text-lg">logout</span>
-            <span>Sign Out</span>
+            <span>{{ $t('app.sign_out') }}</span>
           </button>
         </div>
       </aside>
@@ -98,7 +98,7 @@
               </select>
             </div>
             <div v-else>
-              Site: <span class="text-gray-850 dark:text-gray-200 font-semibold">{{ store.currentFarm ? store.currentFarm.name : 'Loading...' }}</span>
+              {{ $t('app.site') }} <span class="text-gray-850 dark:text-gray-200 font-semibold">{{ store.currentFarm ? store.currentFarm.name : $t('app.loading') }}</span>
             </div>
           </div>
           
@@ -106,11 +106,11 @@
             <!-- Offline Indicator -->
             <div v-if="isOffline" class="flex items-center space-x-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-700 dark:text-amber-400 text-xs font-bold">
               <span class="material-icons-outlined text-sm">wifi_off</span>
-              <span>Offline Mode</span>
+              <span>{{ $t('app.offline_mode') }}</span>
             </div>
             <div v-if="isSyncing" class="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-700 dark:text-blue-400 text-xs font-bold">
               <span class="material-icons-outlined text-sm animate-spin">sync</span>
-              <span>Syncing...</span>
+              <span>{{ $t('app.syncing') }}</span>
             </div>
             <!-- Manual Sync Trigger Button -->
             <button 
@@ -122,7 +122,7 @@
             >
               <span class="material-icons-outlined text-sm animate-spin" v-if="isSyncing">sync</span>
               <span class="material-icons-outlined text-sm" v-else>cloud_upload</span>
-              <span class="hidden sm:inline">Pending Sync ({{ syncQueueLength }})</span>
+              <span class="hidden sm:inline">{{ $t('app.pending_sync') }} ({{ syncQueueLength }})</span>
               <span class="sm:hidden">{{ syncQueueLength }}</span>
             </button>
             <!-- Notifications Bell -->
@@ -142,12 +142,12 @@
               <!-- Dropdown -->
               <div v-if="showNotifications" class="absolute right-0 mt-2 w-80 bg-white dark:bg-darkbg-50 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden z-50">
                 <div class="p-3 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-darkbg-100">
-                  <span class="font-bold text-sm text-gray-800 dark:text-white">Notifications</span>
-                  <span class="text-xs bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded-full font-bold">{{ unreadAlertsCount }} New</span>
+                  <span class="font-bold text-sm text-gray-800 dark:text-white">{{ $t('app.notifications') }}</span>
+                  <span class="text-xs bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded-full font-bold">{{ unreadAlertsCount }} {{ $t('app.new') }}</span>
                 </div>
                 <div class="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
                   <div v-if="alerts.length === 0" class="p-4 text-center text-xs text-gray-500">
-                    No new alerts.
+                    {{ $t('app.no_alerts') }}
                   </div>
                   <div v-for="alert in alerts" :key="alert.id" class="p-3 hover:bg-gray-50 dark:hover:bg-darkbg-100 transition flex gap-3 items-start cursor-pointer" @click="acknowledgeAlert(alert.id)">
                     <span class="material-icons-outlined text-[16px] mt-0.5" :class="alert.severity === 'critical' ? 'text-red-500' : 'text-amber-500'">
@@ -155,7 +155,7 @@
                     </span>
                     <div class="flex-1">
                       <p class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ alert.message }}</p>
-                      <p class="text-[10px] text-gray-500 mt-1">Click to dismiss</p>
+                      <p class="text-[10px] text-gray-500 mt-1">{{ $t('app.dismiss') }}</p>
                     </div>
                   </div>
                 </div>
@@ -173,14 +173,26 @@
               </span>
             </button>
 
+            <!-- Language Switcher -->
+            <div class="relative group">
+              <button class="flex items-center justify-center p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none">
+                <span class="material-icons-outlined text-lg">language</span>
+                <span class="text-xs font-bold ml-1 uppercase">{{ $i18n.locale }}</span>
+              </button>
+              <div class="absolute right-0 mt-2 w-32 bg-white dark:bg-darkbg-50 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden z-50 opacity-0 group-hover:opacity-100 transition pointer-events-none group-hover:pointer-events-auto">
+                <button @click="changeLanguage('en')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'en' }">English</button>
+                <button @click="changeLanguage('ny')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'ny' }">Nyanja</button>
+              </div>
+            </div>
+
             <!-- User Panel -->
             <div class="flex items-center space-x-3 border-l border-gray-200 dark:border-gray-800 pl-3 md:pl-4">
               <div class="hidden sm:flex flex-col text-right">
                 <span class="text-sm font-semibold text-gray-800 dark:text-white">
-                  {{ store.currentUser ? store.currentUser.full_name || store.currentUser.username : 'Guest' }}
+                  {{ store.currentUser ? store.currentUser.full_name || store.currentUser.username : $t('app.guest') }}
                 </span>
                 <span class="text-[10px] uppercase font-bold tracking-wider text-primary-650 dark:text-primary-400">
-                  {{ store.currentFarm && store.currentFarm.role ? store.currentFarm.role : 'Guest' }}
+                  {{ store.currentFarm && store.currentFarm.role ? store.currentFarm.role : $t('app.guest') }}
                 </span>
               </div>
               <div class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-850 text-primary-700 dark:text-white flex items-center justify-center text-sm font-bold border border-primary-250 dark:border-primary-700 shrink-0">
@@ -210,9 +222,16 @@ import { api } from './services/api'
 import { store } from './services/store'
 import { getSyncQueue, removeFromSyncQueue } from './services/db'
 import Toast from './components/Toast.vue'
+import { useI18n } from 'vue-i18n'
 
+const { locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
+
+const changeLanguage = (lang) => {
+  locale.value = lang
+  localStorage.setItem('language', lang)
+}
 
 const isBlankLayout = computed(() => route.meta.layout === 'blank')
 
@@ -463,15 +482,15 @@ onUnmounted(() => {
 })
 
 const navItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
-  { name: 'Batches', path: '/batches', icon: 'layers' },
-  { name: 'Feed & Water', path: '/readings', icon: 'opacity' },
-  { name: 'Flock Growth', path: '/growth', icon: 'show_chart' },
-  { name: 'Medications', path: '/medications', icon: 'vaccines' },
-  { name: 'AI Visual Monitor', path: '/inference', icon: 'videocam' },
-  { name: 'Audio Insights', path: '/audio', icon: 'hearing' },
-  { name: 'Analytics', path: '/analytics', icon: 'analytics' },
-  { name: 'Farm Settings', path: '/farm-settings', icon: 'settings' }
+  { key: 'dashboard', path: '/dashboard', icon: 'dashboard' },
+  { key: 'batches', path: '/batches', icon: 'layers' },
+  { key: 'feed_water', path: '/readings', icon: 'opacity' },
+  { key: 'flock_growth', path: '/growth', icon: 'show_chart' },
+  { key: 'medications', path: '/medications', icon: 'vaccines' },
+  { key: 'ai_monitor', path: '/inference', icon: 'videocam' },
+  { key: 'audio', path: '/audio', icon: 'hearing' },
+  { key: 'analytics', path: '/analytics', icon: 'analytics' },
+  { key: 'settings', path: '/farm-settings', icon: 'settings' }
 ]
 
 const isRouteActive = (path) => {
