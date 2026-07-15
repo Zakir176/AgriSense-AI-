@@ -3,11 +3,11 @@
     <!-- ─── Header ─── -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Farm Settings & Management</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('farm.title') }}</h1>
         <p class="mt-0.5 text-sm text-gray-550 dark:text-gray-400">
-          Manage farm metadata, switch between cohorts, and configure role-based access for
+          {{ $t('farm.subtitle') }}
           <span v-if="store.currentFarm" class="font-bold text-gray-700 dark:text-gray-300">{{ store.currentFarm.name }}</span>
-          <span v-else class="italic text-gray-450">no active farm</span>
+          <span v-else class="italic text-gray-450">{{ $t('farm.no_active') }}</span>
         </p>
       </div>
       <div v-if="isOwner" class="flex items-center gap-3 w-full sm:w-auto">
@@ -16,9 +16,7 @@
           icon="person_add"
           :disabled="isOffline"
           @click="openAddModal"
-        >
-          Add Farm Member
-        </AgriButton>
+        >{{ $t('farm.add_member') }}</AgriButton>
       </div>
     </div>
 
@@ -32,22 +30,22 @@
           <template #header>
             <div class="flex items-center gap-2">
               <span class="material-icons-outlined text-gray-550">info</span>
-              <h2 class="text-sm font-bold text-gray-900 dark:text-white">Farm Profile</h2>
+              <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('farm.profile') }}</h2>
             </div>
           </template>
 
           <form @submit.prevent="handleUpdateFarm" class="space-y-4">
             <AgriInput
-              label="Farm Name"
+              :label="$t('farm.name_label')"
               v-model="farmForm.name"
-              placeholder="e.g. Prime Nest Poultry"
+              :placeholder="$t('farm.name_ph')"
               required
               :disabled="!isOwner"
             />
             <AgriInput
-              label="Location"
+              :label="$t('farm.location_label')"
               v-model="farmForm.location"
-              placeholder="e.g. Lusaka, Zambia"
+              :placeholder="$t('farm.location_ph')"
               :disabled="!isOwner"
             />
             <div v-if="isOwner" class="pt-2">
@@ -56,9 +54,7 @@
                 variant="primary"
                 :loading="updatingFarm"
                 class="w-full"
-              >
-                Save Details
-              </AgriButton>
+              >{{ $t('farm.save_details') }}</AgriButton>
             </div>
             <div v-else class="text-xs text-gray-400 dark:text-gray-500 italic mt-2 text-center">
               Only owners can edit farm settings. (Your role: {{ currentRole }})
@@ -71,7 +67,7 @@
           <template #header>
             <div class="flex items-center gap-2">
               <span class="material-icons-outlined text-gray-550">holiday_village</span>
-              <h2 class="text-sm font-bold text-gray-900 dark:text-white">My Farms</h2>
+              <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('farm.my_farms') }}</h2>
             </div>
           </template>
 
@@ -89,7 +85,7 @@
             >
               <div>
                 <p class="text-xs font-bold text-gray-855 dark:text-gray-200">{{ farm.name }}</p>
-                <p class="text-[10px] text-gray-450 dark:text-gray-500">{{ farm.location || 'No location set' }}</p>
+                <p class="text-[10px] text-gray-450 dark:text-gray-500">{{ farm.location || $t('farm.no_location') }}</p>
               </div>
               <AgriBadge
                 :variant="farm.role === 'owner' ? 'success' : farm.role === 'operator' ? 'primary' : 'secondary'"
@@ -100,10 +96,10 @@
 
             <!-- New Farm Creation -->
             <div class="border-t border-gray-100 dark:border-gray-800 pt-4 mt-2">
-              <p class="text-xs font-bold text-gray-800 dark:text-gray-300 mb-2">Create New Farm</p>
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-300 mb-2">{{ $t('farm.create_new') }}</p>
               <form @submit.prevent="handleCreateFarm" class="space-y-3">
                 <AgriInput
-                  placeholder="New farm name"
+                  :placeholder="$t('farm.new_farm_name')"
                   v-model="newFarm.name"
                   required
                 />
@@ -117,9 +113,7 @@
                   size="sm"
                   class="w-full"
                   :loading="creatingFarm"
-                >
-                  Create Farm
-                </AgriButton>
+                >{{ $t('farm.btn_create_farm') }}</AgriButton>
               </form>
             </div>
           </div>
@@ -132,7 +126,7 @@
           <template #header>
             <div class="flex items-center gap-2">
               <span class="material-icons-outlined text-gray-550">people</span>
-              <h2 class="text-sm font-bold text-gray-900 dark:text-white">Authorized Members</h2>
+              <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('farm.auth_members') }}</h2>
             </div>
           </template>
 
@@ -147,7 +141,7 @@
                 <div class="flex items-center gap-2">
                   <span class="material-icons-outlined text-xs text-gray-400">account_circle</span>
                   <span>{{ item.username }}</span>
-                  <span v-if="item.user_id === store.currentUser?.id" class="text-[10px] text-primary-500 font-bold bg-primary-50 dark:bg-primary-950/40 px-1.5 py-0.5 rounded-full">You</span>
+                  <span v-if="item.user_id === store.currentUser?.id" class="text-[10px] text-primary-500 font-bold bg-primary-50 dark:bg-primary-950/40 px-1.5 py-0.5 rounded-full">{{ $t('farm.you') }}</span>
                 </div>
               </template>
 
@@ -161,9 +155,9 @@
                       @change="updateMemberRole(item)"
                       class="text-xs font-semibold rounded-lg border border-gray-250 dark:border-gray-800 bg-white dark:bg-darkbg-100 py-1.5 px-2.5 outline-none focus:border-primary-500"
                     >
-                      <option value="owner">Owner</option>
-                      <option value="operator">Operator</option>
-                      <option value="viewer">Viewer</option>
+                      <option value="owner">{{ $t('farm.role_owner') }}</option>
+                      <option value="operator">{{ $t('farm.role_operator') }}</option>
+                      <option value="viewer">{{ $t('farm.role_viewer') }}</option>
                     </select>
                   </div>
                   <AgriBadge
@@ -185,10 +179,8 @@
                     icon="person_remove"
                     :disabled="isOffline"
                     @click="removeMember(item)"
-                  >
-                    Remove
-                  </AgriButton>
-                  <span v-else class="text-xs text-gray-400 italic">No actions</span>
+                  >{{ $t('farm.remove') }}</AgriButton>
+                  <span v-else class="text-xs text-gray-400 italic">{{ $t('farm.no_actions') }}</span>
                 </div>
               </template>
             </AgriTable>
@@ -201,24 +193,24 @@
     <!-- ─── Add Member Modal ─── -->
     <AgriModal
       :show="showAddModal"
-      title="Add Farm Member"
+      :title="$t('farm.add_member')"
       @close="showAddModal = false"
     >
       <form @submit.prevent="handleAddMember" class="space-y-4">
         <p class="text-xs text-gray-500 dark:text-gray-400">
-          Enter the exact username of the registered user account you wish to authorize.
+          {{ $t('farm.add_desc') }}
         </p>
 
         <AgriInput
-          label="Username"
+          :label="$t('farm.username')"
           v-model="addForm.username"
-          placeholder="e.g. operator_john"
+          :placeholder="$t('farm.username_ph')"
           required
           icon="person"
         />
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-gray-500 uppercase dark:text-gray-400">Access Role</label>
+          <label class="text-xs font-bold text-gray-500 uppercase dark:text-gray-400">{{ $t('farm.access_role') }}</label>
           <select
             v-model="addForm.role"
             class="w-full text-sm font-medium rounded-xl border border-gray-250 dark:border-gray-800 bg-white dark:bg-darkbg-50/50 text-gray-900 dark:text-white p-3 outline-none focus:border-primary-500"
@@ -230,12 +222,8 @@
         </div>
 
         <div class="flex gap-3 justify-end pt-4 border-t border-gray-100 dark:border-gray-800">
-          <AgriButton variant="outline" @click="showAddModal = false">
-            Cancel
-          </AgriButton>
-          <AgriButton type="submit" variant="primary" :loading="addingMember">
-            Add User
-          </AgriButton>
+          <AgriButton variant="outline" @click="showAddModal = false">{{ $t('farm.cancel') }}</AgriButton>
+          <AgriButton type="submit" variant="primary" :loading="addingMember">{{ $t('farm.add_user') }}</AgriButton>
         </div>
       </form>
     </AgriModal>
@@ -247,6 +235,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { store } from '../services/store'
 import { api } from '../services/api'
 import { useToast } from '../composables/useToast'
+import { useI18n } from 'vue-i18n'
 
 import AgriButton from '../components/ui/AgriButton.vue'
 import AgriCard from '../components/ui/AgriCard.vue'
@@ -256,6 +245,7 @@ import AgriModal from '../components/ui/AgriModal.vue'
 import AgriInput from '../components/ui/AgriInput.vue'
 
 const toast = useToast()
+const { t } = useI18n()
 
 // ── State ──────────────────────────────────
 const loadingMembers = ref(false)
@@ -270,12 +260,12 @@ const farmForm = ref({ name: '', location: '' })
 const newFarm = ref({ name: '', location: '' })
 const addForm = ref({ username: '', role: 'operator' })
 
-const tableHeaders = [
-  { text: 'User', value: 'username', sortable: true },
-  { text: 'Full Name', value: 'full_name', sortable: true },
-  { text: 'Role Permissions', value: 'role', sortable: false },
-  { text: 'Actions', value: 'actions', sortable: false, align: 'right' }
-]
+const tableHeaders = computed(() => [
+  { text: t('farm.col_user'), value: 'username', sortable: true },
+  { text: t('farm.col_full_name'), value: 'full_name', sortable: true },
+  { text: t('farm.col_role'), value: 'role', sortable: false },
+  { text: t('farm.col_actions'), value: 'actions', sortable: false, align: 'right' }
+])
 
 // ── Computed ──────────────────────────────
 const isOwner = computed(() => {

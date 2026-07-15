@@ -5,11 +5,11 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
       <div>
         <div class="flex items-center space-x-2">
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Audio Insights</h1>
-          <AgriBadge variant="warning" icon="science">Research Preview</AgriBadge>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('audio.title') }}</h1>
+          <AgriBadge variant="warning" icon="science">{{ $t('audio.research_preview') }}</AgriBadge>
         </div>
         <p class="mt-0.5 text-sm text-gray-550 dark:text-gray-400">
-          Acoustic library analyzing bird behavior distress signals and vocalization frequencies.
+          {{ $t('audio.subtitle') }}
         </p>
       </div>
     </div>
@@ -28,16 +28,16 @@
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-650"></span>
               </span>
-              <span class="text-[9px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">Live Recording</span>
+              <span class="text-[9px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">{{ $t('audio.live_recording') }}</span>
             </div>
           </h2>
-          <p class="text-xs text-gray-500 mt-0.5">Capturing telemetry vocalizations for real-time analysis.</p>
+          <p class="text-xs text-gray-500 mt-0.5">{{ $t('audio.capturing') }}</p>
         </div>
       </div>
       <!-- Quick distress overview status -->
       <div class="flex items-center gap-2">
-        <span class="text-xs font-semibold text-gray-500">Distress Analysis Status:</span>
-        <AgriBadge variant="success" icon="check">Normal (No Pathogen Risk)</AgriBadge>
+        <span class="text-xs font-semibold text-gray-500">{{ $t('audio.distress_status') }}</span>
+        <AgriBadge variant="success" icon="check">{{ $t('audio.normal') }}</AgriBadge>
       </div>
     </div>
 
@@ -45,7 +45,7 @@
     <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl p-4 flex items-start space-x-3 text-amber-850 dark:text-amber-300 text-xs font-semibold animate-fade-in-up delay-100">
       <span class="material-icons-outlined text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">science</span>
       <div>
-        <span class="font-bold">Research Stage Telemetry:</span> This module plays synthesized acoustic distress indicators. Real-time microphone arrays and live FFT decibel readings are scheduled for Phase 2.
+        <span class="font-bold">{{ $t('audio.research_stage') }}</span> {{ $t('audio.research_desc') }}
       </div>
     </div>
 
@@ -55,7 +55,7 @@
       <div class="lg:col-span-1 space-y-4 animate-fade-in-up delay-150">
         <AgriCard>
           <template #header>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Acoustic Samples Library</h2>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('audio.acoustic_library') }}</h2>
             <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">4 Profiles</span>
           </template>
 
@@ -94,34 +94,34 @@
         <!-- ML Classifier Settings -->
         <AgriCard>
           <template #header>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">ML Classifier Settings</h2>
-            <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Adjust</span>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('audio.ml_settings') }}</h2>
+            <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ $t('audio.adjust') }}</span>
           </template>
 
           <div class="space-y-6">
             <!-- Cough Threshold -->
             <div class="space-y-2">
               <div class="flex justify-between items-end">
-                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Respiratory Cough Sensitivity</label>
+                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('audio.cough_sensitivity') }}</label>
                 <span class="text-xs font-mono font-bold" :class="audioConfig.cough_threshold_pct < 50 ? 'text-status-danger' : 'text-gray-500'">{{ Math.round(audioConfig.cough_threshold_pct) }}%</span>
               </div>
               <input type="range" min="10" max="100" v-model.number="audioConfig.cough_threshold_pct" @change="saveConfig" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary-600">
-              <p class="text-[10px] text-gray-450 dark:text-gray-500">Lower values make the ML model more aggressive at flagging raspy gasps.</p>
+              <p class="text-[10px] text-gray-450 dark:text-gray-500">{{ $t('audio.cough_desc') }}</p>
             </div>
 
             <!-- Chirp Threshold -->
             <div class="space-y-2">
               <div class="flex justify-between items-end">
-                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Thermal Chirp Sensitivity</label>
+                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('audio.chirp_sensitivity') }}</label>
                 <span class="text-xs font-mono font-bold" :class="audioConfig.chirp_threshold_pct < 50 ? 'text-status-danger' : 'text-gray-500'">{{ Math.round(audioConfig.chirp_threshold_pct) }}%</span>
               </div>
               <input type="range" min="10" max="100" v-model.number="audioConfig.chirp_threshold_pct" @change="saveConfig" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary-600">
-              <p class="text-[10px] text-gray-450 dark:text-gray-500">Adjust the distress probability limit for high-pitch thermal chirping.</p>
+              <p class="text-[10px] text-gray-450 dark:text-gray-500">{{ $t('audio.chirp_desc') }}</p>
             </div>
             
             <div v-if="offlineMode" class="text-[10px] flex items-center gap-1.5 text-amber-600 dark:text-amber-400 mt-2">
               <span class="material-icons-outlined text-[14px]">wifi_off</span>
-              Offline: Changes queued for sync
+              {{ $t('audio.offline_sync') }}
             </div>
           </div>
         </AgriCard>
@@ -132,9 +132,9 @@
 
         <div v-if="!selectedSample" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-16 text-center flex flex-col items-center justify-center h-full min-h-[400px]">
           <span class="material-icons-outlined text-5xl text-gray-300 dark:text-gray-700 mb-3 animate-pulse">settings_voice</span>
-          <h3 class="font-bold text-gray-700 dark:text-gray-300 text-sm">Select an acoustic sample</h3>
+          <h3 class="font-bold text-gray-700 dark:text-gray-300 text-sm">{{ $t('audio.select_sample') }}</h3>
           <p class="text-xs text-gray-450 dark:text-gray-500 mt-1 max-w-xs mx-auto">
-            Choose a profile from the library to play synthesized soundscapes, inspect the frequency spectrum, and view clinical recommendations.
+            {{ $t('audio.select_desc') }}
           </p>
         </div>
 
@@ -144,7 +144,7 @@
             <template #header>
               <div>
                 <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ selectedSample.title }} Analysis</h3>
-                <p class="text-[10px] text-gray-450 dark:text-gray-500">Spectral signature: {{ selectedSample.frequencyRange }}</p>
+                <p class="text-[10px] text-gray-450 dark:text-gray-500">{{ $t('audio.spectral_sig') }} {{ selectedSample.frequencyRange }}</p>
               </div>
               <AgriButton
                 variant="primary"
@@ -152,7 +152,7 @@
                 :icon="isPlaying ? 'pause' : 'volume_up'"
                 @click="togglePlayback"
               >
-                {{ isPlaying ? 'Mute Sample' : 'Listen Synthesized' }}
+                {{ isPlaying ? $t('audio.mute_sample') : $t('audio.listen_synthesized') }}
               </AgriButton>
             </template>
 
@@ -169,27 +169,27 @@
             <!-- Analytics Dashboard -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
               <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-150 dark:border-gray-850 rounded-xl p-4 space-y-1">
-                <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Distress Probability</p>
+                <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('audio.distress_prob') }}</p>
                 <div class="text-2xl font-black tabular-nums" :class="getSeverityTextClass(selectedSample.severity)">
                   {{ selectedSample.distressProb }}%
                 </div>
-                <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">Calculated via frequency weight</p>
+                <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">{{ $t('audio.calc_weight') }}</p>
               </div>
 
               <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-150 dark:border-gray-850 rounded-xl p-4 space-y-1">
-                <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Dominant Peak</p>
+                <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('audio.dominant_peak') }}</p>
                 <div class="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
                   {{ selectedSample.dominantPeak }}
                 </div>
-                <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">Excitation threshold limit</p>
+                <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">{{ $t('audio.exc_threshold') }}</p>
               </div>
 
               <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-150 dark:border-gray-850 rounded-xl p-4 space-y-1">
-                <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Flock Cohesion</p>
+                <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('audio.flock_cohesion') }}</p>
                 <div class="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
                   {{ selectedSample.cohesion }}%
                 </div>
-                <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">Spatial correlation metrics</p>
+                <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">{{ $t('audio.spatial_metrics') }}</p>
               </div>
             </div>
           </AgriCard>
@@ -202,18 +202,18 @@
             <h4 class="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"
               :class="selectedSample.severity === 'Critical' ? 'text-status-danger' : 'text-primary-650 dark:text-primary-400'">
               <span class="material-icons-outlined text-[16px] font-semibold">health_and_safety</span>
-              Clinical Diagnostics & Action Plan
+              {{ $t('audio.clinical_diag') }}
             </h4>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
               <div class="space-y-2">
-                <h5 class="font-bold text-gray-900 dark:text-white text-xs">Vocalization Details</h5>
+                <h5 class="font-bold text-gray-900 dark:text-white text-xs">{{ $t('audio.voc_details') }}</h5>
                 <p class="text-xs text-gray-600 dark:text-gray-450 leading-relaxed font-semibold">
                   {{ selectedSample.description }}
                 </p>
               </div>
               <div class="space-y-2">
-                <h5 class="font-bold text-gray-900 dark:text-white text-xs">Management Instructions</h5>
+                <h5 class="font-bold text-gray-900 dark:text-white text-xs">{{ $t('audio.management') }}</h5>
                 <ul class="text-xs text-gray-650 dark:text-gray-400 space-y-2 list-disc pl-4 font-semibold">
                   <li v-for="(inst, i) in selectedSample.instructions" :key="i">{{ inst }}</li>
                 </ul>
