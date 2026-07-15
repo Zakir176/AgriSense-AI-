@@ -4,9 +4,9 @@
     <!-- ─── Header ─── -->
     <div class="flex items-start justify-between animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Farm Dashboard</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('dashboard.title') }}</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-          Real-time indicators and operational summary for
+          {{ $t('dashboard.subtitle') }}
           <span class="font-semibold text-gray-700 dark:text-gray-300">{{ store.currentFarm?.name || 'Prime Nest Poultry' }}</span>
         </p>
       </div>
@@ -16,7 +16,7 @@
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-450 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
           </span>
-          Live Monitoring
+          {{ $t('dashboard.live_monitoring') }}
         </div>
         <AgriButton
           variant="outline"
@@ -24,9 +24,7 @@
           icon="refresh"
           :loading="loading"
           @click="refreshAll"
-        >
-          Refresh
-        </AgriButton>
+        >{{ $t('dashboard.refresh') }}</AgriButton>
       </div>
     </div>
 
@@ -34,7 +32,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       <div class="animate-fade-in-up delay-50">
         <AgriStatCard
-          label="Active Batches"
+          :label="$t('dashboard.active_batches')"
           :value="activeBatchCount"
           icon="layers"
           icon-color-class="bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400"
@@ -46,7 +44,7 @@
 
       <div class="animate-fade-in-up delay-100">
         <AgriStatCard
-          label="Total Birds"
+          :label="$t('dashboard.total_birds')"
           :value="liveCountValue"
           icon="egg"
           icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
@@ -63,15 +61,15 @@
       <!-- Active Alerts Card (Pulsing critical warning if counts exist) -->
       <div class="animate-fade-in-up delay-150">
         <AgriStatCard
-          label="Active Alerts"
+          :label="$t('dashboard.active_alerts')"
           :value="unackAlerts.length"
           icon="notifications_active"
           :icon-color-class="unackAlerts.length > 0 ? 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400' : 'bg-gray-50 dark:bg-darkbg-100 text-gray-400 dark:text-gray-500'"
           :loading="loading"
-          :trend="unackAlerts.length > 0 ? 'Action required' : 'All clear'"
+          :trend="unackAlerts.length > 0 ? $t('dashboard.action_required') : $t('dashboard.all_clear')"
           :trend-direction="unackAlerts.length > 0 ? 'up' : 'neutral'"
           :trend-good="unackAlerts.length === 0"
-          :subtext="unackAlerts.length > 0 ? 'Unresolved exceptions detected' : 'All systems operating normally'"
+          :subtext="unackAlerts.length > 0 ? $t('dashboard.exceptions_detected') : $t('dashboard.systems_normal')"
           class="h-full"
           :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': unackAlerts.length > 0 }"
         />
@@ -79,13 +77,13 @@
 
       <div class="animate-fade-in-up delay-200">
         <AgriStatCard
-          label="Batch Age"
+          :label="$t('dashboard.batch_age')"
           :value="batchAgeDays !== null ? batchAgeDays : 0"
-          prefix="Day "
+          :prefix="$t('dashboard.day') + ' '"
           icon="calendar_today"
           icon-color-class="bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400"
           :loading="loading"
-          :subtext="store.activeBatch ? `Started ${formatDate(store.activeBatch.start_date)}` : 'No active batch'"
+          :subtext="store.activeBatch ? `Started ${formatDate(store.activeBatch.start_date)}` : $t('dashboard.no_active_batch')"
           class="h-full"
         />
       </div>
@@ -99,13 +97,13 @@
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">inbox</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Active Alerts Queue</h2>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('dashboard.active_alerts_queue') }}</h2>
             <AgriBadge
               v-if="unackAlerts.length > 0"
               variant="critical"
               pulse
             >
-              {{ unackAlerts.length }} Unresolved
+              {{ unackAlerts.length }} {{ $t('dashboard.unresolved') }}
             </AgriBadge>
           </div>
           <AgriButton
@@ -114,9 +112,7 @@
             size="sm"
             :loading="ackLoading"
             @click="acknowledgeAll"
-          >
-            Acknowledge All
-          </AgriButton>
+          >{{ $t('dashboard.ack_all') }}</AgriButton>
         </template>
 
         <!-- Skeleton while loading -->
@@ -130,7 +126,7 @@
             <span class="material-icons-outlined text-emerald-500 dark:text-emerald-400 text-2xl">check_circle</span>
           </div>
           <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">All clear</p>
-          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">No unacknowledged alerts. Daily metrics within normal limits.</p>
+          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $t('dashboard.no_alerts_desc') }}</p>
         </div>
 
         <!-- Alert rows -->
@@ -158,12 +154,10 @@
               variant="outline"
               size="sm"
               @click="acknowledgeAlert(alert.id)"
-            >
-              Ack
-            </AgriButton>
+            >{{ $t('dashboard.ack') }}</AgriButton>
           </div>
           <div v-if="unackAlerts.length > 8" class="px-5 py-3.5 text-xs text-gray-450 dark:text-gray-500 text-center font-semibold">
-            +{{ unackAlerts.length - 8 }} more alerts not shown in list
+            +{{ unackAlerts.length - 8 }} {{ $t('dashboard.more_alerts') }}
           </div>
         </div>
       </AgriCard>
@@ -176,7 +170,7 @@
           <template #header>
             <div class="flex items-center gap-2">
               <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">inventory_2</span>
-              <h2 class="text-sm font-bold text-gray-900 dark:text-white">Active Focus Cohort</h2>
+              <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('dashboard.active_cohort') }}</h2>
             </div>
           </template>
           
@@ -186,27 +180,27 @@
             </div>
           </template>
           <div v-else-if="!store.activeBatch" class="px-5 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
-            No active batch registered. <router-link to="/batches" class="text-primary-600 dark:text-primary-400 font-semibold">Create one →</router-link>
+            {{ $t('dashboard.no_batch_registered') }} <router-link to="/batches" class="text-primary-600 dark:text-primary-400 font-semibold">{{ $t('dashboard.create_one') }}</router-link>
           </div>
           <div v-else class="px-5 py-4.5 space-y-3.5 text-sm">
             <div class="flex justify-between items-center">
-              <span class="text-gray-500 dark:text-gray-400 font-medium">Batch ID</span>
+              <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $t('dashboard.batch_id') }}</span>
               <span class="font-bold text-gray-900 dark:text-white">#{{ store.activeBatch.id }}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-gray-500 dark:text-gray-400 font-medium">Breed Type</span>
+              <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $t('dashboard.breed_type') }}</span>
               <span class="font-bold text-gray-900 dark:text-white">{{ store.activeBatch.breed || '—' }}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-gray-500 dark:text-gray-400 font-medium">Original Flock Size</span>
+              <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $t('dashboard.original_flock_size') }}</span>
               <span class="font-bold text-gray-900 dark:text-white">{{ store.activeBatch.bird_count?.toLocaleString() }}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-gray-500 dark:text-gray-400 font-medium">Register Date</span>
+              <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $t('dashboard.register_date') }}</span>
               <span class="font-bold text-gray-900 dark:text-white">{{ formatDate(store.activeBatch.start_date) }}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-gray-500 dark:text-gray-400 font-medium">Status</span>
+              <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $t('dashboard.status') }}</span>
               <AgriBadge :variant="store.activeBatch.status === 'active' ? 'active' : 'info'" pulse>
                 {{ store.activeBatch.status }}
               </AgriBadge>
@@ -215,7 +209,7 @@
               to="/batches"
               class="flex items-center justify-center gap-1.5 w-full mt-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-bold text-gray-600 dark:text-gray-450 hover:bg-gray-50 dark:hover:bg-darkbg-100 transition duration-150"
             >
-              Manage Cohorts
+              {{ $t('dashboard.manage_cohorts') }}
               <span class="material-icons-outlined text-[14px]">arrow_forward</span>
             </router-link>
           </div>
@@ -223,7 +217,7 @@
 
         <!-- Quick Links -->
         <AgriCard class="animate-fade-in-up delay-350">
-          <p class="text-xs font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-3">Operations Quick Links</p>
+          <p class="text-xs font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-3">{{ $t('dashboard.quick_links') }}</p>
           <div class="grid grid-cols-2 gap-2">
             <router-link
               v-for="ql in quickLinks"
@@ -249,9 +243,9 @@
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">opacity</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Recent Feed & Water Logs</h2>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('dashboard.recent_logs') }}</h2>
           </div>
-          <router-link to="/readings" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition">View all</router-link>
+          <router-link to="/readings" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition">{{ $t('dashboard.view_all') }}</router-link>
         </template>
 
         <!-- Using AgriTable component -->
@@ -281,7 +275,7 @@
                 :variant="item.flagged_abnormal ? 'warning' : 'success'"
                 :icon="item.flagged_abnormal ? 'warning' : 'check'"
               >
-                {{ item.flagged_abnormal ? 'Flagged' : 'Normal' }}
+                {{ item.flagged_abnormal ? $t('dashboard.flagged') : $t('dashboard.normal') }}
               </AgriBadge>
             </span>
           </template>
@@ -293,9 +287,9 @@
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">layers</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">All Cohorts</h2>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('dashboard.all_cohorts') }}</h2>
           </div>
-          <router-link to="/batches" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition">Manage</router-link>
+          <router-link to="/batches" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition">{{ $t('dashboard.manage') }}</router-link>
         </template>
 
         <!-- Using AgriTable component -->
@@ -343,6 +337,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { store } from '../services/store'
 import { api } from '../services/api'
 import { useAnimations } from '../composables/useAnimations'
+import { useI18n } from 'vue-i18n'
 
 // Import premium design system components
 import AgriButton from '../components/ui/AgriButton.vue'
@@ -353,6 +348,7 @@ import AgriTable from '../components/ui/AgriTable.vue'
 import AgriSkeleton from '../components/ui/AgriSkeleton.vue'
 
 const { getStaggerDelayClass } = useAnimations()
+const { t } = useI18n()
 
 const loading = ref(true)
 const ackLoading = ref(false)
@@ -406,7 +402,7 @@ const populationTrendGood = computed(() => {
 })
 
 const populationSubtext = computed(() => {
-  if (!store.activeBatch) return 'No active batch'
+  if (!store.activeBatch) return $t('dashboard.no_active_batch')
   if (store.latestInferenceResult) {
     return `Expected: ${expectedChickenCount.value} · AI Visual: ${store.latestInferenceResult.bird_count_est}`
   }
@@ -443,19 +439,19 @@ const formatDateTime = (dtStr) => {
 }
 
 // ── Table Configuration ───────────────────────
-const readingsHeaders = [
-  { text: 'Date', value: 'date', align: 'left' },
-  { text: 'Feed (kg)', value: 'feed_kg', align: 'right' },
-  { text: 'Water (L)', value: 'water_litres', align: 'right' },
-  { text: 'Status', value: 'status', align: 'right' }
-]
+const readingsHeaders = computed(() => [
+  { text: t('dashboard.date'), value: 'date', align: 'left' },
+  { text: t('dashboard.feed_kg'), value: 'feed_kg', align: 'right' },
+  { text: t('dashboard.water_l'), value: 'water_litres', align: 'right' },
+  { text: t('dashboard.status'), value: 'status', align: 'right' }
+])
 
-const batchesHeaders = [
-  { text: 'ID / Breed', value: 'breed', align: 'left' },
-  { text: 'Birds', value: 'bird_count', align: 'right' },
-  { text: 'Age', value: 'age', align: 'right' },
-  { text: 'Status', value: 'status', align: 'right' }
-]
+const batchesHeaders = computed(() => [
+  { text: t('dashboard.id_breed'), value: 'breed', align: 'left' },
+  { text: t('dashboard.birds'), value: 'bird_count', align: 'right' },
+  { text: t('dashboard.age'), value: 'age', align: 'right' },
+  { text: t('dashboard.status'), value: 'status', align: 'right' }
+])
 
 // ── Alert helpers ──────────────────────────────
 const alertIcon = (type) => {
@@ -485,12 +481,12 @@ const alertIconColor = (type) => {
 }
 
 // ── Quick links ──────────────────────────────
-const quickLinks = [
-  { label: 'Log Feed & Water', path: '/readings', icon: 'opacity' },
-  { label: 'Log Growth', path: '/growth', icon: 'show_chart' },
-  { label: 'AI Monitor', path: '/inference', icon: 'videocam' },
-  { label: 'Medications', path: '/medications', icon: 'vaccines' },
-]
+const quickLinks = computed(() => [
+  { label: t('dashboard.log_feed_water'), path: '/readings', icon: 'opacity' },
+  { label: t('dashboard.log_growth'), path: '/growth', icon: 'show_chart' },
+  { label: t('dashboard.ai_monitor'), path: '/inference', icon: 'videocam' },
+  { label: t('dashboard.medications'), path: '/medications', icon: 'vaccines' },
+])
 
 // ── Data fetching ──────────────────────────────
 const fetchDashboardData = async () => {
