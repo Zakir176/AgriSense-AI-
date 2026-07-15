@@ -35,16 +35,16 @@
         <!-- Badge -->
         <div class="inline-flex items-center space-x-2 bg-white/8 backdrop-blur-md px-4 py-2 rounded-full border border-white/12 w-fit mb-8">
           <span class="material-icons-outlined text-primary-400 text-[15px]">psychology</span>
-          <span class="text-[11px] font-bold uppercase tracking-widest text-gray-300">Next-Gen AgriTech Platform</span>
+          <span class="text-[11px] font-bold uppercase tracking-widest text-gray-300">{{ $t('login.badge') }}</span>
         </div>
 
         <!-- Hero copy -->
         <h1 class="text-5xl font-black tracking-tight leading-[1.15] mb-5">
-          Precision Poultry<br/>
-          <span class="bg-gradient-to-r from-primary-300 via-green-300 to-emerald-300 bg-clip-text text-transparent inline-block">Driven by AI</span>
+          {{ $t('login.title_1') }}<br/>
+          <span class="bg-gradient-to-r from-primary-300 via-green-300 to-emerald-300 bg-clip-text text-transparent inline-block">{{ $t('login.title_2') }}</span>
         </h1>
         <p class="text-gray-400 text-[15px] leading-relaxed max-w-sm mb-10">
-          Real-time telemetry, YOLOv8 flock counting, bioacoustic health scoring, and predictive alerts — all in one platform.
+          {{ $t('login.hero_desc') }}
         </p>
 
         <!-- Feature cards -->
@@ -52,30 +52,30 @@
           <div class="group bg-white/5 hover:bg-white/9 backdrop-blur-sm border border-white/8 hover:border-white/18 rounded-2xl p-4 transition-all duration-300 cursor-default">
             <div class="flex items-center space-x-2 mb-2">
               <span class="material-icons-outlined text-primary-400 text-[18px]">videocam</span>
-              <div class="font-bold text-[13px]">YOLOv8 Telemetry</div>
+              <div class="font-bold text-[13px]">{{ $t('login.yolo') }}</div>
             </div>
-            <div class="text-[11px] text-gray-500 leading-relaxed">Real-time flock visual counts & movement analysis</div>
+            <div class="text-[11px] text-gray-500 leading-relaxed">{{ $t('login.yolo_desc') }}</div>
           </div>
           <div class="group bg-white/5 hover:bg-white/9 backdrop-blur-sm border border-white/8 hover:border-white/18 rounded-2xl p-4 transition-all duration-300 cursor-default">
             <div class="flex items-center space-x-2 mb-2">
               <span class="material-icons-outlined text-primary-400 text-[18px]">hearing</span>
-              <div class="font-bold text-[13px]">Bioacoustic Insights</div>
+              <div class="font-bold text-[13px]">{{ $t('login.bioacoustic') }}</div>
             </div>
-            <div class="text-[11px] text-gray-500 leading-relaxed">Early respiratory stress & audio anomaly detection</div>
+            <div class="text-[11px] text-gray-500 leading-relaxed">{{ $t('login.bioacoustic_desc') }}</div>
           </div>
           <div class="group bg-white/5 hover:bg-white/9 backdrop-blur-sm border border-white/8 hover:border-white/18 rounded-2xl p-4 transition-all duration-300 cursor-default">
             <div class="flex items-center space-x-2 mb-2">
               <span class="material-icons-outlined text-primary-400 text-[18px]">show_chart</span>
-              <div class="font-bold text-[13px]">Growth Analytics</div>
+              <div class="font-bold text-[13px]">{{ $t('login.growth') }}</div>
             </div>
-            <div class="text-[11px] text-gray-500 leading-relaxed">FCR tracking, weight benchmarks & batch comparisons</div>
+            <div class="text-[11px] text-gray-500 leading-relaxed">{{ $t('login.growth_desc') }}</div>
           </div>
           <div class="group bg-white/5 hover:bg-white/9 backdrop-blur-sm border border-white/8 hover:border-white/18 rounded-2xl p-4 transition-all duration-300 cursor-default">
             <div class="flex items-center space-x-2 mb-2">
               <span class="material-icons-outlined text-primary-400 text-[18px]">notifications_active</span>
-              <div class="font-bold text-[13px]">Smart Alerts</div>
+              <div class="font-bold text-[13px]">{{ $t('login.alerts') }}</div>
             </div>
-            <div class="text-[11px] text-gray-500 leading-relaxed">Rule-based & AI-driven health & environment alerts</div>
+            <div class="text-[11px] text-gray-500 leading-relaxed">{{ $t('login.alerts_desc') }}</div>
           </div>
         </div>
 
@@ -86,13 +86,13 @@
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
             </span>
-            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Live</span>
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ $t('login.live') }}</span>
           </div>
           <div class="flex items-center space-x-5 text-[11px] text-gray-300 font-mono">
-            <span>🐔 Flock: <b class="text-white">{{ stats.birdCount }}</b></span>
-            <span>📊 FCR: <b class="text-white">{{ stats.fcr }}</b></span>
-            <span>🌡 Shed: <b class="text-white">{{ stats.temp }}°C</b></span>
-            <span>💧 RH: <b class="text-white">{{ stats.rh }}%</b></span>
+            <span>🐔 {{ $t('login.flock') }}: <b class="text-white">{{ stats.birdCount }}</b></span>
+            <span>📊 {{ $t('login.fcr') }}: <b class="text-white">{{ stats.fcr }}</b></span>
+            <span>🌡 {{ $t('login.shed') }}: <b class="text-white">{{ stats.temp }}°C</b></span>
+            <span>💧 {{ $t('login.rh') }}: <b class="text-white">{{ stats.rh }}%</b></span>
           </div>
         </div>
       </div>
@@ -137,13 +137,13 @@
               </div>
               <div>
                 <div class="text-[17px] font-black tracking-wide text-gray-900 dark:text-white uppercase leading-none">AgriSense <span class="text-primary-600 dark:text-primary-400">AI</span></div>
-                <div class="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider uppercase leading-none mt-0.5">Intelligent Farm Management</div>
+                <div class="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider uppercase leading-none mt-0.5">{{ $t('login.subtitle') }}</div>
               </div>
             </div>
 
             <!-- Heading -->
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">{{ isRegistering ? 'Create account' : 'Welcome back' }}</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ isRegistering ? 'Register a new operator account' : 'Sign in to your operator dashboard' }}</p>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">{{ isRegistering ? $t('login.create_account') : $t('login.welcome_back') }}</h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ isRegistering ? $t('login.register_desc') : $t('login.signin_desc') }}</p>
 
             <!-- Error alert -->
             <Transition
@@ -178,8 +178,8 @@
               >
                 <span class="material-icons-outlined text-[18px] shrink-0 text-primary-500 dark:text-primary-400">tips_and_updates</span>
                 <div>
-                  <div class="font-semibold mb-0.5">Demo Account</div>
-                  <div>Use <code class="bg-primary-100 dark:bg-primary-900/40 px-1.5 py-0.5 rounded font-mono text-[11px] font-bold">operator</code> / <code class="bg-primary-100 dark:bg-primary-900/40 px-1.5 py-0.5 rounded font-mono text-[11px] font-bold">prime_nest_2026</code></div>
+                  <div class="font-semibold mb-0.5">{{ $t('login.demo_account') }}</div>
+                  <div>{{ $t('login.demo_desc') }} <code class="bg-primary-100 dark:bg-primary-900/40 px-1.5 py-0.5 rounded font-mono text-[11px] font-bold">operator</code> / <code class="bg-primary-100 dark:bg-primary-900/40 px-1.5 py-0.5 rounded font-mono text-[11px] font-bold">prime_nest_2026</code></div>
                 </div>
               </div>
             </Transition>
@@ -206,7 +206,7 @@
 
               <!-- Full Name (register only) -->
               <div v-if="isRegistering" class="space-y-1.5">
-                <label for="fullName" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Full Name</label>
+                <label for="fullName" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{{ $t('login.full_name') }}</label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
                     <span class="material-icons-outlined text-[18px]">badge</span>
@@ -218,14 +218,14 @@
                     type="text"
                     autocomplete="name"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700/80 placeholder-gray-350 dark:placeholder-gray-600 text-gray-900 dark:text-white rounded-xl bg-gray-50 dark:bg-[#111816] focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-sm"
-                    placeholder="Enter your full name"
+                    :placeholder="$t('login.full_name_ph')"
                   />
                 </div>
               </div>
 
               <!-- Username -->
               <div class="space-y-1.5">
-                <label for="username" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Username</label>
+                <label for="username" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{{ $t('login.username') }}</label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
                     <span class="material-icons-outlined text-[18px]">person_outline</span>
@@ -238,14 +238,14 @@
                     required
                     autocomplete="username"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700/80 placeholder-gray-350 dark:placeholder-gray-600 text-gray-900 dark:text-white rounded-xl bg-gray-50 dark:bg-[#111816] focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-sm"
-                    placeholder="Choose a username"
+                    :placeholder="$t('login.username_ph')"
                   />
                 </div>
               </div>
 
               <!-- Password -->
               <div class="space-y-1.5">
-                <label for="password" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Password</label>
+                <label for="password" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{{ $t('login.password') }}</label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
                     <span class="material-icons-outlined text-[18px]">lock_outline</span>
@@ -258,7 +258,7 @@
                     required
                     autocomplete="current-password"
                     class="block w-full pl-10 pr-11 py-3 border border-gray-200 dark:border-gray-700/80 placeholder-gray-350 dark:placeholder-gray-600 text-gray-900 dark:text-white rounded-xl bg-gray-50 dark:bg-[#111816] focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-sm"
-                    placeholder="Enter your password"
+                    :placeholder="$t('login.password_ph')"
                   />
                   <button
                     type="button"
@@ -279,14 +279,14 @@
                     v-model="rememberMe"
                     class="w-4 h-4 text-primary-600 border-gray-300 dark:border-gray-700 rounded focus:ring-primary-500/30 transition cursor-pointer"
                   />
-                  <span class="text-sm text-gray-600 dark:text-gray-400 select-none">Remember device</span>
+                  <span class="text-sm text-gray-600 dark:text-gray-400 select-none">{{ $t('login.remember_device') }}</span>
                 </label>
                 <button
                   type="button"
                   @click="triggerForgotTip"
                   class="text-sm font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 transition-colors focus:outline-none"
                 >
-                  Forgot password?
+                  {{ $t('login.forgot_pwd') }}
                 </button>
               </div>
 
@@ -301,17 +301,17 @@
               >
                 <template v-if="loginSuccess">
                   <span class="material-icons-outlined text-[18px] animate-bounce">check_circle</span>
-                  <span>Redirecting…</span>
+                  <span>{{ $t('login.redirecting') }}</span>
                 </template>
                 <template v-else-if="isLoading">
                   <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                   </svg>
-                  <span>{{ isRegistering ? 'Creating account…' : 'Authenticating…' }}</span>
+                  <span>{{ isRegistering ? $t('login.creating') : $t('login.authenticating') }}</span>
                 </template>
                 <template v-else>
-                  <span>{{ isRegistering ? 'Create Account' : 'Sign In' }}</span>
+                  <span>{{ isRegistering ? $t('login.btn_create') : $t('login.btn_signin') }}</span>
                   <span class="material-icons-outlined text-[17px]">{{ isRegistering ? 'person_add' : 'arrow_forward' }}</span>
                 </template>
               </button>
@@ -320,7 +320,7 @@
             <!-- Divider -->
             <div class="relative flex items-center py-5 mt-2">
               <div class="flex-grow border-t border-gray-100 dark:border-gray-800/60"></div>
-              <span class="flex-shrink-0 mx-4 text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-widest">Or continue with</span>
+              <span class="flex-shrink-0 mx-4 text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-widest">{{ $t('login.or_continue') }}</span>
               <div class="flex-grow border-t border-gray-100 dark:border-gray-800/60"></div>
             </div>
 
@@ -343,19 +343,19 @@
             <div class="mt-7 pt-5 border-t border-gray-100 dark:border-gray-800/60 text-center space-y-4">
               <!-- Mode toggle -->
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ isRegistering ? 'Already have an account?' : "Don't have an account?" }}
+                {{ isRegistering ? $t('login.already_have') : $t('login.dont_have') }}
                 <button
                   type="button"
                   @click="toggleMode"
                   class="font-bold text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 transition-colors focus:outline-none ml-1"
                 >
-                  {{ isRegistering ? 'Sign in' : 'Sign up' }}
+                  {{ isRegistering ? $t('login.sign_in_link') : $t('login.sign_up_link') }}
                 </button>
               </p>
 
               <!-- Demo credentials (login mode only) -->
               <div v-if="!isRegistering">
-                <p class="text-[11px] text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-wider font-semibold">Demo Account</p>
+                <p class="text-[11px] text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-wider font-semibold">{{ $t('login.demo_account') }}</p>
                 <div class="inline-flex items-center gap-2 bg-gray-50 dark:bg-[#111816] border border-gray-200/80 dark:border-gray-800/60 px-3.5 py-2 rounded-xl font-mono text-[11px] text-gray-600 dark:text-gray-400">
                   <span><b class="text-gray-800 dark:text-gray-200">operator</b></span>
                   <span class="text-gray-300 dark:text-gray-700">/</span>
