@@ -3,39 +3,37 @@
     <!-- Header Block -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Batches Overview</h1>
-        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Register new cohorts, monitor active flocks, and view historical operations.</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('batches.title') }}</h1>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{{ $t('batches.subtitle') }}</p>
       </div>
       <AgriButton 
         id="btn-register-batch"
         variant="primary"
         icon="add"
         @click="showCreateModal = true"
-      >
-        Register Batch
-      </AgriButton>
+      >{{ $t('batches.register_batch') }}</AgriButton>
     </div>
 
     <!-- Active Batches Grid -->
     <div class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm transition-colors duration-200 animate-fade-in-up delay-100">
       <div class="px-6 py-4 border-b border-gray-150 dark:border-gray-800 flex items-center justify-between">
-        <h2 class="text-sm font-bold text-gray-900 dark:text-white">Active Cohorts</h2>
+        <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('batches.active_cohorts') }}</h2>
         <AgriBadge variant="active" pulse>
-          {{ activeBatches.length }} Running
+          {{ activeBatches.length }} {{ $t('batches.running') }}
         </AgriBadge>
       </div>
 
       <!-- Loading State -->
       <div v-if="isLoading" class="p-12 text-center text-gray-450 dark:text-gray-500">
         <span class="material-icons-outlined text-3xl animate-spin block mb-2 text-primary-500">sync</span>
-        <span class="font-semibold text-sm">Retrieving cohorts...</span>
+        <span class="font-semibold text-sm">{{ $t('batches.retrieving') }}</span>
       </div>
 
       <!-- Empty State -->
       <div v-else-if="activeBatches.length === 0" class="text-center py-16 text-gray-450 dark:text-gray-500 px-6">
         <span class="material-icons-outlined text-4xl block mb-2 text-gray-300 dark:text-gray-700">layers</span>
-        <p class="text-base font-bold text-gray-700 dark:text-gray-300">No active cohorts registered</p>
-        <p class="text-xs mt-1">Register a new batch of birds to start logging feed, water, and growth metrics.</p>
+        <p class="text-base font-bold text-gray-700 dark:text-gray-300">{{ $t('batches.no_active') }}</p>
+        <p class="text-xs mt-1">{{ $t('batches.register_new_desc') }}</p>
       </div>
 
       <!-- Batch Cards List -->
@@ -53,9 +51,7 @@
                 <h3 class="text-base font-bold text-gray-950 dark:text-white truncate">
                   {{ batch.breed }}
                 </h3>
-                <AgriBadge variant="active" pulse>
-                  Active
-                </AgriBadge>
+                <AgriBadge variant="active" pulse>{{ $t('batches.active') }}</AgriBadge>
                 <AgriBadge v-if="store.activeBatch?.id === batch.id" variant="success" icon="center_focus_strong">
                   Focus
                 </AgriBadge>
@@ -63,15 +59,15 @@
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1 text-sm text-gray-500 dark:text-gray-450">
                 <div class="flex items-center space-x-1.5 font-medium">
                   <span class="material-icons-outlined text-base text-gray-400">people</span>
-                  <span>Flock: <strong class="text-gray-800 dark:text-gray-250 font-bold">{{ batch.bird_count.toLocaleString() }} birds</strong></span>
+                  <span>{{ $t('batches.flock') }} <strong class="text-gray-800 dark:text-gray-250 font-bold">{{ batch.bird_count.toLocaleString() }} {{ $t('batches.birds') }}</strong></span>
                 </div>
                 <div class="flex items-center space-x-1.5 font-medium">
                   <span class="material-icons-outlined text-base text-gray-400">date_range</span>
-                  <span>Started: <strong class="text-gray-800 dark:text-gray-250 font-bold">{{ formatDate(batch.start_date) }}</strong></span>
+                  <span>{{ $t('batches.started') }} <strong class="text-gray-800 dark:text-gray-250 font-bold">{{ formatDate(batch.start_date) }}</strong></span>
                 </div>
                 <div class="flex items-center space-x-1.5 font-medium col-span-2 sm:col-span-1">
                   <span class="material-icons-outlined text-base text-gray-400">cake</span>
-                  <span>Age: <strong class="text-gray-800 dark:text-gray-250 font-bold">{{ calculateDays(batch.start_date) }} days</strong></span>
+                  <span>{{ $t('batches.age') }} <strong class="text-gray-800 dark:text-gray-250 font-bold">{{ calculateDays(batch.start_date) }} {{ $t('batches.days') }}</strong></span>
                 </div>
               </div>
             </div>
@@ -84,24 +80,20 @@
                 size="sm"
                 :icon="expandedBatchId === batch.id ? 'expand_less' : 'expand_more'"
                 @click="toggleExpand(batch.id)"
-              >
-                Details
-              </AgriButton>
+              >{{ $t('batches.details') }}</AgriButton>
               <AgriButton 
                 variant="outline"
                 size="sm"
                 icon="edit"
                 @click="openEditModal(batch)"
-              >
-                Edit
-              </AgriButton>
+              >{{ $t('batches.edit') }}</AgriButton>
               <AgriButton 
                 :variant="store.activeBatch?.id === batch.id ? 'primary' : 'outline'"
                 size="sm"
                 icon="center_focus_strong"
                 @click="selectActiveBatch(batch)"
               >
-                {{ store.activeBatch?.id === batch.id ? 'Active Focus' : 'Focus' }}
+                {{ store.activeBatch?.id === batch.id ? $t('batches.active_focus') : $t('batches.focus') }}
               </AgriButton>
               <AgriButton 
                 variant="ghost"
@@ -109,9 +101,7 @@
                 icon="archive"
                 class="text-red-500 hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20"
                 @click="archiveBatch(batch.id)"
-              >
-                Archive
-              </AgriButton>
+              >{{ $t('batches.archive') }}</AgriButton>
             </div>
           </div>
 
@@ -123,20 +113,20 @@
             >
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold text-gray-600 dark:text-gray-450">
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Telemetry Status</p>
-                  <p class="text-sm font-bold text-gray-800 dark:text-gray-200">Normal Range</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('batches.telemetry_status') }}</p>
+                  <p class="text-sm font-bold text-gray-800 dark:text-gray-200">{{ $t('batches.normal_range') }}</p>
                 </div>
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Mortality Rate</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('batches.mortality_rate') }}</p>
                   <p class="text-sm font-bold text-gray-800 dark:text-gray-200">0.0% (Stable)</p>
                 </div>
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Last Log Date</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('batches.last_log_date') }}</p>
                   <p class="text-sm font-bold text-gray-800 dark:text-gray-200">{{ formatDate(batch.start_date) }}</p>
                 </div>
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Current Feed Type</p>
-                  <p class="text-sm font-bold text-gray-800 dark:text-gray-200">Broiler Starter</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('batches.current_feed_type') }}</p>
+                  <p class="text-sm font-bold text-gray-800 dark:text-gray-200">{{ $t('batches.broiler_starter') }}</p>
                 </div>
               </div>
             </div>
@@ -148,14 +138,14 @@
     <!-- Historical / Archived Batches Table -->
     <div class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm transition-colors duration-200 animate-fade-in-up delay-200">
       <div class="px-6 py-4 border-b border-gray-150 dark:border-gray-800 flex items-center justify-between">
-        <h2 class="text-sm font-bold text-gray-900 dark:text-white">Archived / Historical</h2>
+        <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('batches.archived_historical') }}</h2>
         <AgriBadge variant="info">
-          {{ archivedBatches.length }} Total
+          {{ archivedBatches.length }} {{ $t('batches.total') }}
         </AgriBadge>
       </div>
 
       <div v-if="archivedBatches.length === 0" class="text-center py-12 text-gray-450 dark:text-gray-500 font-semibold text-xs px-6">
-        No archived cohorts. Active cohorts will appear here once closed.
+        {{ $t('batches.no_archived') }}
       </div>
 
       <div v-else class="divide-y divide-gray-150 dark:divide-gray-800">
@@ -165,19 +155,17 @@
               <h3 class="text-base font-bold text-gray-500 dark:text-gray-400 line-through">
                 {{ batch.breed }}
               </h3>
-              <AgriBadge variant="info">
-                Closed
-              </AgriBadge>
+              <AgriBadge variant="info">{{ $t('batches.closed') }}</AgriBadge>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1 text-sm text-gray-500 dark:text-gray-450">
-              <div>Flock: <strong class="text-gray-700 dark:text-gray-300">{{ batch.bird_count.toLocaleString() }} birds</strong></div>
-              <div>Started: <strong class="text-gray-700 dark:text-gray-300">{{ formatDate(batch.start_date) }}</strong></div>
+              <div>{{ $t('batches.flock') }} <strong class="text-gray-700 dark:text-gray-300">{{ batch.bird_count.toLocaleString() }} {{ $t('batches.birds') }}</strong></div>
+              <div>{{ $t('batches.started') }} <strong class="text-gray-700 dark:text-gray-300">{{ formatDate(batch.start_date) }}</strong></div>
               <div 
                 class="text-xs text-status-danger hover:text-red-500 hover:underline cursor-pointer pt-0.5 font-bold flex items-center gap-1" 
                 @click="deleteBatchPermanently(batch.id)"
               >
                 <span class="material-icons-outlined text-xs">delete</span>
-                <span>Delete Permanently</span>
+                <span>{{ $t('batches.delete_perm') }}</span>
               </div>
             </div>
           </div>
@@ -188,15 +176,15 @@
     <!-- Register Batch Dialog Modal (Integrated AgriModal) -->
     <AgriModal
       :show="showCreateModal"
-      :title="editingBatchId ? 'Edit Cohort Batch' : 'Register Cohort Batch'"
+      :title="editingBatchId ? $t('batches.edit_cohort') : $t('batches.register_cohort')"
       @close="closeModal"
     >
       <form @submit.prevent="submitBatch" class="space-y-4">
         <AgriInput
           v-model="newBatch.breed"
-          label="Breed / Type"
+          :label="$t('batches.breed_type')"
           required
-          placeholder="e.g. Cobb 500 Broilers"
+          :placeholder="$t('batches.breed_placeholder')"
           icon="layers"
         />
 
@@ -204,16 +192,16 @@
           <AgriInput
             v-model.number="newBatch.bird_count"
             type="number"
-            label="Bird Count"
+            :label="$t('batches.initial_bird_count')"
             required
             min="1"
-            placeholder="1000"
+            :placeholder="$t('batches.initial_count_placeholder')"
             icon="people"
           />
           <AgriInput
             v-model="newBatch.start_date"
             type="date"
-            label="Start Date"
+            :label="$t('batches.start_date')"
             required
             icon="calendar_today"
           />
@@ -229,16 +217,14 @@
             variant="outline"
             class="flex-1"
             @click="closeModal" 
-          >
-            Cancel
-          </AgriButton>
+          >{{ $t('batches.cancel') }}</AgriButton>
           <AgriButton 
             type="submit" 
             variant="primary"
             class="flex-1"
             :loading="isSubmitting"
           >
-            {{ editingBatchId ? 'Save Changes' : 'Register' }}
+            {{ editingBatchId ? $t('batches.save_changes') : $t('batches.register') }}
           </AgriButton>
         </div>
       </form>

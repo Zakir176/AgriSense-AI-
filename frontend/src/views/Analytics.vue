@@ -4,11 +4,11 @@
     <!-- ─── Header ─── -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Analytics & Insights</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('analytics.title') }}</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
           Cross-batch efficiency analysis, dynamic Feed Conversion Ratio (FCR), and rule-based diagnostic suggestions for
           <span v-if="activeBatchObj" class="font-bold text-gray-700 dark:text-gray-300">Batch #{{ activeBatchObj.id }} · {{ activeBatchObj.breed }}</span>
-          <span v-else class="italic text-gray-450">no active batch</span>
+          <span v-else class="italic text-gray-450">{{ $t('analytics.no_active') }}</span>
         </p>
       </div>
       <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -17,7 +17,7 @@
           <AgriSelect
             v-model="selectedBatchId"
             :options="batchOptions"
-            placeholder="Select cohort batch"
+            :placeholder="$t('analytics.select_batch')"
             @change="onBatchChange"
           />
         </div>
@@ -27,8 +27,8 @@
     <!-- ─── No batch selected state ─── -->
     <div v-if="!selectedBatchId" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-16 text-center animate-fade-in-up delay-100">
       <span class="material-icons-outlined text-4xl text-gray-300 dark:text-gray-700 block mb-3">analytics</span>
-      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">Select a batch above to inspect cross-cohort analytics.</p>
-      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Computes biomass efficiency ratios and feed wastage metrics.</p>
+      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">{{ $t('analytics.no_batch_desc') }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $t('analytics.computes_desc') }}</p>
     </div>
 
     <template v-else>
@@ -57,7 +57,7 @@
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
           <!-- Cumulative FCR -->
           <AgriStatCard
-            label="Cumulative FCR"
+            :label="$t('analytics.cum_fcr')"
             :value="computedFCR !== null ? computedFCR : 0"
             :decimals="2"
             icon="bar_chart"
@@ -65,56 +65,56 @@
             :trend="getFCRLabel(computedFCR)"
             trend-direction="neutral"
             :trend-good="computedFCR !== null && computedFCR >= 1.5 && computedFCR <= 1.75"
-            subtext="Target standard FCR: 1.5 - 1.7"
+            :subtext="$t('analytics.target_fcr')"
             class="animate-fade-in-up delay-100"
           />
 
           <!-- Total Biomass Gain -->
           <AgriStatCard
-            label="Total Biomass Gain"
+            :label="$t('analytics.biomass_gain')"
             :value="biomassGainKg !== null ? biomassGainKg / 1000 : 0"
             :decimals="1"
             suffix=" t"
             icon="scale"
             icon-color-class="bg-blue-50 dark:bg-blue-950/40 text-blue-500"
-            subtext="Based on latest weight sample"
+            :subtext="$t('analytics.based_on_latest')"
             class="animate-fade-in-up delay-150"
           />
 
           <!-- Total Feed Used -->
           <AgriStatCard
-            label="Total Feed Used"
+            :label="$t('analytics.total_feed')"
             :value="totalFeedKg / 1000"
             :decimals="1"
             suffix=" t"
             icon="restaurant"
             icon-color-class="bg-amber-50 dark:bg-amber-950/40 text-amber-500"
-            :subtext="`Summed: ${totalFeedKg.toLocaleString()} kg`"
+            :subtext="`\${$t('analytics.summed')} ${totalFeedKg.toLocaleString()} kg`"
             class="animate-fade-in-up delay-200"
           />
 
           <!-- Water-to-Feed Ratio -->
           <AgriStatCard
-            label="Water-to-Feed Ratio"
+            :label="$t('analytics.water_feed_ratio')"
             :value="waterFeedRatio !== null ? waterFeedRatio : 0"
             :decimals="1"
             suffix="x"
             icon="water_drop"
             icon-color-class="bg-cyan-50 dark:bg-cyan-950/40 text-cyan-500"
-            subtext="Standard: 1.8x - 2.2x ratio"
+            :subtext="$t('analytics.standard_ratio')"
             class="animate-fade-in-up delay-250"
           />
 
           <!-- Total Mortality -->
           <AgriStatCard
-            label="Total Mortality"
+            :label="$t('analytics.total_mortality')"
             :value="totalMortality"
             icon="warning"
             icon-color-class="bg-red-50 dark:bg-red-950/40 text-red-550 dark:text-red-400"
-            :trend="`${mortalityRate.toFixed(1)}% Loss`"
+            :trend="`\${mortalityRate.toFixed(1)}% \${$t('analytics.loss')}`"
             trend-direction="neutral"
             :trend-good="mortalityRate <= 5"
-            subtext="Allowable limit: <= 5%"
+            :subtext="$t('analytics.allowable_limit')"
             class="animate-fade-in-up delay-300"
           />
         </div>
@@ -124,12 +124,12 @@
           <template #header>
             <div class="flex items-center gap-2">
               <span class="material-icons-outlined text-primary-600 dark:text-primary-400 font-bold">psychology</span>
-              <h2 class="text-sm font-bold text-gray-900 dark:text-white">Management & Diagnostic Insights</h2>
+              <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('analytics.management_insights') }}</h2>
             </div>
           </template>
 
           <div v-if="suggestions.length === 0" class="text-xs text-gray-400 dark:text-gray-500 py-3">
-            Log feed, water, and growth samples to enable diagnostic recommendations.
+            {{ $t('analytics.log_feed_desc') }}
           </div>
           <div v-else class="space-y-3">
             <div
