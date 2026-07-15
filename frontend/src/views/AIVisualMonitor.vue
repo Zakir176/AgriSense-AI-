@@ -5,11 +5,11 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
       <div>
         <div class="flex items-center space-x-2">
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">AI Visual Monitoring</h1>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('ai.title') }}</h1>
           <AgriBadge variant="info" icon="psychology">YOLOv8 CV Engine</AgriBadge>
         </div>
         <p class="mt-0.5 text-sm text-gray-550 dark:text-gray-400">
-          Upload poultry house footage to analyze density distribution, estimate counts, and profile movement anomalies.
+          {{ $t('ai.subtitle') }}
         </p>
       </div>
       <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -18,7 +18,7 @@
           <AgriSelect
             v-model="selectedBatchId"
             :options="batchOptions"
-            placeholder="Select cohort batch"
+            :placeholder="$t('ai.select_batch')"
             @change="onBatchChange"
           />
         </div>
@@ -29,15 +29,15 @@
     <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-xl p-4 flex items-start space-x-3 text-blue-700 dark:text-blue-300 text-xs font-semibold animate-fade-in-up delay-75">
       <span class="material-icons-outlined text-blue-600 dark:text-blue-400 shrink-0 mt-0.5">info</span>
       <div>
-        <span class="font-bold">Prototype Telemetry:</span> This computer vision module processes pre-recorded footage uploads. Real-time RTSP streams are scheduled for farm integration in Phase 2.
+        <span class="font-bold">{{ $t('ai.prototype_telemetry') }}</span> {{ $t('ai.prototype_desc') }}
       </div>
     </div>
 
     <!-- ─── No batch selected state ─── -->
     <div v-if="!selectedBatchId" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-16 text-center animate-fade-in-up delay-100">
       <span class="material-icons-outlined text-4xl text-gray-300 dark:text-gray-700 block mb-3">photo_camera</span>
-      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">Select a batch above to start AI footage profiling.</p>
-      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Footage logs and neural network inferences are archived per batch.</p>
+      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">{{ $t('ai.select_view') }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $t('ai.archived_desc') }}</p>
     </div>
 
     <template v-else>
@@ -47,7 +47,7 @@
         <div class="space-y-6 lg:col-span-1 animate-fade-in-up delay-100">
           <!-- Upload Box -->
           <AgriCard>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white mb-4">Analyze New Footage</h2>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white mb-4">{{ $t('ai.analyze_new') }}</h2>
 
             <div
               @dragover.prevent="isDragging = true"
@@ -67,8 +67,8 @@
                 @change="handleFileSelect"
               />
               <span class="material-icons-outlined text-3xl text-gray-400 group-hover:text-primary-500 transition">cloud_upload</span>
-              <p class="text-xs font-bold text-gray-700 dark:text-gray-300">Drag & drop video file</p>
-              <p class="text-[10px] text-gray-400 dark:text-gray-500">or click to browse local files (MP4, WebM)</p>
+              <p class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('ai.drag_drop') }}</p>
+              <p class="text-[10px] text-gray-400 dark:text-gray-500">{{ $t('ai.or_click') }}</p>
             </div>
 
             <!-- Upload progress / processing overlay -->
@@ -76,8 +76,8 @@
               <div class="flex items-center gap-3">
                 <span class="material-icons-outlined text-lg text-primary-650 dark:text-primary-400 animate-spin">sync</span>
                 <div class="text-xs">
-                  <p class="font-bold text-gray-800 dark:text-gray-200">Executing AI CV Inference</p>
-                  <p class="text-gray-500 dark:text-gray-400 text-[10px]">Processing frames with YOLOv8 neural net…</p>
+                  <p class="font-bold text-gray-800 dark:text-gray-200">{{ $t('ai.executing_ai') }}</p>
+                  <p class="text-gray-500 dark:text-gray-400 text-[10px]">{{ $t('ai.processing') }}</p>
                 </div>
               </div>
               <!-- Animated Progress Bar -->
@@ -100,7 +100,7 @@
           <!-- History Catalog -->
           <AgriCard padding="none">
             <template #header>
-              <h2 class="text-sm font-bold text-gray-900 dark:text-white">Footage History</h2>
+              <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('ai.history') }}</h2>
             </template>
 
             <div v-if="listLoading" class="p-4 space-y-2.5">
@@ -109,7 +109,7 @@
 
             <div v-else-if="clips.length === 0" class="py-12 text-center text-xs text-gray-400 dark:text-gray-500 px-6">
               <span class="material-icons-outlined text-2xl mb-1 text-gray-300 dark:text-gray-700 block">movie</span>
-              No clips uploaded yet.
+              {{ $t('ai.no_clips') }}
             </div>
 
             <div v-else class="divide-y divide-gray-100 dark:divide-gray-850 max-h-[300px] overflow-y-auto">
@@ -125,8 +125,8 @@
                   <p class="text-[10px] text-gray-400 dark:text-gray-500">{{ formatDateTime(c.uploaded_at) }}</p>
                 </div>
                 <div class="text-right shrink-0">
-                  <p class="font-bold text-gray-700 dark:text-gray-300">{{ c.inference_result?.bird_count_est }} birds</p>
-                  <p class="text-[9px] text-gray-450 dark:text-gray-500">Score: {{ c.inference_result?.movement_score }}</p>
+                  <p class="font-bold text-gray-700 dark:text-gray-300">{{ c.inference_result?.bird_count_est }} {{ $t('ai.birds') }}</p>
+                  <p class="text-[9px] text-gray-450 dark:text-gray-500">{{ $t('ai.score') }} {{ c.inference_result?.movement_score }}</p>
                 </div>
               </button>
             </div>
@@ -138,9 +138,9 @@
 
           <div v-if="!selectedClip" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-16 text-center flex flex-col items-center justify-center h-full min-h-[400px]">
             <span class="material-icons-outlined text-5xl text-gray-300 dark:text-gray-700 mb-3 animate-pulse">analytics</span>
-            <h3 class="font-bold text-gray-700 dark:text-gray-300 text-sm">Awaiting footage selection</h3>
+            <h3 class="font-bold text-gray-700 dark:text-gray-300 text-sm">{{ $t('ai.awaiting_selection') }}</h3>
             <p class="text-xs text-gray-450 dark:text-gray-500 mt-1 max-w-xs mx-auto">
-              Upload a new poultry video clip or select a historic record from the sidebar to inspect AI predictions.
+              {{ $t('ai.awaiting_desc') }}
             </p>
           </div>
 
@@ -169,7 +169,7 @@
                   <div class="absolute inset-0 pointer-events-none opacity-30 mix-blend-screen bg-green-500/5 flex items-center justify-center border border-emerald-500/20">
                     <div class="absolute top-4 left-4 bg-emerald-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-lg shadow-sm flex items-center gap-1 uppercase tracking-wider">
                       <span class="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping"></span>
-                      YOLOv8 Active
+                      {{ $t('ai.yolov8_active') }}
                     </div>
                   </div>
                 </div>
@@ -194,8 +194,8 @@
                     <div class="space-y-1">
                       <p class="font-bold uppercase tracking-wider text-[10px]">
                         {{ selectedClip.inference_result.discrepancy_note.includes('missing')
-                          ? (selectedClip.inference_result.discrepancy_note.includes('mortality') ? 'Critical Anomaly: Suspected Mortality' : 'Warning: Population Discrepancy (Undocumented Loss)')
-                          : 'Population Status: Verified' }}
+                          ? (selectedClip.inference_result.discrepancy_note.includes('mortality') ? $t('ai.crit_mortality') : 'Warning: Population Discrepancy (Undocumented Loss)')
+                          : $t('ai.pop_verified') }}
                       </p>
                       <p class="text-xs leading-relaxed font-semibold">
                         {{ selectedClip.inference_result.discrepancy_note }}
@@ -211,18 +211,18 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                   <!-- Count Estimate (Animated Number Countup) -->
                   <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-150 dark:border-gray-850 rounded-xl p-4 space-y-1">
-                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Estimated Bird Count</p>
+                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('ai.estimated_count') }}</p>
                     <div class="flex items-baseline gap-1.5">
                       <span class="text-3xl font-black text-gray-900 dark:text-white tabular-nums">{{ animatedBirdCount }}</span>
-                      <span class="text-[10px] text-gray-450 dark:text-gray-500 font-semibold">in-frame density</span>
+                      <span class="text-[10px] text-gray-450 dark:text-gray-500 font-semibold">{{ $t('ai.in_frame_density') }}</span>
                     </div>
-                    <p class="text-[10px] text-gray-500 dark:text-gray-450 mt-1">Normal cluster profile detected</p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-450 mt-1">{{ $t('ai.normal_cluster') }}</p>
                   </div>
 
                   <!-- Activity level score (Circular SVG Gauge) -->
                   <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-150 dark:border-gray-850 rounded-xl p-4 flex items-center justify-between gap-2">
                     <div class="space-y-1.5">
-                      <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Activity Index</p>
+                      <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('ai.activity_index') }}</p>
                       <div class="flex items-baseline gap-0.5">
                         <span class="text-2xl font-black text-gray-900 dark:text-white tabular-nums">{{ selectedClip.inference_result?.movement_score }}</span>
                         <span class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold">/ 10</span>
@@ -257,18 +257,18 @@
                   <!-- Low Activity windows -->
                   <div class="bg-gray-50 dark:bg-darkbg-100 border border-gray-150 dark:border-gray-850 rounded-xl p-4 space-y-1 flex flex-col justify-between">
                     <div>
-                      <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Anomalous Activity</p>
+                      <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('ai.anomalous_activity') }}</p>
                       <div class="text-xs font-bold text-gray-900 dark:text-white mt-1.5 flex items-center gap-1.5">
                         <span class="material-icons-outlined text-[16px] leading-none" :class="selectedClip.inference_result?.low_activity_windows?.length > 0 ? 'text-status-warning' : 'text-primary-500'">
                           {{ selectedClip.inference_result?.low_activity_windows?.length > 0 ? 'warning' : 'check_circle' }}
                         </span>
-                        {{ selectedClip.inference_result?.low_activity_windows?.length > 0 ? 'Lethargy Flagged' : 'No Anomaly' }}
+                        {{ selectedClip.inference_result?.low_activity_windows?.length > 0 ? $t('ai.lethargy_flagged') : $t('ai.no_anomaly') }}
                       </div>
                     </div>
                     <p class="text-[10px] text-gray-450 dark:text-gray-500 leading-normal">
                       {{ selectedClip.inference_result?.low_activity_windows?.length > 0
-                        ? 'Detected slow movement segments.'
-                        : 'Uniform cohort movement observed.' }}
+                        ? $t('ai.detected_slow')
+                        : $t('ai.uniform_cohort') }}
                     </p>
                   </div>
                 </div>
@@ -279,7 +279,7 @@
             <div v-if="selectedClip.inference_result?.low_activity_windows?.length > 0" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm space-y-3 animate-fade-in-up">
               <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 select-none">
                 <span class="material-icons-outlined text-[16px] text-status-warning">warning</span>
-                Flagged Anomaly Details
+                {{ $t('ai.flagged_details') }}
               </h4>
               <div class="space-y-4 pl-2">
                 <div
@@ -294,10 +294,10 @@
                     <span class="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/45 border border-amber-100 dark:border-amber-900/30 px-2 py-0.5 rounded-md tabular-nums">
                       {{ w.start_sec }}s - {{ w.end_sec }}s
                     </span>
-                    <span class="text-xs text-amber-800 dark:text-amber-300 font-bold">Lethargic Cluster Velocity</span>
+                    <span class="text-xs text-amber-800 dark:text-amber-300 font-bold">{{ $t('ai.lethargic_cluster') }}</span>
                   </div>
                   <p class="text-xs text-gray-650 dark:text-gray-350">
-                    Reason: {{ w.reason }}
+                    {{ $t('ai.reason') }} {{ w.reason }}
                   </p>
                 </div>
               </div>
@@ -310,7 +310,7 @@
                 <div class="flex items-center justify-between w-full">
                   <div class="flex items-center gap-2">
                     <span class="material-icons-outlined text-primary-650 dark:text-primary-400">sensors</span>
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">Spatial Telemetry & Density Map</h3>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('ai.spatial_map') }}</h3>
                   </div>
                   <!-- Mode Toggles -->
                   <div class="flex items-center space-x-2">
@@ -320,18 +320,14 @@
                       :class="!heatmapMode 
                         ? 'bg-primary-50 dark:bg-primary-950/40 border-primary-300 text-primary-700 dark:text-primary-400 shadow-sm font-black' 
                         : 'bg-white dark:bg-darkbg-100 border-gray-250 dark:border-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-600'"
-                    >
-                      Vector Dots
-                    </button>
+                    >{{ $t('ai.vector_dots') }}</button>
                     <button 
                       @click="heatmapMode = true"
                       class="px-2.5 py-1 rounded-lg text-2xs font-extrabold border uppercase tracking-wider transition-colors cursor-pointer"
                       :class="heatmapMode 
                         ? 'bg-primary-50 dark:bg-primary-950/40 border-primary-300 text-primary-700 dark:text-primary-400 shadow-sm font-black' 
                         : 'bg-white dark:bg-darkbg-100 border-gray-250 dark:border-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-600'"
-                    >
-                      Thermal Density
-                    </button>
+                    >{{ $t('ai.thermal_density') }}</button>
                   </div>
                 </div>
               </template>
@@ -340,29 +336,29 @@
                 <!-- Map Header Statistics -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-gray-50 dark:bg-darkbg-100 border border-gray-150 dark:border-gray-850">
                   <div>
-                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Spatial Dispersion</p>
+                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('ai.spatial_dispersion') }}</p>
                     <p class="text-base font-black text-gray-800 dark:text-white tabular-nums">
-                      {{ selectedClip.inference_result.spatial_dispersion_index || '38.4' }} <span class="text-2xs font-bold text-gray-400 dark:text-gray-500">px</span>
+                      {{ selectedClip.inference_result.spatial_dispersion_index || '38.4' }} <span class="text-2xs font-bold text-gray-400 dark:text-gray-500">{{ $t('ai.px') }}</span>
                     </p>
                   </div>
                   <div>
-                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Clustering Index</p>
+                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('ai.clustering_index') }}</p>
                     <p class="text-base font-black text-gray-800 dark:text-white tabular-nums">
                       {{ selectedClip.inference_result.clustering_density_pct || '15.0' }}%
                     </p>
                   </div>
                   <div>
-                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Clustering Warning</p>
+                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('ai.clustering_warning') }}</p>
                     <p class="text-xs font-extrabold mt-1.5 flex items-center gap-1.5 leading-none" 
                        :class="(selectedClip.inference_result.clustering_density_pct || 15) > 55 ? 'text-red-550' : 'text-primary-600'">
                       <span class="h-2 w-2 rounded-full inline-block" :class="(selectedClip.inference_result.clustering_density_pct || 15) > 55 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'"></span>
-                      {{ (selectedClip.inference_result.clustering_density_pct || 15) > 55 ? 'Critical (Huddling)' : 'Healthy Dispersion' }}
+                      {{ (selectedClip.inference_result.clustering_density_pct || 15) > 55 ? 'Critical (Huddling)' : $t('ai.healthy_dispersion') }}
                     </p>
                   </div>
                   <div class="text-right">
-                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Tracked Nodes</p>
+                    <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('ai.tracked_nodes') }}</p>
                     <p class="text-base font-black text-gray-800 dark:text-white tabular-nums">
-                      {{ selectedClip.inference_result.tracked_birds.length }} <span class="text-2xs font-bold text-gray-400 dark:text-gray-500">nodes</span>
+                      {{ selectedClip.inference_result.tracked_birds.length }} <span class="text-2xs font-bold text-gray-400 dark:text-gray-500">{{ $t('ai.nodes') }}</span>
                     </p>
                   </div>
                 </div>
@@ -382,16 +378,16 @@
                     class="absolute bg-gray-900/95 text-white border border-gray-800 text-[10px] rounded-lg p-2 shadow-xl backdrop-blur-sm pointer-events-none z-20 space-y-0.5"
                     :style="{ left: hoveredBirdScreenX + 'px', top: hoveredBirdScreenY + 'px', transform: 'translate(-50%, -120%)' }"
                   >
-                    <p class="font-extrabold text-primary-400 uppercase tracking-wider">Bird Node #{{ hoveredBird.track_id }}</p>
-                    <p class="font-semibold text-gray-300">Status: {{ hoveredBird.status === 'inactive' ? `Lethargic (${hoveredBird.inactivity_duration_sec}s)` : 'Active' }}</p>
-                    <p class="text-2xs text-gray-500">Coordinates: {{ hoveredBird.x }}, {{ hoveredBird.y }}</p>
+                    <p class="font-extrabold text-primary-400 uppercase tracking-wider">{{ $t('ai.node_id') }}{{ hoveredBird.track_id }}</p>
+                    <p class="font-semibold text-gray-300">{{ $t('ai.status') }} {{ hoveredBird.status === 'inactive' ? `Lethargic (${hoveredBird.inactivity_duration_sec}s)` : 'Active' }}</p>
+                    <p class="text-2xs text-gray-500">{{ $t('ai.coords') }} {{ hoveredBird.x }}, {{ hoveredBird.y }}</p>
                   </div>
                 </div>
 
                 <!-- Interactive bird node selector grid -->
                 <div class="text-left">
                   <div class="flex justify-between items-center mb-2">
-                    <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Tracked Nodes Catalog</p>
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('ai.catalog') }}</p>
                     <div class="flex items-center gap-3 text-[10px] font-semibold">
                       <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-emerald-500"></span> Active ({{ activeCount }})</span>
                       <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-red-500 animate-ping"></span> Inactive ({{ inactiveCount }})</span>

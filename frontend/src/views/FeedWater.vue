@@ -4,11 +4,11 @@
     <!-- ─── Header ─── -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Feed & Water Logs</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('feed.title') }}</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-          Record daily consumption and monitor rolling deviations for
+          {{ $t('feed.subtitle') }}
           <span v-if="store.activeBatch" class="font-bold text-gray-700 dark:text-gray-300">Batch #{{ store.activeBatch.id }} · {{ store.activeBatch.breed }}</span>
-          <span v-else class="italic text-gray-450">no active batch</span>
+          <span v-else class="italic text-gray-450">{{ $t('feed.no_active') }}</span>
         </p>
       </div>
       <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -17,7 +17,7 @@
           <AgriSelect
             v-model="selectedBatchId"
             :options="batchOptions"
-            placeholder="Select cohort batch"
+            :placeholder="$t('feed.select_batch')"
             @change="onBatchChange"
           />
         </div>
@@ -26,17 +26,15 @@
           icon="add"
           :disabled="!selectedBatchId"
           @click="showLogModal = true"
-        >
-          Log Reading
-        </AgriButton>
+        >{{ $t('feed.log_reading') }}</AgriButton>
       </div>
     </div>
 
     <!-- ─── No batch selected state ─── -->
     <div v-if="!selectedBatchId" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-16 text-center animate-fade-in-up delay-100">
       <span class="material-icons-outlined text-4xl text-gray-300 dark:text-gray-700 block mb-3">opacity</span>
-      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">Select a batch above to view feed and water logs.</p>
-      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Readings are tracked per-batch. Choose an active cohort to start.</p>
+      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">{{ $t('feed.select_view') }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $t('feed.tracked_desc') }}</p>
     </div>
 
     <template v-else>
@@ -45,7 +43,7 @@
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="animate-fade-in-up delay-100">
           <AgriStatCard
-            label="Total Readings"
+            :label="$t('feed.total_readings')"
             :value="readings.length"
             icon="bar_chart"
             icon-color-class="bg-blue-50 dark:bg-blue-950/40 text-blue-500"
@@ -55,7 +53,7 @@
         </div>
         <div class="animate-fade-in-up delay-150">
           <AgriStatCard
-            label="Latest Feed"
+            :label="$t('feed.latest_feed')"
             :value="readings.length > 0 ? readings[0].feed_kg : 0"
             :decimals="1"
             suffix=" kg"
@@ -67,7 +65,7 @@
         </div>
         <div class="animate-fade-in-up delay-200">
           <AgriStatCard
-            label="Latest Water"
+            :label="$t('feed.latest_water')"
             :value="readings.length > 0 ? readings[0].water_litres : 0"
             :decimals="1"
             suffix=" L"
@@ -79,11 +77,11 @@
         </div>
         <div class="animate-fade-in-up delay-250">
           <AgriStatCard
-            label="Flagged Readings"
+            :label="$t('feed.flagged_readings')"
             :value="flaggedCount"
             icon="warning"
             :icon-color-class="flaggedCount > 0 ? 'bg-red-50 dark:bg-red-950/40 text-red-500' : 'bg-gray-50 dark:bg-darkbg-100 text-gray-400'"
-            :trend="flaggedCount > 0 ? 'Review anomalies' : 'Optimal'"
+            :trend="flaggedCount > 0 ? $t('feed.review_anomalies') : $t('feed.optimal')"
             :trend-direction="flaggedCount > 0 ? 'up' : 'neutral'"
             :trend-good="flaggedCount === 0"
             :loading="tableLoading"
@@ -98,12 +96,12 @@
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">show_chart</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Consumption Trends</h2>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('feed.consumption_trends') }}</h2>
           </div>
           <div class="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wider">
-            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-primary-500"></span> <span class="text-gray-400">Feed</span></span>
-            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-blue-500"></span> <span class="text-gray-400">Water</span></span>
-            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-sm bg-primary-300/40 border border-primary-300"></span> <span class="text-gray-400">7d Avg</span></span>
+            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-primary-500"></span> <span class="text-gray-400">{{ $t('feed.feed') }}</span></span>
+            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-blue-500"></span> <span class="text-gray-400">{{ $t('feed.water') }}</span></span>
+            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-sm bg-primary-300/40 border border-primary-300"></span> <span class="text-gray-400">{{ $t('feed.avg_7d') }}</span></span>
           </div>
         </template>
 
@@ -112,8 +110,8 @@
         </div>
         <div v-else-if="summaryData.length < 2" class="h-72 flex flex-col items-center justify-center text-sm text-gray-400 dark:text-gray-500 p-6 text-center">
           <span class="material-icons-outlined text-3xl mb-2 text-gray-300 dark:text-gray-700">timeline</span>
-          <p class="font-bold text-gray-700 dark:text-gray-300">Insufficient Data Points</p>
-          <p class="text-xs mt-1">Need at least 2 logged readings to chart historical FCR and consumption trends.</p>
+          <p class="font-bold text-gray-700 dark:text-gray-300">{{ $t('feed.insufficient_data') }}</p>
+          <p class="text-xs mt-1">{{ $t('feed.need_at_least_2') }}</p>
         </div>
         <div v-else class="p-4">
           <canvas ref="chartCanvas" class="w-full" style="height: 280px;"></canvas>
@@ -125,8 +123,8 @@
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">table_chart</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">All Readings Log</h2>
-            <span class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ readings.length }} entries</span>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('feed.all_readings') }}</h2>
+            <span class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ readings.length }} {{ $t('feed.entries') }}</span>
           </div>
         </template>
 
@@ -188,7 +186,7 @@
     <!-- ─── Log Reading Modal (AgriModal) ─── -->
     <AgriModal
       :show="showLogModal"
-      :title="editingReadingId ? 'Edit Consumption Log' : 'Log Daily Readings'"
+      :title="editingReadingId ? $t('feed.edit_log') : $t('feed.log_daily')"
       @close="closeModal"
     >
       <form @submit.prevent="submitReading" class="space-y-4">
@@ -196,7 +194,7 @@
         <AgriInput
           v-model="form.date"
           type="date"
-          label="Reading Date"
+          :label="$t('feed.reading_date')"
           required
           icon="calendar_today"
         />
@@ -229,7 +227,7 @@
             v-model.number="form.mortality_count"
             type="number"
             min="0"
-            label="Mortality"
+            :label="$t('feed.mortality')"
             required
             placeholder="0"
             icon="warning"
@@ -247,16 +245,14 @@
             variant="outline"
             class="flex-1"
             @click="closeModal"
-          >
-            Cancel
-          </AgriButton>
+          >{{ $t('feed.cancel') }}</AgriButton>
           <AgriButton
             type="submit"
             variant="primary"
             class="flex-1"
             :loading="submitting"
           >
-            {{ editingReadingId ? 'Save Changes' : 'Save Reading' }}
+            {{ editingReadingId ? $t('feed.save_changes') : $t('feed.save_reading') }}
           </AgriButton>
         </div>
       </form>
@@ -270,6 +266,7 @@ import { store } from '../services/store'
 import { api } from '../services/api'
 import { Chart, registerables } from 'chart.js'
 import { useToast } from '../composables/useToast'
+import { useI18n } from 'vue-i18n'
 
 // Design System components
 import AgriButton from '../components/ui/AgriButton.vue'
@@ -284,6 +281,7 @@ import AgriSelect from '../components/ui/AgriSelect.vue'
 Chart.register(...registerables)
 
 const toast = useToast()
+const { t } = useI18n()
 
 // ── State ──────────────────────────────────
 const selectedBatchId = ref(null)
@@ -338,15 +336,15 @@ const enrichedReadings = computed(() => {
   })
 })
 
-const tableHeaders = [
-  { text: 'Date', value: 'date', align: 'left' },
-  { text: 'Feed (kg)', value: 'feed_kg', align: 'right' },
-  { text: 'Water (L)', value: 'water_litres', align: 'right' },
-  { text: 'Mortality', value: 'mortality_count', align: 'right' },
-  { text: 'Feed Δ%', value: '_feedDevPct', align: 'right' },
-  { text: 'Status', value: 'status', align: 'center' },
-  { text: 'Actions', value: 'actions', align: 'right' }
-]
+const tableHeaders = computed(() => [
+  { text: t('feed.date'), value: 'date', align: 'left' },
+  { text: t('feed.feed_kg'), value: 'feed_kg', align: 'right' },
+  { text: t('feed.water_l'), value: 'water_litres', align: 'right' },
+  { text: t('feed.mortality'), value: 'mortality_count', align: 'right' },
+  { text: t('feed.feed_delta'), value: '_feedDevPct', align: 'right' },
+  { text: t('feed.status'), value: 'status', align: 'center' },
+  { text: t('feed.actions'), value: 'actions', align: 'right' }
+])
 
 // ── Data fetching ──────────────────────────
 const fetchReadings = async () => {

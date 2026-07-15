@@ -4,11 +4,11 @@
     <!-- ─── Header ─── -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Medications & Vaccines</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('meds.title') }}</h1>
         <p class="mt-0.5 text-sm text-gray-550 dark:text-gray-400">
-          Track treatments, vaccination cycles, and monitor outcome notes for
+          {{ $t('meds.subtitle') }}
           <span v-if="activeBatchObj" class="font-bold text-gray-700 dark:text-gray-300">Batch #{{ activeBatchObj.id }} · {{ activeBatchObj.breed }}</span>
-          <span v-else class="italic text-gray-450">no active batch</span>
+          <span v-else class="italic text-gray-450">{{ $t('meds.no_active') }}</span>
         </p>
       </div>
       <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -17,7 +17,7 @@
           <AgriSelect
             v-model="selectedBatchId"
             :options="batchOptions"
-            placeholder="Select cohort batch"
+            :placeholder="$t('meds.select_batch')"
             @change="onBatchChange"
           />
         </div>
@@ -26,38 +26,36 @@
           icon="medical_services"
           :disabled="!selectedBatchId"
           @click="showLogModal = true"
-        >
-          Log Administration
-        </AgriButton>
+        >{{ $t('meds.log_admin') }}</AgriButton>
       </div>
     </div>
 
     <!-- ─── No batch selected state ─── -->
     <div v-if="!selectedBatchId" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-16 text-center animate-fade-in-up delay-100">
       <span class="material-icons-outlined text-4xl text-gray-300 dark:text-gray-700 block mb-3">vaccines</span>
-      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">Select a batch above to view medication schedules.</p>
-      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Vaccinations and clinical remedies are organized by production batch.</p>
+      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">{{ $t('meds.select_view') }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $t('meds.vaccines_org') }}</p>
     </div>
 
     <template v-else>
       <!-- ─── Summary Cards (Staggered load) ─── -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <AgriStatCard
-          label="Total Treatments"
+          :label="$t('meds.total_treatments')"
           :value="entries.length"
           icon="medical_services"
           icon-color-class="bg-blue-50 dark:bg-blue-950/40 text-blue-500"
           class="animate-fade-in-up delay-100"
         />
         <AgriStatCard
-          label="Vaccinations Done"
+          :label="$t('meds.vaccinations_done')"
           :value="vaccineCount"
           icon="verified"
           icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-450"
           class="animate-fade-in-up delay-150"
         />
         <AgriStatCard
-          label="Resolution Success Rate"
+          :label="$t('meds.resolution_success')"
           :value="entries.length > 0 ? Math.round((resolvedCount / entries.length) * 100) : 0"
           suffix="%"
           icon="monitoring"
@@ -71,9 +69,9 @@
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">schedule</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Broiler Vaccination Roadmap</h2>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('meds.roadmap') }}</h2>
           </div>
-          <span class="text-xs text-gray-450 dark:text-gray-500 font-semibold">Standard Broiler Program (Ross/Cobb)</span>
+          <span class="text-xs text-gray-450 dark:text-gray-500 font-semibold">{{ $t('meds.standard_program') }}</span>
         </template>
 
         <!-- Horizontal Timeline -->
@@ -128,8 +126,8 @@
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">history</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Administration logs</h2>
-            <span class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ entries.length }} entries</span>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('meds.admin_logs') }}</h2>
+            <span class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ entries.length }} {{ $t('meds.entries') }}</span>
           </div>
         </template>
 
@@ -164,7 +162,7 @@
               <span v-if="item.outcome_note" class="italic text-gray-700 dark:text-gray-300">"{{ item.outcome_note }}"</span>
               <span v-else class="text-gray-400 dark:text-gray-600 flex items-center gap-1">
                 <span class="h-1 w-1 bg-amber-500 rounded-full animate-ping"></span>
-                Pending outcome note…
+                {{ $t('meds.pending_note') }}
               </span>
             </div>
           </template>
@@ -193,7 +191,7 @@
     <!-- ─── Log Medication Modal (AgriModal) ─── -->
     <AgriModal
       :show="showLogModal"
-      :title="editingMedicationId ? 'Edit Medical Log' : 'Log Vaccine & Medication'"
+      :title="editingMedicationId ? $t('meds.edit_log') : $t('meds.log_vaccine')"
       @close="closeModal"
     >
       <form @submit.prevent="submitMedication" class="space-y-4">
@@ -201,7 +199,7 @@
         <AgriInput
           v-model="form.date"
           type="date"
-          label="Administration Date"
+          :label="$t('meds.admin_date')"
           required
           icon="calendar_today"
         />
@@ -210,7 +208,7 @@
         <AgriInput
           v-model="form.medicine_type"
           type="text"
-          label="Medicine / Treatment Name"
+          :label="$t('meds.med_name')"
           required
           placeholder="e.g. Newcastle ND-LaSota Vaccine, Amoxicillin"
           icon="vaccines"
@@ -220,7 +218,7 @@
         <AgriInput
           v-model="form.dosage"
           type="text"
-          label="Dosage Instruction"
+          :label="$t('meds.dosage_inst')"
           required
           placeholder="e.g. 10 ml/L in water, 2.5g / kg feed"
           icon="medical_services"
@@ -228,7 +226,7 @@
 
         <!-- Outcome Note -->
         <div>
-          <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Outcome Notes</label>
+          <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">{{ $t('meds.outcome_notes') }}</label>
           <textarea
             v-model="form.outcome_note"
             rows="2.5"
@@ -248,16 +246,14 @@
             variant="outline"
             class="flex-1"
             @click="closeModal"
-          >
-            Cancel
-          </AgriButton>
+          >{{ $t('meds.cancel') }}</AgriButton>
           <AgriButton
             type="submit"
             variant="primary"
             class="flex-1"
             :loading="submitting"
           >
-            {{ editingMedicationId ? 'Save Changes' : 'Log Treatment' }}
+            {{ editingMedicationId ? $t('meds.save_changes') : $t('meds.log_treatment') }}
           </AgriButton>
         </div>
       </form>
@@ -271,6 +267,7 @@ import { store } from '../services/store'
 import { api } from '../services/api'
 import { useToast } from '../composables/useToast'
 import { useAnimations } from '../composables/useAnimations'
+import { useI18n } from 'vue-i18n'
 
 // Design System components
 import AgriButton from '../components/ui/AgriButton.vue'
@@ -284,6 +281,7 @@ import AgriSelect from '../components/ui/AgriSelect.vue'
 
 const toast = useToast()
 const { getStaggerDelayClass } = useAnimations()
+const { t } = useI18n()
 
 // ── State ──────────────────────────────────
 const selectedBatchId = ref(null)
@@ -377,13 +375,13 @@ const isVaccine = (typeStr) => {
   return lower.includes('vaccine') || lower.includes('vacc') || lower.includes('vac') || lower.includes('vax')
 }
 
-const tableHeaders = [
-  { text: 'Date', value: 'date', align: 'left' },
-  { text: 'Type / Description', value: 'medicine_type', align: 'left' },
-  { text: 'Dosage', value: 'dosage', align: 'left' },
-  { text: 'Outcome Notes', value: 'outcome_note', align: 'left' },
-  { text: 'Actions', value: 'actions', align: 'right' }
-]
+const tableHeaders = computed(() => [
+  { text: t('meds.date'), value: 'date', align: 'left' },
+  { text: t('meds.type_desc'), value: 'medicine_type', align: 'left' },
+  { text: t('meds.dosage'), value: 'dosage', align: 'left' },
+  { text: t('meds.outcome_notes'), value: 'outcome_note', align: 'left' },
+  { text: t('meds.actions'), value: 'actions', align: 'right' }
+])
 
 // ── Data fetching ──────────────────────────
 const fetchEntries = async () => {
