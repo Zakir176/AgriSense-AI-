@@ -1,5 +1,4 @@
-from pydantic_settings import BaseSettings
-from pydantic import ConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "AgriSense AI API"
@@ -18,7 +17,7 @@ class Settings(BaseSettings):
     # AI/Inference Configuration
     UPLOAD_DIR: str = "uploads"
     
-    model_config = ConfigDict(
+    model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True,
         extra="ignore"
