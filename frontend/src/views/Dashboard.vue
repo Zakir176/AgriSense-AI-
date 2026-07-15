@@ -402,7 +402,7 @@ const populationTrendGood = computed(() => {
 })
 
 const populationSubtext = computed(() => {
-  if (!store.activeBatch) return $t('dashboard.no_active_batch')
+  if (!store.activeBatch) return t('dashboard.no_active_batch')
   if (store.latestInferenceResult) {
     return `Expected: ${expectedChickenCount.value} · AI Visual: ${store.latestInferenceResult.bird_count_est}`
   }
