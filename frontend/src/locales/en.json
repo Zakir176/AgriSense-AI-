@@ -289,7 +289,21 @@
     "active": "Active",
     "inactive": "Inactive",
     "lethargic": "Lethargic",
-    "healthy_active": "Healthy & Active"
+    "healthy_active": "Healthy & Active",
+    "live_feed": "Live Camera Feed",
+    "archived_footage": "Archived Footage",
+    "live_camera": "Live Camera",
+    "connecting": "Connecting…",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "reconnecting": "Reconnecting…",
+    "live_bird_count": "Live Bird Count",
+    "live_movement": "Movement Score",
+    "live_lethargic": "Lethargic Detected",
+    "live_frame": "Frame",
+    "connection_lost": "Connection lost. Attempting to reconnect…",
+    "start_live": "Start Live Feed",
+    "stop_live": "Stop Live Feed"
   },
   "audio": {
     "title": "Audio Insights",
