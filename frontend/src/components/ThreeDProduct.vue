@@ -14,6 +14,17 @@
       </div>
       <div class="flex space-x-2">
         <button 
+          @click="toggleExplode"
+          class="p-1.5 rounded-lg border text-xs font-extrabold uppercase tracking-wider flex items-center gap-1 transition"
+          :class="exploded 
+            ? 'bg-primary-500 border-primary-600 text-white shadow-sm' 
+            : 'border-gray-200 dark:border-gray-805 bg-white/90 dark:bg-darkbg-50/90 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-455'"
+          title="Explode Assembly"
+        >
+          <span class="material-icons-outlined text-sm block">unfold_more</span>
+          <span class="hidden sm:inline">Explode</span>
+        </button>
+        <button 
           @click="toggleAutoRotate"
           class="p-1.5 rounded-lg border border-gray-200 dark:border-gray-805 bg-white/90 dark:bg-darkbg-50/90 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition"
           title="Toggle Auto Rotate"
@@ -32,21 +43,28 @@
 
     <!-- Main Canvas Viewport -->
     <div class="relative flex-1 flex items-center justify-center cursor-grab active:cursor-grabbing w-full min-h-[220px]" ref="container">
-      <canvas ref="canvas" class="w-full h-full max-h-[380px] max-w-[500px]"></canvas>
+      <canvas ref="canvas" class="w-full h-full max-h-[420px] max-w-[540px]"></canvas>
 
-      <!-- Floating Holographic HTML Labels -->
+      <!-- Floating Holographic HTML Labels (Interactive Hotspots) -->
       <div 
         v-for="(label, idx) in projectedLabels" 
         :key="idx"
-        class="absolute pointer-events-none transition-all duration-75 select-none"
+        class="absolute pointer-events-auto transition-all duration-75 select-none cursor-pointer"
         :style="{
           left: label.x + 'px',
           top: label.y + 'px',
           opacity: label.visible ? 1 : 0,
-          transform: 'translate(-50%, -100%)'
+          transform: 'translate(-50%, -100%)',
+          zIndex: activeHotspot === idx ? 30 : 10
         }"
+        @click.stop="selectHotspot(idx)"
       >
-        <div class="bg-white/90 dark:bg-darkbg-50/90 backdrop-blur-md border border-primary-500/25 dark:border-primary-400/20 px-2.5 py-1.5 rounded-xl shadow-lg flex flex-col items-start min-w-[120px] max-w-[160px] translate-y-[-16px]">
+        <div 
+          class="bg-white/90 dark:bg-darkbg-50/90 backdrop-blur-md border px-2.5 py-1.5 rounded-xl shadow-lg flex flex-col items-start min-w-[120px] max-w-[160px] translate-y-[-16px] transition-all hover:scale-105"
+          :class="activeHotspot === idx 
+            ? 'border-primary-500 ring-2 ring-primary-500/25 dark:border-primary-400' 
+            : 'border-primary-500/25 dark:border-primary-400/20'"
+        >
           <span class="text-[8px] font-black uppercase tracking-wider text-primary-600 dark:text-primary-400">{{ label.category }}</span>
           <span class="text-[10px] font-extrabold text-gray-850 dark:text-gray-100 mt-0.5 leading-none">{{ label.title }}</span>
           <!-- Dynamic Telemetry reading if present -->
@@ -54,7 +72,53 @@
           
           <!-- Connector point line -->
           <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-[16px] w-[1px] h-[16px] bg-gradient-to-b from-primary-500/30 to-transparent"></div>
-          <div class="absolute bottom-[-16px] left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary-500 border border-white dark:border-darkbg-50"></div>
+          <div class="absolute bottom-[-16px] left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary-500 border border-white dark:border-darkbg-50" :class="activeHotspot === idx ? 'animate-ping' : ''"></div>
+        </div>
+      </div>
+
+      <!-- Time of Day Shadow Control HUD overlay -->
+      <div class="absolute bottom-2 left-2 bg-white/95 dark:bg-darkbg-50/95 backdrop-blur-md border border-gray-200/80 dark:border-gray-805 px-3 py-1.5 rounded-2xl shadow-md z-10 flex items-center space-x-2.5">
+        <span class="material-icons-outlined text-xs text-amber-500 animate-spin-slow leading-none">wb_sunny</span>
+        <div class="flex flex-col text-left">
+          <span class="text-[8px] font-black uppercase tracking-wider text-gray-450 dark:text-gray-500">Simulated Sun (Time)</span>
+          <div class="flex items-center space-x-1.5 mt-0.5">
+            <input 
+              type="range" 
+              min="6" 
+              max="18" 
+              step="0.5" 
+              v-model.number="sunTime"
+              class="w-16 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-750 accent-primary-600"
+            />
+            <span class="text-[9px] font-mono font-bold text-gray-850 dark:text-gray-250 leading-none">{{ formatTime(sunTime) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hotspot specs detail overlay card -->
+      <div v-if="activeHotspot !== null" class="absolute right-3 top-3 bottom-3 w-64 sm:w-72 bg-white/95 dark:bg-darkbg-50/95 backdrop-blur-md border border-gray-200/80 dark:border-gray-850 p-5 rounded-2xl shadow-2xl z-20 flex flex-col justify-between overflow-y-auto animate-scale-in">
+        <div>
+          <div class="flex items-center justify-between mb-3.5">
+            <span class="text-[10px] font-black uppercase tracking-widest text-primary-650 dark:text-primary-400">Node Spec Sheet</span>
+            <button @click="activeHotspot = null" class="text-gray-450 hover:text-gray-650 dark:hover:text-white transition cursor-pointer">
+              <span class="material-icons-outlined text-sm block">close</span>
+            </button>
+          </div>
+          
+          <h5 class="text-sm font-black text-gray-900 dark:text-white leading-tight">{{ activeHotspotInfo.title }}</h5>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-2.5 leading-relaxed font-semibold">{{ activeHotspotInfo.description }}</p>
+          
+          <div class="mt-4 space-y-2 border-t border-gray-150 dark:border-gray-800/80 pt-3.5">
+            <div v-for="spec in activeHotspotInfo.specs" :key="spec.label" class="flex justify-between items-center text-xs">
+              <span class="text-gray-450 dark:text-gray-500 font-bold">{{ spec.label }}</span>
+              <span class="font-mono font-bold text-gray-850 dark:text-gray-250">{{ spec.val }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="pt-3 border-t border-gray-150 dark:border-gray-800/80 mt-4 flex items-center justify-between text-[10px] uppercase tracking-wider font-extrabold text-primary-600 dark:text-primary-450">
+          <span>Status: Operational</span>
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
         </div>
       </div>
     </div>
@@ -87,7 +151,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 
 const props = defineProps({
   isDark: {
@@ -99,6 +163,16 @@ const props = defineProps({
 const canvas = ref(null)
 const container = ref(null)
 const autoRotate = ref(true)
+
+// Interactive and Exploded states
+const exploded = ref(false)
+const explodeValue = ref(0.0)
+const sunTime = ref(12.0)
+const activeHotspot = ref(null)
+
+// Target orientation for smooth pan/zoom focus on hotspots
+const targetAngleX = ref(null)
+const targetAngleY = ref(null)
 
 // Rotation angles in radians
 const angleX = ref(-0.4) // Pitch
@@ -114,6 +188,15 @@ let animationFrameId = null
 
 const toggleAutoRotate = () => {
   autoRotate.value = !autoRotate.value
+  if (autoRotate.value) {
+    activeHotspot.value = null
+    targetAngleX.value = null
+    targetAngleY.value = null
+  }
+}
+
+const toggleExplode = () => {
+  exploded.value = !exploded.value
 }
 
 const resetView = () => {
@@ -121,10 +204,82 @@ const resetView = () => {
   angleY.value = 0.6
   velocityX = 0
   velocityY = 0
+  exploded.value = false
+  activeHotspot.value = null
+  targetAngleX.value = null
+  targetAngleY.value = null
 }
 
 // 3D Model Coordinate System & Projection
 // local origin (0,0,0) is centered inside the hub box.
+
+// Hotspots Specs metadata and specifications
+const hotspotsInfo = [
+  {
+    id: 0,
+    title: 'Dual-Band LoRa Antenna',
+    specs: [
+      { label: 'Frequency', val: '868 / 915 MHz' },
+      { label: 'Gain', val: '+5.0 dBi' },
+      { label: 'Protocol', val: 'LoRaWAN Class A' },
+      { label: 'Telemetry Range', val: 'Up to 15 km' }
+    ],
+    description: 'Provides long-range, low-power connectivity back to the central farmhouse or cellular gateway in areas with zero internet or mobile signal coverage.'
+  },
+  {
+    id: 1,
+    title: 'Edge Compute Module',
+    specs: [
+      { label: 'Processor', val: 'Quad-Core Cortex-A53' },
+      { label: 'NPU Core', val: '0.8 TOPS AI Accel' },
+      { label: 'Model', val: 'YOLOv8-Nano Local' },
+      { label: 'Inference Speed', val: '22 ms / frame' }
+    ],
+    description: 'Processes camera feeds inside the coop completely offline. Runs bird counting, crowd density analysis, and alerts operators immediately if huddling patterns or mortality events occur.'
+  },
+  {
+    id: 2,
+    title: 'Precision Silo Sensors',
+    specs: [
+      { label: 'Interface', val: 'RS-485 Modbus' },
+      { label: 'Sensor Support', val: '4x Load Cells' },
+      { label: 'Power Supply', val: 'Isolated 12V Out' },
+      { label: 'Water Flow Input', val: 'Pulse-based counter' }
+    ],
+    description: 'Integrates load cells beneath feed silos and inline water flow meters. Instantly cross-checks total remaining resources against batch size to calculate dynamic FCR and predict run-out dates.'
+  }
+]
+
+const activeHotspotInfo = computed(() => {
+  if (activeHotspot.value === null) return null
+  return hotspotsInfo[activeHotspot.value]
+})
+
+const selectHotspot = (idx) => {
+  activeHotspot.value = idx
+  autoRotate.value = false // Stop autorotate to focus on clicked item
+  
+  // Set target angles for auto-focus animation depending on hotspot index
+  if (idx === 0) {
+    targetAngleX.value = -0.5
+    targetAngleY.value = 0.5
+  } else if (idx === 1) {
+    targetAngleX.value = -0.2
+    targetAngleY.value = 1.0
+  } else if (idx === 2) {
+    targetAngleX.value = -0.7
+    targetAngleY.value = 0.0
+  }
+}
+
+const formatTime = (t) => {
+  const hours = Math.floor(t)
+  const minutes = (t % 1) * 60
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+  const dispHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours)
+  return `${dispHours}:${minutes.toString().padStart(2, '0')} ${ampm}`
+}
+
 // Chassis: a box (cube).
 const chassisWidth = 70
 const chassisHeight = 45
@@ -203,6 +358,35 @@ const leds = [
   { x: 20, y: 10, z: chassisDepth/2 + 1, color: 'alert', hz: 0.5 }   // Slow Blinking Amber
 ]
 
+// Motherboard (PCB)
+const pcbWidth = 56
+const pcbHeight = 2
+const pcbDepth = 56
+const localPcbVertices = [
+  { x: -pcbWidth/2, y: 4, z: -pcbDepth/2 },
+  { x:  pcbWidth/2, y: 4, z: -pcbDepth/2 },
+  { x:  pcbWidth/2, y: 6, z: -pcbDepth/2 },
+  { x: -pcbWidth/2, y: 6, z: -pcbDepth/2 },
+  { x: -pcbWidth/2, y: 4, z:  pcbDepth/2 },
+  { x:  pcbWidth/2, y: 4, z:  pcbDepth/2 },
+  { x:  pcbWidth/2, y: 6, z:  pcbDepth/2 },
+  { x: -pcbWidth/2, y: 6, z:  pcbDepth/2 },
+]
+const pcbFaces = [
+  { indices: [0, 1, 2, 3], normal: { x: 0, y: 0, z: -1 } },
+  { indices: [1, 5, 6, 2], normal: { x: 1, y: 0, z: 0 } },
+  { indices: [4, 0, 3, 7], normal: { x: -1, y: 0, z: 0 } },
+  { indices: [4, 5, 6, 7], normal: { x: 0, y: 0, z: 1 } },
+  { indices: [4, 5, 1, 0], normal: { x: 0, y: -1, z: 0 } },
+  { indices: [3, 2, 6, 7], normal: { x: 0, y: 1, z: 0 } }
+]
+
+// Battery cells
+const battery1Start = { x: -12, y: 14, z: -20 }
+const battery1End = { x: -12, y: 14, z: 20 }
+const battery2Start = { x: 12, y: 14, z: -20 }
+const battery2End = { x: 12, y: 14, z: 20 }
+
 // Signal ripples animation state
 const signalRipples = ref([
   { radius: 0, opacity: 1 },
@@ -258,18 +442,25 @@ const rotateY = (v, theta) => {
 
 const project = (v, cx, cy, d) => {
   const scale = d / (d + v.z)
+  const zoom = 1.38 // Scale up the model representation by 38% for visibility
   return {
-    x: cx + v.x * scale,
-    y: cy + v.y * scale,
+    x: cx + v.x * zoom * scale,
+    y: cy + v.y * zoom * scale,
     z: v.z,
     scale
   }
 }
 
-// Lighting calculation (flat shading)
+// Lighting calculation (flat shading) using time-of-day sun position
 const computeLighting = (normal, rotatedNormal, isDarkTheme) => {
-  // Light source from top-left-front in camera space
-  const lightDir = { x: -0.4, y: -0.7, z: -0.6 }
+  // Map sunTime (6 to 18) to light direction in camera space
+  const sunAngle = (sunTime.value - 12) * (Math.PI / 12)
+  const lightDir = { 
+    x: Math.sin(sunAngle), 
+    y: -Math.cos(sunAngle), 
+    z: -0.5 
+  }
+  
   // Normalize light dir
   const length = Math.sqrt(lightDir.x*lightDir.x + lightDir.y*lightDir.y + lightDir.z*lightDir.z)
   const lNorm = { x: lightDir.x/length, y: lightDir.y/length, z: lightDir.z/length }
@@ -318,35 +509,120 @@ const render = () => {
     angleY.value += 0.007
   }
 
-  // Handle momentum
+  // Handle momentum and hotspot targeting
   if (!isDragging) {
-    angleX.value += velocityX
-    angleY.value += velocityY
-    velocityX *= 0.92
-    velocityY *= 0.92
+    if (targetAngleX.value !== null && targetAngleY.value !== null) {
+      // Lerp camera angle to hotspot view
+      angleX.value += (targetAngleX.value - angleX.value) * 0.08
+      angleY.value += (targetAngleY.value - angleY.value) * 0.08
+      
+      // Stop tracking once close enough to prevent infinite calculation
+      if (Math.abs(angleX.value - targetAngleX.value) < 0.005 && Math.abs(angleY.value - targetAngleY.value) < 0.005) {
+        angleX.value = targetAngleX.value
+        angleY.value = targetAngleY.value
+        targetAngleX.value = null
+        targetAngleY.value = null
+      }
+    } else {
+      angleX.value += velocityX
+      angleY.value += velocityY
+      velocityX *= 0.92
+      velocityY *= 0.92
+    }
     
     // Clamp Pitch (X Rotation) to prevent flipping upside down
     angleX.value = Math.max(-0.9, Math.min(0.2, angleX.value))
   }
 
-  // 1. Rotate and project chassis vertices
-  const rotChassisVertices = chassisVertices.map(v => {
+  // Interpolate explodeValue towards 1.0 (exploded) or 0.0 (normal)
+  const targetExplode = exploded.value ? 1.0 : 0.0
+  explodeValue.value += (targetExplode - explodeValue.value) * 0.12
+  if (Math.abs(explodeValue.value - targetExplode) < 0.001) {
+    explodeValue.value = targetExplode
+  }
+
+  const coverYOffset = -26 * explodeValue.value
+  const antennaExplodeY = -40 * explodeValue.value
+  const antBase = { x: antennaBase.x, y: antennaBase.y + coverYOffset + antennaExplodeY, z: antennaBase.z }
+  const antTip = { x: antennaTip.x, y: antennaTip.y + coverYOffset + antennaExplodeY, z: antennaTip.z }
+
+  const batteryExplodeY = 50 * explodeValue.value
+  const bat1Start = { x: battery1Start.x, y: battery1Start.y + batteryExplodeY, z: battery1Start.z }
+  const bat1End = { x: battery1End.x, y: battery1End.y + batteryExplodeY, z: battery1End.z }
+  const bat2Start = { x: battery2Start.x, y: battery2Start.y + batteryExplodeY, z: battery2Start.z }
+  const bat2End = { x: battery2End.x, y: battery2End.y + batteryExplodeY, z: battery2End.z }
+
+  const pcbExplodeZ = 35 * explodeValue.value
+  const pcbVerticesCurrent = localPcbVertices.map(v => {
+    return {
+      x: v.x,
+      y: v.y,
+      z: v.z + pcbExplodeZ
+    }
+  })
+
+  // 1. Casing: bottom casing (open box, open at the top, sides slightly down)
+  const casingVertices = chassisVertices.map((v, i) => {
+    const isTopVertex = (i === 0 || i === 1 || i === 4 || i === 5)
+    return {
+      x: v.x,
+      y: isTopVertex ? v.y + 4 : v.y,
+      z: v.z
+    }
+  })
+
+  const rotCasingVertices = casingVertices.map(v => {
     let rv = rotateY(v, angleY.value)
     rv = rotateX(rv, angleX.value)
     return rv
   })
+  const projCasingVertices = rotCasingVertices.map(v => project(v, cx, cy, d))
 
-  const projChassisVertices = rotChassisVertices.map(v => project(v, cx, cy, d))
-
-  // Rotate chassis normal vectors for backface culling & flat shading
-  const rotatedChassisNormals = chassisFaces.map(f => {
+  // Rotate casing normal vectors
+  const rotatedCasingNormals = chassisFaces.map(f => {
     let rn = rotateY(f.normal, angleY.value)
     rn = rotateX(rn, angleX.value)
     return rn
   })
 
-  // 2. Rotate and project Solar Panel vertices
-  const rotSolarVertices = solarPanelVertices.map(v => {
+  // Top Cover plate box vertices (slides up)
+  const coverHeight = 3
+  const localCoverVertices = [
+    { x: -chassisWidth/2, y: -chassisHeight/2 - coverHeight + coverYOffset, z: -chassisDepth/2 },
+    { x:  chassisWidth/2, y: -chassisHeight/2 - coverHeight + coverYOffset, z: -chassisDepth/2 },
+    { x:  chassisWidth/2, y: -chassisHeight/2 + coverYOffset, z: -chassisDepth/2 },
+    { x: -chassisWidth/2, y: -chassisHeight/2 + coverYOffset, z: -chassisDepth/2 },
+    { x: -chassisWidth/2, y: -chassisHeight/2 - coverHeight + coverYOffset, z:  chassisDepth/2 },
+    { x:  chassisWidth/2, y: -chassisHeight/2 - coverHeight + coverYOffset, z:  chassisDepth/2 },
+    { x:  chassisWidth/2, y: -chassisHeight/2 + coverYOffset, z:  chassisDepth/2 },
+    { x: -chassisWidth/2, y: -chassisHeight/2 + coverYOffset, z:  chassisDepth/2 },
+  ]
+  const rotCoverVertices = localCoverVertices.map(v => {
+    let rv = rotateY(v, angleY.value)
+    rv = rotateX(rv, angleX.value)
+    return rv
+  })
+  const projCoverVertices = rotCoverVertices.map(v => project(v, cx, cy, d))
+
+  // Rotate cover normal vectors
+  const rotatedCoverNormals = chassisFaces.map(f => {
+    let rn = rotateY(f.normal, angleY.value)
+    rn = rotateX(rn, angleX.value)
+    return rn
+  })
+
+  // 2. Solar Panel (slides up + back)
+  const panelExplodeY = -60 * explodeValue.value
+  const panelExplodeZ = -20 * explodeValue.value
+  const solarPanelVerticesCurrent = solarPanelVertices.map(v => {
+    return {
+      x: v.x,
+      y: v.y + panelExplodeY,
+      z: v.z + panelExplodeZ
+    }
+  })
+
+  const rotSolarVertices = solarPanelVerticesCurrent.map(v => {
     let rv = rotateY(v, angleY.value)
     rv = rotateX(rv, angleX.value)
     return rv
@@ -362,34 +638,139 @@ const render = () => {
   // 3. Assemble all polygons to draw (for Painter's Depth Sorting)
   const drawList = []
 
-  // Add chassis faces to draw list
+  // Add casing faces (open box: skipping top face index 4) to draw list
   chassisFaces.forEach((face, idx) => {
-    const rotNormal = rotatedChassisNormals[idx]
-    
-    // Backface culling: face normal towards camera has positive Z component in this system.
-    // If Z > 0, normal faces towards screen.
+    if (idx === 4) return // Skip top face as casing is open
+
+    const rotNormal = rotatedCasingNormals[idx]
     if (rotNormal.z > -0.15) {
-      // Calculate average Z for depth sorting
       let avgZ = 0
       face.indices.forEach(vIdx => {
-        avgZ += rotChassisVertices[vIdx].z
+        avgZ += rotCasingVertices[vIdx].z
       })
       avgZ /= 4
 
-      // Setup colors
       const faceColor = computeLighting(face.normal, rotNormal, isDarkTheme)
       const strokeColor = isDarkTheme ? 'rgba(52, 211, 153, 0.25)' : 'rgba(45, 106, 79, 0.25)'
 
       drawList.push({
         type: 'polygon',
         depth: avgZ,
-        points: face.indices.map(vIdx => projChassisVertices[vIdx]),
+        points: face.indices.map(vIdx => projCasingVertices[vIdx]),
         fill: faceColor,
         stroke: strokeColor,
         lineWidth: 1.5,
-        name: `chassis-${face.name}`
+        name: `casing-${face.name}`
       })
     }
+  })
+
+  // Add cover box faces to draw list
+  chassisFaces.forEach((face, idx) => {
+    const rotNormal = rotatedCoverNormals[idx]
+    if (rotNormal.z > -0.15) {
+      let avgZ = 0
+      face.indices.forEach(vIdx => {
+        avgZ += rotCoverVertices[vIdx].z
+      })
+      avgZ /= 4
+
+      const faceColor = computeLighting(face.normal, rotNormal, isDarkTheme)
+      const strokeColor = isDarkTheme ? 'rgba(52, 211, 153, 0.25)' : 'rgba(45, 106, 79, 0.25)'
+
+      drawList.push({
+        type: 'polygon',
+        depth: avgZ,
+        points: face.indices.map(vIdx => projCoverVertices[vIdx]),
+        fill: faceColor,
+        stroke: strokeColor,
+        lineWidth: 1.5,
+        name: `cover-${face.name}`
+      })
+    }
+  })
+
+  // Add Motherboard (PCB) green board to draw list
+  const rotPcbVertices = pcbVerticesCurrent.map(v => {
+    let rv = rotateY(v, angleY.value)
+    rv = rotateX(rv, angleX.value)
+    return rv
+  })
+  const projPcbVertices = rotPcbVertices.map(v => project(v, cx, cy, d))
+
+  const rotatedPcbNormals = pcbFaces.map(f => {
+    let rn = rotateY(f.normal, angleY.value)
+    rn = rotateX(rn, angleX.value)
+    return rn
+  })
+
+  pcbFaces.forEach((face, idx) => {
+    const rotNormal = rotatedPcbNormals[idx]
+    if (rotNormal.z > -0.15) {
+      let avgZ = 0
+      face.indices.forEach(vIdx => {
+        avgZ += rotPcbVertices[vIdx].z
+      })
+      avgZ /= 4
+
+      // Shaded green PCB colors
+      let pcbColor = ''
+      const dot = -(rotNormal.x * -0.4 + rotNormal.y * -0.7 + rotNormal.z * -0.6)
+      const intensity = Math.max(0.15, Math.min(1.0, dot))
+      if (isDarkTheme) {
+        pcbColor = `rgb(${Math.round(20 + intensity * 20)}, ${Math.round(45 + intensity * 25)}, ${Math.round(25 + intensity * 20)})`
+      } else {
+        pcbColor = `rgb(${Math.round(40 + intensity * 15)}, ${Math.round(85 + intensity * 25)}, ${Math.round(55 + intensity * 15)})`
+      }
+
+      drawList.push({
+        type: 'polygon',
+        depth: avgZ,
+        points: face.indices.map(vIdx => projPcbVertices[vIdx]),
+        fill: pcbColor,
+        stroke: isDarkTheme ? 'rgba(52, 211, 153, 0.4)' : 'rgba(255, 255, 255, 0.3)',
+        lineWidth: 1,
+        name: 'pcb-face'
+      })
+    }
+  })
+
+  // Add Battery cells to draw list
+  let rotBat1S = rotateY(bat1Start, angleY.value)
+  rotBat1S = rotateX(rotBat1S, angleX.value)
+  const projBat1S = project(rotBat1S, cx, cy, d)
+
+  let rotBat1E = rotateY(bat1End, angleY.value)
+  rotBat1E = rotateX(rotBat1E, angleX.value)
+  const projBat1E = project(rotBat1E, cx, cy, d)
+
+  let rotBat2S = rotateY(bat2Start, angleY.value)
+  rotBat2S = rotateX(rotBat2S, angleX.value)
+  const projBat2S = project(rotBat2S, cx, cy, d)
+
+  let rotBat2E = rotateY(bat2End, angleY.value)
+  rotBat2E = rotateX(rotBat2E, angleX.value)
+  const projBat2E = project(rotBat2E, cx, cy, d)
+
+  const bat1AvgZ = (rotBat1S.z + rotBat1E.z) / 2
+  const bat2AvgZ = (rotBat2S.z + rotBat2E.z) / 2
+
+  drawList.push({
+    type: 'line',
+    depth: bat1AvgZ,
+    from: projBat1S,
+    to: projBat1E,
+    color: '#0284c7', // Lithium blue cells
+    lineWidth: 8
+  })
+
+  drawList.push({
+    type: 'line',
+    depth: bat2AvgZ,
+    from: projBat2S,
+    to: projBat2E,
+    color: '#0284c7', // Lithium blue cells
+    lineWidth: 8
   })
 
   // Add solar panel faces to draw list
@@ -431,11 +812,11 @@ const render = () => {
   })
 
   // 4. Rotate and project Antenna
-  let rotAntBase = rotateY(antennaBase, angleY.value)
+  let rotAntBase = rotateY(antBase, angleY.value)
   rotAntBase = rotateX(rotAntBase, angleX.value)
   const projAntBase = project(rotAntBase, cx, cy, d)
 
-  let rotAntTip = rotateY(antennaTip, angleY.value)
+  let rotAntTip = rotateY(antTip, angleY.value)
   rotAntTip = rotateX(rotAntTip, angleX.value)
   const projAntTip = project(rotAntTip, cx, cy, d)
 
@@ -466,7 +847,7 @@ const render = () => {
     let rotLed = rotateY(led, angleY.value)
     rotLed = rotateX(rotLed, angleX.value)
     
-    const frontNormal = rotatedChassisNormals[3]
+    const frontNormal = rotatedCasingNormals[3]
     if (frontNormal.z > 0.05) {
       const projLed = project(rotLed, cx, cy, d)
       
@@ -529,6 +910,33 @@ const render = () => {
       lineWidth: 1.5
     })
   })
+
+  // Pulsing neon highlight ring around selected active hotspot
+  if (activeHotspot.value !== null) {
+    let hotspotPos = { x: 0, y: 0, z: 0 }
+    if (activeHotspot.value === 0) {
+      hotspotPos = { ...antTip }
+    } else if (activeHotspot.value === 1) {
+      hotspotPos = { x: 25, y: -10, z: chassisDepth/2 + pcbExplodeZ }
+    } else if (activeHotspot.value === 2) {
+      hotspotPos = { x: 0, y: chassisHeight/2, z: 0 }
+    }
+
+    let rotH = rotateY(hotspotPos, angleY.value)
+    rotH = rotateX(rotH, angleX.value)
+    const projH = project(rotH, cx, cy, d)
+
+    const pulseRadius = 12 + Math.sin(Date.now() / 150) * 3
+    drawList.push({
+      type: 'circle',
+      depth: rotH.z - 5,
+      pos: projH,
+      radius: pulseRadius,
+      fill: 'transparent',
+      stroke: isDarkTheme ? '#10b981' : '#2d6a4f',
+      lineWidth: 1.5
+    })
+  }
 
   // 7. Sort all draw items by depth
   drawList.sort((a, b) => b.depth - a.depth)
@@ -642,8 +1050,22 @@ const updateHTMLOverlay = (cx, cy, d) => {
   const scaleX = rect.width / canvasEl.width
   const scaleY = rect.height / canvasEl.height
 
-  projectedLabels.value.forEach(label => {
-    let rv = rotateY(label.localPos, angleY.value)
+  projectedLabels.value.forEach((label, idx) => {
+    // Apply exploded offsets to local coordinates dynamically
+    const localPos = { ...label.localPos }
+    const coverYOffset = -26 * explodeValue.value
+    const antennaExplodeY = -40 * explodeValue.value
+    const pcbExplodeZ = 35 * explodeValue.value
+
+    if (idx === 0) {
+      // Antenna tip shifts up
+      localPos.y += coverYOffset + antennaExplodeY
+    } else if (idx === 1) {
+      // Edge compute module shifts forward with PCB
+      localPos.z += pcbExplodeZ
+    }
+
+    let rv = rotateY(localPos, angleY.value)
     rv = rotateX(rv, angleX.value)
 
     const proj = project(rv, canvasEl.width / 2, canvasEl.height / 2 + 15, d)
