@@ -237,6 +237,7 @@ import { ref, computed, onMounted } from 'vue'
 import { api } from '../services/api'
 import { store } from '../services/store'
 import { useAnimations } from '../composables/useAnimations'
+import { useToast } from '../composables/useToast'
 
 // Reusable Components
 import AgriButton from '../components/ui/AgriButton.vue'
@@ -293,8 +294,12 @@ const loadBatches = async () => {
   }
 }
 
+const toast = useToast()
+
 const selectActiveBatch = (batch) => {
   store.activeBatch = batch
+  localStorage.setItem('agrisense_focused_batch_id', batch.id)
+  toast.success(`Globally focused on ${batch.breed} (Batch #${batch.id})`)
 }
 
 const archiveBatch = async (batchId) => {
