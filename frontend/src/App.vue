@@ -126,7 +126,7 @@
               <span class="sm:hidden">{{ syncQueueLength }}</span>
             </button>
             <!-- Notifications Bell -->
-            <div class="relative">
+            <div class="relative" data-dropdown="notifications">
               <button 
                 @click="toggleNotifications"
                 class="p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none relative"
@@ -174,12 +174,16 @@
             </button>
 
             <!-- Language Switcher -->
-            <div class="relative group">
-              <button class="flex items-center justify-center p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none">
+            <div class="relative" data-dropdown="language">
+              <button 
+                @click="showLanguageDropdown = !showLanguageDropdown"
+                class="flex items-center justify-center p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none"
+                aria-label="Switch Language"
+              >
                 <span class="material-icons-outlined text-lg">language</span>
                 <span class="text-xs font-bold ml-1 uppercase">{{ $i18n.locale }}</span>
               </button>
-              <div class="absolute right-0 mt-2 w-32 bg-white dark:bg-darkbg-50 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden z-50 opacity-0 group-hover:opacity-100 transition pointer-events-none group-hover:pointer-events-auto">
+              <div v-if="showLanguageDropdown" class="absolute right-0 mt-2 w-32 bg-white dark:bg-darkbg-50 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden z-50">
                 <button @click="changeLanguage('en')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'en' }">English</button>
                 <button @click="changeLanguage('ny')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'ny' }">Nyanja</button>
               </div>
@@ -228,9 +232,12 @@ const { locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
+const showLanguageDropdown = ref(false)
+
 const changeLanguage = (lang) => {
   locale.value = lang
   localStorage.setItem('language', lang)
+  showLanguageDropdown.value = false
 }
 
 const isBlankLayout = computed(() => route.meta.layout === 'blank')
@@ -269,7 +276,18 @@ const handleFarmChange = async (farm) => {
   try {
     const batches = await api.batches.list(farm.id)
     store.batchesList = batches
-    const active = batches.find(b => b.status === 'active')
+    
+    // Check if there is a saved focused batch ID in localStorage
+    const savedFocusedId = localStorage.getItem('agrisense_focused_batch_id')
+    let active = null
+    if (savedFocusedId) {
+      active = batches.find(b => b.id === parseInt(savedFocusedId) && b.status === 'active')
+    }
+    
+    if (!active) {
+      active = batches.find(b => b.status === 'active')
+    }
+    
     if (active) {
       store.activeBatch = active
     } else if (batches.length > 0) {
@@ -310,8 +328,17 @@ const initApp = async () => {
       const batches = await api.batches.list(store.currentFarm.id)
       store.batchesList = batches
       
-      // 4. Set first active batch as active
-      const active = batches.find(b => b.status === 'active')
+      // 4. Restore focused batch selection if stored, otherwise default to first active batch
+      const savedFocusedId = localStorage.getItem('agrisense_focused_batch_id')
+      let active = null
+      if (savedFocusedId) {
+        active = batches.find(b => b.id === parseInt(savedFocusedId) && b.status === 'active')
+      }
+      
+      if (!active) {
+        active = batches.find(b => b.status === 'active')
+      }
+      
       if (active) {
         store.activeBatch = active
       } else if (batches.length > 0) {
@@ -351,6 +378,17 @@ const toggleNotifications = () => {
   showNotifications.value = !showNotifications.value
   if (showNotifications.value) {
     fetchAlerts()
+  }
+}
+
+const handleClickOutside = (e) => {
+  // Close language dropdown if clicking outside its container
+  if (showLanguageDropdown.value && !e.target.closest('[data-dropdown="language"]')) {
+    showLanguageDropdown.value = false
+  }
+  // Close notifications dropdown if clicking outside its container
+  if (showNotifications.value && !e.target.closest('[data-dropdown="notifications"]')) {
+    showNotifications.value = false
   }
 }
 
@@ -468,6 +506,9 @@ onMounted(async () => {
   window.addEventListener('online', handleOnline)
   window.addEventListener('offline', handleOffline)
   
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', handleClickOutside)
+  
   // Check if we came online while the page was closed/reloading
   if (navigator.onLine) {
     syncOfflineData()
@@ -479,6 +520,7 @@ onUnmounted(() => {
   clearInterval(syncQueueInterval)
   window.removeEventListener('online', handleOnline)
   window.removeEventListener('offline', handleOffline)
+  document.removeEventListener('click', handleClickOutside)
 })
 
 const navItems = [
