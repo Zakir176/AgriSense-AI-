@@ -103,24 +103,38 @@ def run_video_inference(video_path: str) -> dict:
                     for idx, tid in enumerate(current_ids):
                         matched_ids[idx] = tid
                 else:
-                    # Centroid tracking matching logic fallback
-                    max_distance = 85.0  # max pixels a bird moves between frames
+                    # Centroid tracking matching logic fallback with Linear Motion Prediction (reduced ID swaps)
+                    max_distance = 95.0  # Slightly larger distance window allowed due to directional tracking
                     used_indices = set()
                     
-                    # Sort existing tracks by ID to ensure consistency
-                    # Map existing active track_id to its last position (only lookback 15 frames to prevent ID drift)
-                    last_positions = {}
+                    # Map existing active tracks to their velocity-predicted next positions
+                    predicted_positions = {}
                     for tid, history in track_history.items():
                         if history and (i - history[-1][0]) <= 15:
-                            last_positions[tid] = history[-1][1]
+                            if len(history) >= 2:
+                                # Calculate average displacement over last min(5, history_len) logs
+                                lookback = min(5, len(history))
+                                time_diff = history[-1][0] - history[-lookback][0]
+                                if time_diff > 0:
+                                    dx = (history[-1][1][0] - history[-lookback][1][0]) / time_diff
+                                    dy = (history[-1][1][1] - history[-lookback][1][1]) / time_diff
+                                else:
+                                    dx, dy = 0.0, 0.0
+                                
+                                frames_elapsed = i - history[-1][0]
+                                pred_x = history[-1][1][0] + dx * frames_elapsed
+                                pred_y = history[-1][1][1] + dy * frames_elapsed
+                                predicted_positions[tid] = (pred_x, pred_y)
+                            else:
+                                predicted_positions[tid] = history[-1][1]
                     
-                    for tid, last_pos in sorted(last_positions.items()):
+                    for tid, pred_pos in sorted(predicted_positions.items()):
                         closest_dist = float('inf')
                         closest_idx = -1
                         for idx, pos in enumerate(current_centroids):
                             if idx in used_indices:
                                 continue
-                            dist = math.hypot(pos[0] - last_pos[0], pos[1] - last_pos[1])
+                            dist = math.hypot(pos[0] - pred_pos[0], pos[1] - pred_pos[1])
                             if dist < closest_dist:
                                 closest_dist = dist
                                 closest_idx = idx
@@ -215,11 +229,36 @@ def run_video_inference(video_path: str) -> dict:
                         close_count += 1
                 raw_dense_pct = (close_count / len(centroids)) * 100.0
 
-            # Dynamic occlusion compensation scaling:
-            # If clustering density is high, scale up final bird count to account for hidden birds
+            # 1. Global Occlusion Scaling Base
+            global_correction = 1.0
             if raw_dense_pct > 35.0:
-                correction = 1.05 + 0.12 * ((raw_dense_pct - 35.0) / 65.0)
-                final_count = int(round(final_count * correction))
+                global_correction = 1.05 + 0.10 * ((raw_dense_pct - 35.0) / 65.0)
+            final_count = int(round(final_count * global_correction))
+
+            # 2. Grid-Based Local Occlusion Compensation (Estimates hidden birds in dense clusters)
+            GRID_COLS = 4
+            GRID_ROWS = 3
+            CELL_W = 640.0 / GRID_COLS
+            CELL_H = 480.0 / GRID_ROWS
+            
+            grid_counts = [[0 for _ in range(GRID_COLS)] for _ in range(GRID_ROWS)]
+            for cx, cy in centroids:
+                col = min(GRID_COLS - 1, max(0, int(cx / CELL_W)))
+                row = min(GRID_ROWS - 1, max(0, int(cy / CELL_H)))
+                grid_counts[row][col] += 1
+                
+            local_adjustments = 0
+            for r in range(GRID_ROWS):
+                for c in range(GRID_COLS):
+                    count = grid_counts[r][c]
+                    if count >= 6:
+                        # High local density cluster (e.g. grouped near water line): compensate 25% of counted birds
+                        local_adjustments += int(math.ceil(count * 0.25))
+                    elif count >= 4:
+                        # Medium local density cluster: compensate 15%
+                        local_adjustments += int(math.ceil(count * 0.15))
+            
+            final_count += local_adjustments
                 
             for index in range(final_count):
                 tid = index + 1
