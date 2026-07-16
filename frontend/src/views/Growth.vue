@@ -439,13 +439,50 @@ const renderChart = () => {
         {
           label: 'Actual (g)',
           data: sorted.map(s => s.avg_weight_g),
-          borderColor: '#2d6a4f',
-          backgroundColor: 'rgba(45, 106, 79, 0.08)',
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.04)',
           borderWidth: 2.5,
           tension: 0.3,
           fill: true,
-          pointRadius: 4,
-          pointBackgroundColor: '#2d6a4f',
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          pointBackgroundColor: (ctx) => {
+            const idx = ctx.dataIndex;
+            const s = sorted[idx];
+            if (!s) return '#10b981';
+            const dev = s.deviation;
+            if (Math.abs(dev) > 10) return '#ef4444'; // Critical
+            if (Math.abs(dev) > 5) return '#f59e0b';   // Warning
+            return '#10b981'; // Optimal
+          },
+          pointBorderColor: (ctx) => {
+            const idx = ctx.dataIndex;
+            const s = sorted[idx];
+            if (!s) return '#047857';
+            const dev = s.deviation;
+            if (Math.abs(dev) > 10) return '#b91c1c';
+            if (Math.abs(dev) > 5) return '#d97706';
+            return '#047857';
+          },
+          pointBorderWidth: 2,
+        },
+        {
+          label: 'Breed Target Upper (+5%)',
+          data: sorted.map(s => s.target_weight_g * 1.05),
+          borderColor: 'transparent',
+          backgroundColor: 'transparent',
+          pointRadius: 0,
+          fill: false,
+          tension: 0.3
+        },
+        {
+          label: 'Breed Target Lower (-5%)',
+          data: sorted.map(s => s.target_weight_g * 0.95),
+          borderColor: 'transparent',
+          backgroundColor: isDark ? 'rgba(16, 185, 129, 0.05)' : 'rgba(46, 117, 89, 0.05)',
+          pointRadius: 0,
+          fill: '-1', // Fills down to Upper Target (dataset 1)
+          tension: 0.3
         },
         {
           label: 'Breed Target (Ross 308)',
@@ -478,8 +515,39 @@ const renderChart = () => {
           padding: 10,
           titleFont: { weight: 'bold', size: 12 },
           bodyFont: { size: 11 },
+          filter: (tooltipItem) => {
+            // Only show labels for Actual (0) and Breed Target (3)
+            return tooltipItem.datasetIndex === 0 || tooltipItem.datasetIndex === 3;
+          },
           callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(0)} g`
+            title: (tooltipItems) => {
+              const idx = tooltipItems[0].dataIndex;
+              const s = sorted[idx];
+              return `Cohort Age: Day ${s.age} (${s.date})`;
+            },
+            label: (ctx) => {
+              const idx = ctx.dataIndex;
+              const s = sorted[idx];
+              if (!s) return '';
+              
+              if (ctx.datasetIndex === 0) {
+                const devText = s.deviation >= 0 ? `+${s.deviation.toFixed(1)}%` : `${s.deviation.toFixed(1)}%`;
+                let status = 'Optimal Growth';
+                if (Math.abs(s.deviation) > 10) {
+                  status = s.deviation > 0 ? 'Critical Overweight 🚨' : 'Critical Underweight 🚨';
+                } else if (Math.abs(s.deviation) > 5) {
+                  status = s.deviation > 0 ? 'Overweight Warning ⚠️' : 'Underweight Warning ⚠️';
+                }
+                return [
+                  `Actual Weight: ${s.avg_weight_g} g`,
+                  `Breed Target: ${s.target_weight_g.toFixed(0)} g`,
+                  `Deviation: ${devText} (${status})`
+                ];
+              } else if (ctx.datasetIndex === 3) {
+                return `Standard Target: ${ctx.parsed.y.toFixed(0)} g`;
+              }
+              return `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(0)} g`;
+            }
           }
         }
       },
@@ -579,9 +647,9 @@ const formatDateShort = (dateStr) => {
 
 const getDeviationClass = (dev) => {
   if (dev === null || dev === undefined) return 'text-gray-400'
-  if (dev >= 5) return 'text-emerald-600 dark:text-emerald-450 font-bold'
-  if (dev <= -5) return 'text-status-danger font-bold animate-pulse'
-  return 'text-gray-650 dark:text-gray-400'
+  if (Math.abs(dev) > 10) return 'text-status-danger font-bold animate-pulse'
+  if (Math.abs(dev) > 5) return 'text-amber-600 dark:text-amber-400 font-bold'
+  return 'text-emerald-600 dark:text-emerald-450 font-bold'
 }
 
 // ── Lifecycle & Watchers ──────────────────
