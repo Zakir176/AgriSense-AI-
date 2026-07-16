@@ -289,7 +289,21 @@
     "active": "Zikugwira",
     "inactive": "Zosagwira",
     "lethargic": "Zosatakataka",
-    "healthy_active": "Zathanzi & Zogwira Ntchito"
+    "healthy_active": "Zathanzi & Zogwira Ntchito",
+    "live_feed": "Kuwona Kwankhuku Moyo",
+    "archived_footage": "Mavidiyo Osungidwa",
+    "live_camera": "Kamera Yamoyo",
+    "connecting": "Kulumikizana…",
+    "connected": "Zalumikizidwa",
+    "disconnected": "Zadulidwa",
+    "reconnecting": "Kulumikizanso…",
+    "live_bird_count": "Chiwerengero cha Nkhuku Zamoyo",
+    "live_movement": "Mlingo Wasuntha",
+    "live_lethargic": "Zosatakataka Zopezeka",
+    "live_frame": "Chithunzi",
+    "connection_lost": "Kulumikizana kwatha. Kuyesa kulumikizanso…",
+    "start_live": "Yambani Kuwona Moyo",
+    "stop_live": "Imitsani Kuwona Moyo"
   },
   "audio": {
     "title": "Zidziwitso Za Mawu",
