@@ -126,6 +126,24 @@
             <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('feed.all_readings') }}</h2>
             <span class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ readings.length }} {{ $t('feed.entries') }}</span>
           </div>
+          <div v-if="readings.length > 0" class="flex items-center gap-2">
+            <button
+              @click="exportCSV"
+              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-darkbg-100 rounded-lg border border-gray-250 dark:border-gray-800 transition-all shadow-sm shrink-0"
+              title="Download CSV"
+            >
+              <span class="material-icons-outlined text-sm">download</span>
+              <span>{{ $t('feed.export_csv') }}</span>
+            </button>
+            <button
+              @click="printLedger"
+              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-darkbg-100 rounded-lg border border-gray-250 dark:border-gray-800 transition-all shadow-sm shrink-0"
+              title="Print PDF Report"
+            >
+              <span class="material-icons-outlined text-sm">print</span>
+              <span>{{ $t('feed.print_ledger') }}</span>
+            </button>
+          </div>
         </template>
 
         <AgriTable
@@ -565,6 +583,168 @@ const closeModal = () => {
 }
 
 // ── Helpers ──────────────────────────────────
+const getCohortAgeAtDate = (readingDateStr) => {
+  if (!store.activeBatch?.start_date) return '—'
+  const start = new Date(store.activeBatch.start_date)
+  const readingDate = new Date(readingDateStr)
+  start.setHours(0,0,0,0)
+  readingDate.setHours(0,0,0,0)
+  const diffTime = readingDate - start
+  const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return days >= 0 ? days : 0
+}
+
+const exportCSV = () => {
+  if (summaryData.value.length === 0) return
+  
+  const headers = [
+    'Date',
+    'Cohort Age (Days)',
+    'Feed Consumed (kg)',
+    'Water Consumed (Liters)',
+    'Daily Mortality (Birds)',
+    'Cumulative Mortality (Birds)',
+    'Feed Conversion Ratio (FCR)',
+    '7d Feed Avg (kg)',
+    '7d Water Avg (Liters)',
+    'Feed Deviation (%)',
+    'Water Deviation (%)'
+  ]
+
+  const rows = summaryData.value.map(row => {
+    const age = getCohortAgeAtDate(row.date)
+    const fcrVal = row.feed_conversion_ratio ? row.feed_conversion_ratio.toFixed(2) : '—'
+    const feedDev = row.feed_deviation_pct !== null ? `${row.feed_deviation_pct > 0 ? '+' : ''}${row.feed_deviation_pct}` : '—'
+    const waterDev = row.water_deviation_pct !== null ? `${row.water_deviation_pct > 0 ? '+' : ''}${row.water_deviation_pct}` : '—'
+    
+    return [
+      row.date,
+      age,
+      row.feed_kg.toFixed(1),
+      row.water_litres.toFixed(1),
+      row.mortality_count || 0,
+      row.cumulative_mortality || 0,
+      fcrVal,
+      row.feed_rolling_avg_7d.toFixed(1),
+      row.water_rolling_avg_7d.toFixed(1),
+      feedDev,
+      waterDev
+    ]
+  })
+
+  const csvString = [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute('download', `AgriSense_Batch_${selectedBatchId.value}_Telemetry_Report.csv`)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+const printLedger = () => {
+  if (summaryData.value.length === 0) return
+  
+  const printWindow = window.open('', '_blank')
+  
+  let tableRowsHtml = ''
+  summaryData.value.forEach(row => {
+    const age = getCohortAgeAtDate(row.date)
+    const fcrVal = row.feed_conversion_ratio ? row.feed_conversion_ratio.toFixed(2) : '—'
+    const statusText = row.flagged_abnormal ? 'FLAGGED' : 'NORMAL'
+    const statusColor = row.flagged_abnormal ? 'color: #dc2626; font-weight: bold;' : 'color: #16a34a;'
+    
+    tableRowsHtml += `
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <td style="padding: 10px 8px; text-align: left;">${formatDate(row.date)}</td>
+        <td style="padding: 10px 8px; text-align: center;">${age}</td>
+        <td style="padding: 10px 8px; text-align: right;">${row.feed_kg.toFixed(1)}</td>
+        <td style="padding: 10px 8px; text-align: right;">${row.water_litres.toFixed(1)}</td>
+        <td style="padding: 10px 8px; text-align: center;">${row.mortality_count || 0}</td>
+        <td style="padding: 10px 8px; text-align: center;">${row.cumulative_mortality || 0}</td>
+        <td style="padding: 10px 8px; text-align: center; font-weight: bold;">${fcrVal}</td>
+        <td style="padding: 10px 8px; text-align: center; ${statusColor}">${statusText}</td>
+      </tr>
+    `
+  })
+
+  const batchInfo = store.activeBatch 
+    ? `Batch #${store.activeBatch.id} - ${store.activeBatch.breed} (${store.activeBatch.bird_count} birds)` 
+    : 'All Batches'
+  const dateRange = summaryData.value.length > 0 
+    ? `From ${formatDate(summaryData.value[0].date)} to ${formatDate(summaryData.value[summaryData.value.length - 1].date)}` 
+    : ''
+
+  printWindow.document.write(`
+    \x3chtml\x3e
+      \x3chead\x3e
+        \x3ctitle\x3eAgriSense AI - Telemetry Ledger Report\x3c/title\x3e
+        \x3cstyle\x3e
+          body { font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #111827; padding: 25px; line-height: 1.5; background-color: #fff; }
+          .header { border-bottom: 2px solid #10b981; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+          .logo-area { display: flex; flex-direction: column; }
+          .logo { font-size: 26px; font-weight: 800; color: #059669; letter-spacing: -0.025em; }
+          .logo span { color: #10b981; }
+          .subtitle { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-top: 2px; }
+          .meta-area { font-size: 13px; color: #374151; text-align: right; line-height: 1.6; }
+          table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+          th { background-color: #f9fafb; padding: 10px 8px; font-weight: 700; border-bottom: 2px solid #e5e7eb; color: #4b5563; }
+          td { border-bottom: 1px solid #e5e7eb; color: #1f2937; }
+          .footer { margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 15px; font-size: 11px; color: #9ca3af; text-align: center; }
+          @media print {
+            body { padding: 0; }
+            button { display: none; }
+          }
+        \x3c/style\x3e
+      \x3c/head\x3e
+      \x3cbody\x3e
+        <div class="header">
+          <div class="logo-area">
+            <div class="logo">AgriSense <span>AI</span></div>
+            <div class="subtitle">Poultry Ledger Report</div>
+          </div>
+          <div class="meta-area">
+            <strong>Cohort:</strong> \${batchInfo}<br>
+            <strong>Date Range:</strong> \${dateRange}<br>
+            <strong>Report Date:</strong> \${new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align: left;">Date</th>
+              <th style="text-align: center;">Age (Days)</th>
+              <th style="text-align: right;">Feed (kg)</th>
+              <th style="text-align: right;">Water (L)</th>
+              <th style="text-align: center;">Mortality (Birds)</th>
+              <th style="text-align: center;">Cumulative</th>
+              <th style="text-align: center;">FCR</th>
+              <th style="text-align: center;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            \${tableRowsHtml}
+          </tbody>
+        </table>
+        <div class="footer">
+          Generated automatically by AgriSense AI Precision Poultry System &copy; 2026. All rights reserved.
+        </div>
+        \x3cscript\x3e
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+              window.close();
+            }, 300);
+          }
+        \x3c/script\x3e
+      \x3c/body\x3e
+    \x3c/html\x3e
+  `)
+  printWindow.document.close()
+}
+
 const formatDate = (dateStr) => {
   if (!dateStr) return '—'
   return new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
