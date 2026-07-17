@@ -332,7 +332,8 @@ const activeCohortAge = computed(() => {
   const today = new Date()
   start.setHours(0,0,0,0)
   today.setHours(0,0,0,0)
-  return Math.ceil(Math.abs(today - start) / (1000 * 60 * 60 * 24))
+  const diffTime = today - start
+  return diffTime >= 0 ? Math.ceil(diffTime / (1000 * 60 * 60 * 24)) : 0
 })
 
 const vaccineSchedule = computed(() => {
