@@ -192,7 +192,9 @@
     "reading_date": "Reading Date",
     "cancel": "Cancel",
     "save_changes": "Save Changes",
-    "save_reading": "Save Reading"
+    "save_reading": "Save Reading",
+    "export_csv": "Export CSV",
+    "print_ledger": "Print Ledger"
   },
   "growth": {
     "title": "Growth Monitoring",
