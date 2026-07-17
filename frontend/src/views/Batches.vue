@@ -413,8 +413,8 @@ const calculateDays = (startDateStr) => {
   const today = new Date()
   start.setHours(0, 0, 0, 0)
   today.setHours(0, 0, 0, 0)
-  const diffTime = Math.abs(today - start)
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  const diffTime = today - start
+  return diffTime >= 0 ? Math.ceil(diffTime / (1000 * 60 * 60 * 24)) : 0
 }
 
 onMounted(() => {
