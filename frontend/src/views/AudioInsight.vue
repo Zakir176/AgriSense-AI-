@@ -37,7 +37,13 @@
       <!-- Quick distress overview status -->
       <div class="flex items-center gap-2">
         <span class="text-xs font-semibold text-gray-500">{{ $t('audio.distress_status') }}</span>
-        <AgriBadge variant="success" icon="check">{{ $t('audio.normal') }}</AgriBadge>
+        <AgriBadge
+          :variant="selectedSample?.id === 'live_mic' ? (liveSeverity === 'Normal' ? 'success' : (liveSeverity === 'Warning' ? 'warning' : 'critical')) : 'success'"
+          :icon="selectedSample?.id === 'live_mic' ? (liveSeverity === 'Normal' ? 'check' : (liveSeverity === 'Warning' ? 'warning' : 'error')) : 'check'"
+          :pulse="selectedSample?.id === 'live_mic' && liveSeverity !== 'Normal'"
+        >
+          {{ selectedSample?.id === 'live_mic' ? liveSeverity : $t('audio.normal') }}
+        </AgriBadge>
       </div>
     </div>
 
@@ -53,7 +59,7 @@
 
       <!-- ─── Left Pane: Soundboard & Settings ─── -->
       <div class="lg:col-span-1 space-y-4 animate-fade-in-up delay-150">
-        <AgriCard>
+        <AgriCard id="audio-library-card">
           <template #header>
             <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('audio.acoustic_library') }}</h2>
             <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">4 Profiles</span>
@@ -231,13 +237,24 @@
 import { ref, onUnmounted, nextTick, computed, onMounted, watch } from 'vue'
 import { api } from '../services/api'
 import { store } from '../services/store'
+import { useToast } from '../composables/useToast'
 
 // Design System components
 import AgriCard from '../components/ui/AgriCard.vue'
 import AgriBadge from '../components/ui/AgriBadge.vue'
 import AgriButton from '../components/ui/AgriButton.vue'
 
+const toast = useToast()
+
 const offlineMode = ref(false)
+
+// Live Microphone Analyzer state
+const liveSeverity = ref('Normal')
+const liveDistressProb = ref(0)
+const livePeak = ref('—')
+const liveCohesion = ref(100)
+const liveDescription = ref('Analyzing live audio stream from your computer microphone. Data is being sent to the telemetry backend.')
+const isLiveMicConnected = ref(false)
 
 const audioConfig = ref({
   cough_threshold_pct: 80.0,
@@ -351,6 +368,21 @@ const samples = computed(() => {
         'Check ammonia (NH3) gas sensor levels — target < 20 ppm.',
         'Alert attending veterinary staff for flock swab evaluation.'
       ]
+    },
+    {
+      id: 'live_mic',
+      title: 'Live Local Microphone (Active Scan)',
+      frequencyRange: '20 Hz - 20,000 Hz',
+      severity: liveSeverity.value,
+      distressProb: liveDistressProb.value,
+      dominantPeak: livePeak.value,
+      cohesion: liveCohesion.value,
+      description: liveDescription.value,
+      instructions: [
+        'Make sounds (clap, click, speak) to observe real-time frequency waveforms.',
+        'Adjust Cough/Chirp sensitivity filters in ML Settings panel.',
+        'High decibel triggers will raise system respiratory alerts.'
+      ]
     }
   ]
 })
@@ -366,13 +398,117 @@ let gainNode = null
 let canvasCtx = null
 let animationFrameId = null
 
+// Live Mic Streams
+let micStream = null
+let micAnalyser = null
+let micSource = null
+let micDataArray = null
+let mediaRecorder = null
+let recordIntervalId = null
+
+const connectMicrophone = async () => {
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    initAudio()
+    if (audioCtx.state === 'suspended') {
+      await audioCtx.resume()
+    }
+    
+    micAnalyser = audioCtx.createAnalyser()
+    micAnalyser.fftSize = 256
+    
+    micSource = audioCtx.createMediaStreamSource(micStream)
+    micSource.connect(micAnalyser)
+    
+    const bufferLength = micAnalyser.frequencyBinCount
+    micDataArray = new Uint8Array(bufferLength)
+
+    // Setup Telemetry MediaRecorder
+    try {
+      mediaRecorder = new MediaRecorder(micStream, { mimeType: 'audio/webm' })
+      mediaRecorder.ondataavailable = async (e) => {
+        if (e.data.size > 0 && store.currentFarm?.id) {
+          try {
+            const result = await api.audio.classify(store.currentFarm.id, e.data)
+            if (result) {
+              liveDistressProb.value = result.distressProb
+              liveSeverity.value = result.severity
+              livePeak.value = result.dominantPeak
+              liveCohesion.value = result.cohesion
+              liveDescription.value = result.description
+            }
+          } catch (err) {
+            console.error("Telemetry upload failed:", err)
+          }
+        }
+      }
+      mediaRecorder.start()
+      
+      // Capture slices every 3 seconds
+      recordIntervalId = setInterval(() => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop()
+          mediaRecorder.start()
+        }
+      }, 3000)
+    } catch (mrErr) {
+      console.warn("MediaRecorder setup failed (browser may not support it):", mrErr)
+    }
+    
+    isLiveMicConnected.value = true
+    isPlaying.value = true
+    
+    nextTick(() => {
+      startAnimation()
+    })
+  } catch (err) {
+    console.error('Mic access denied:', err)
+    alert('Microphone access denied: ' + err.message)
+    selectedSample.value = null
+  }
+}
+
+const disconnectMicrophone = () => {
+  if (recordIntervalId) {
+    clearInterval(recordIntervalId)
+    recordIntervalId = null
+  }
+  if (mediaRecorder) {
+    if (mediaRecorder.state !== 'inactive') mediaRecorder.stop()
+    mediaRecorder = null
+  }
+  if (micStream) {
+    micStream.getTracks().forEach(track => track.stop())
+    micStream = null
+  }
+  if (micSource) {
+    micSource.disconnect()
+    micSource = null
+  }
+  if (micAnalyser) {
+    micAnalyser.disconnect()
+    micAnalyser = null
+  }
+  isLiveMicConnected.value = false
+  isPlaying.value = false
+}
+
 // ── Sound Selection ────────────────────────
 const selectSample = (sample) => {
+  const previousWasMic = selectedSample.value?.id === 'live_mic'
   stopSound()
+  if (previousWasMic) {
+    disconnectMicrophone()
+  }
   selectedSample.value = sample
-  nextTick(() => {
-    startAnimation()
-  })
+  
+  if (sample.id === 'live_mic') {
+    connectMicrophone()
+  } else {
+    nextTick(() => {
+      startAnimation()
+    })
+  }
 }
 
 // ── Web Audio API Sound Generation ──────────
@@ -384,6 +520,10 @@ const initAudio = () => {
 
 const playSound = () => {
   if (!selectedSample.value) return
+  if (selectedSample.value.id === 'live_mic') {
+    connectMicrophone()
+    return
+  }
   initAudio()
 
   oscillator = audioCtx.createOscillator()
@@ -411,6 +551,10 @@ const playSound = () => {
 }
 
 const stopSound = () => {
+  if (selectedSample.value?.id === 'live_mic') {
+    disconnectMicrophone()
+    return
+  }
   if (oscillator) {
     try {
       oscillator.stop()
@@ -474,41 +618,78 @@ const startAnimation = () => {
       canvasCtx.stroke()
     }
 
-    canvasCtx.beginPath()
-    canvasCtx.lineWidth = 2
-    canvasCtx.strokeStyle = selectedSample.value.severity === 'Normal'
-      ? '#2d6a4f'
-      : (selectedSample.value.severity === 'Warning' ? '#f4a261' : '#e76f51')
+    if (selectedSample.value.id === 'live_mic' && micAnalyser) {
+      micAnalyser.getByteTimeDomainData(micDataArray)
+      const bufferLength = micAnalyser.frequencyBinCount
+      
+      // Calculate RMS just for oscilloscope display purposes if needed, 
+      // but bypass assigning to live severity (now handled by backend)
+      let sumOfSquares = 0
+      for (let i = 0; i < bufferLength; i++) {
+        const v = (micDataArray[i] - 128) / 128.0
+        sumOfSquares += v * v
+      }
+      // We don't overwrite liveDistressProb.value or liveSeverity.value anymore
+      // because they are asynchronously updated by the backend Telemetry payload.
 
-    const amp = isPlaying.value ? 45 : 8
-    const freq = selectedSample.value.id === 'thermal' ? 0.08 : (selectedSample.value.id === 'healthy' ? 0.02 : 0.04)
-
-    for (let x = 0; x < width; x++) {
-      let y = height / 2
-      if (isPlaying.value) {
-        if (selectedSample.value.id === 'healthy') {
-          y += Math.sin(x * freq + phase) * amp * (0.8 + 0.2 * Math.sin(phase * 0.5))
-        } else if (selectedSample.value.id === 'thermal') {
-          y += Math.sin(x * freq + phase) * amp * (Math.sin(x * 0.005 + phase * 0.2) > 0.4 ? 1 : 0.1)
-        } else if (selectedSample.value.id === 'feeding') {
-          y += Math.sin(x * freq + phase) * amp * Math.cos(x * 0.01 + phase * 0.05)
+      // Draw active mic waveform
+      canvasCtx.beginPath()
+      canvasCtx.lineWidth = 2
+      canvasCtx.strokeStyle = liveSeverity.value === 'Normal'
+        ? '#2d6a4f'
+        : (liveSeverity.value === 'Warning' ? '#f4a261' : '#e76f51')
+      
+      const sliceWidth = width / bufferLength
+      let x = 0
+      for (let i = 0; i < bufferLength; i++) {
+        const v = micDataArray[i] / 128.0
+        const y = v * (height / 2)
+        
+        if (i === 0) {
+          canvasCtx.moveTo(x, y)
         } else {
-          const noise = (Math.random() - 0.5) * 12
-          const sawtooth = ((x * freq + phase) % 2) - 1
-          y += (sawtooth * amp) + noise
+          canvasCtx.lineTo(x, y)
         }
-      } else {
-        y += (Math.random() - 0.5) * 2 + Math.sin(x * 0.01 + phase) * 2
+        x += sliceWidth
       }
+      canvasCtx.stroke()
+    } else {
+      // Draw reference synthesized waves or idle waves (original loop)
+      canvasCtx.beginPath()
+      canvasCtx.lineWidth = 2
+      canvasCtx.strokeStyle = selectedSample.value.severity === 'Normal'
+        ? '#2d6a4f'
+        : (selectedSample.value.severity === 'Warning' ? '#f4a261' : '#e76f51')
 
-      if (x === 0) {
-        canvasCtx.moveTo(x, y)
-      } else {
-        canvasCtx.lineTo(x, y)
+      const amp = isPlaying.value ? 45 : 8
+      const freq = selectedSample.value.id === 'thermal' ? 0.08 : (selectedSample.value.id === 'healthy' ? 0.02 : 0.04)
+
+      for (let x = 0; x < width; x++) {
+        let y = height / 2
+        if (isPlaying.value) {
+          if (selectedSample.value.id === 'healthy') {
+            y += Math.sin(x * freq + phase) * amp * (0.8 + 0.2 * Math.sin(phase * 0.5))
+          } else if (selectedSample.value.id === 'thermal') {
+            y += Math.sin(x * freq + phase) * amp * (Math.sin(x * 0.005 + phase * 0.2) > 0.4 ? 1 : 0.1)
+          } else if (selectedSample.value.id === 'feeding') {
+            y += Math.sin(x * freq + phase) * amp * Math.cos(x * 0.01 + phase * 0.05)
+          } else {
+            const noise = (Math.random() - 0.5) * 12
+            const sawtooth = ((x * freq + phase) % 2) - 1
+            y += (sawtooth * amp) + noise
+          }
+        } else {
+          y += (Math.random() - 0.5) * 2 + Math.sin(x * 0.01 + phase) * 2
+        }
+
+        if (x === 0) {
+          canvasCtx.moveTo(x, y)
+        } else {
+          canvasCtx.lineTo(x, y)
+        }
       }
+      canvasCtx.stroke()
     }
-
-    canvasCtx.stroke()
 
     phase += isPlaying.value ? 0.25 : 0.03
     animationFrameId = requestAnimationFrame(draw)
