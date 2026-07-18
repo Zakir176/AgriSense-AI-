@@ -38,21 +38,28 @@
     </div>
 
     <template v-else>
-      <!-- ─── Summary Cards (Staggered load) ─── -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- ─── Summary Cards ─── -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <AgriStatCard
           :label="$t('meds.total_treatments')"
           :value="entries.length"
-          icon="medical_services"
+          icon="history"
           icon-color-class="bg-blue-50 dark:bg-blue-950/40 text-blue-500"
           class="animate-fade-in-up delay-100"
+        />
+        <AgriStatCard
+          :label="$t('calendar.upcoming')"
+          :value="upcomingCount"
+          icon="event_upcoming"
+          icon-color-class="bg-amber-50 dark:bg-amber-950/40 text-amber-500"
+          class="animate-fade-in-up delay-150"
         />
         <AgriStatCard
           :label="$t('meds.vaccinations_done')"
           :value="vaccineCount"
           icon="verified"
           icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-450"
-          class="animate-fade-in-up delay-150"
+          class="animate-fade-in-up delay-200"
         />
         <AgriStatCard
           :label="$t('meds.resolution_success')"
@@ -60,66 +67,20 @@
           suffix="%"
           icon="monitoring"
           icon-color-class="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400"
-          class="animate-fade-in-up delay-200"
+          class="animate-fade-in-up delay-250"
         />
       </div>
 
-      <!-- ─── Vaccine Schedule Timeline ─── -->
-      <AgriCard class="animate-fade-in-up delay-250">
-        <template #header>
-          <div class="flex items-center gap-2">
-            <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">schedule</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('meds.roadmap') }}</h2>
-          </div>
-          <span class="text-xs text-gray-450 dark:text-gray-500 font-semibold">{{ $t('meds.standard_program') }}</span>
-        </template>
-
-        <!-- Horizontal Timeline -->
-        <div class="relative py-6 flex flex-col md:flex-row justify-between items-center md:items-start gap-8 md:gap-4 w-full">
-          <!-- Connective line -->
-          <div class="hidden md:block absolute top-[43px] left-[5%] right-[5%] h-0.5 bg-gray-200 dark:bg-gray-800 z-0"></div>
-
-          <!-- Timeline Steps -->
-          <div
-            v-for="(item, idx) in vaccineSchedule"
-            :key="idx"
-            class="relative flex flex-col items-center text-center z-10 w-full md:w-1/5 animate-scale-in"
-            :class="getStaggerDelayClass(idx)"
-          >
-            <!-- Step marker bubble -->
-            <div
-              class="h-10 w-10 rounded-full flex items-center justify-center border-2 transition-all duration-300"
-              :class="[
-                item.status === 'completed'
-                  ? 'bg-primary-500 border-primary-600 text-white dark:bg-primary-600'
-                  : item.status === 'overdue'
-                    ? 'bg-red-50 border-status-danger text-status-danger dark:bg-red-950/40 animate-pulse-critical'
-                    : 'bg-white dark:bg-darkbg-50 border-gray-300 dark:border-gray-800 text-gray-400'
-              ]"
-            >
-              <span class="material-icons-outlined text-[18px] leading-none">
-                {{ item.status === 'completed' ? 'check' : item.status === 'overdue' ? 'warning' : 'hourglass_empty' }}
-              </span>
-            </div>
-
-            <!-- Labels -->
-            <div class="mt-3.5 space-y-0.5">
-              <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">Day {{ item.day }}</p>
-              <p class="text-sm font-extrabold text-gray-850 dark:text-gray-200">{{ item.name }}</p>
-              <p class="text-[11px] text-gray-550 dark:text-gray-550">{{ item.type }}</p>
-              <div class="pt-1.5 flex justify-center">
-                <AgriBadge
-                  :variant="item.status === 'completed' ? 'success' : item.status === 'overdue' ? 'critical' : 'info'"
-                  :pulse="item.status === 'overdue'"
-                  size="xs"
-                >
-                  {{ item.status }}
-                </AgriBadge>
-              </div>
-            </div>
-          </div>
-        </div>
-      </AgriCard>
+      <!-- ─── Interactive Treatment Calendar ─── -->
+      <TreatmentCalendar
+        :schedules="schedules"
+        :batch-start-date="activeBatchObj?.start_date"
+        @open-schedule="openScheduleModal"
+        @edit="editSchedule"
+        @delete="deleteSchedule"
+        @mark-complete="markScheduleComplete"
+        class="animate-fade-in-up delay-300"
+      />
 
       <!-- ─── Treatment History Logs ─── -->
       <AgriCard class="animate-fade-in-up delay-300" padding="none">
@@ -188,7 +149,16 @@
       </AgriCard>
     </template>
 
-    <!-- ─── Log Medication Modal (AgriModal) ─── -->
+    <!-- ─── Schedule Modal ─── -->
+    <ScheduleModal
+      :show="showScheduleModal"
+      :initial-date="selectedScheduleDate"
+      :edit-data="editingScheduleData"
+      @close="closeScheduleModal"
+      @save="saveSchedule"
+    />
+
+    <!-- ─── Log Medication Modal ─── -->
     <AgriModal
       :show="showLogModal"
       :title="editingMedicationId ? $t('meds.edit_log') : $t('meds.log_vaccine')"
@@ -268,6 +238,7 @@ import { api } from '../services/api'
 import { useToast } from '../composables/useToast'
 import { useAnimations } from '../composables/useAnimations'
 import { useI18n } from 'vue-i18n'
+import { useReminders } from '../composables/useReminders'
 
 // Design System components
 import AgriButton from '../components/ui/AgriButton.vue'
@@ -279,19 +250,32 @@ import AgriModal from '../components/ui/AgriModal.vue'
 import AgriInput from '../components/ui/AgriInput.vue'
 import AgriSelect from '../components/ui/AgriSelect.vue'
 
+// Custom feature components
+import TreatmentCalendar from '../components/TreatmentCalendar.vue'
+import ScheduleModal from '../components/ScheduleModal.vue'
+
 const toast = useToast()
 const { getStaggerDelayClass } = useAnimations()
 const { t } = useI18n()
+const { scheduleReminder, cancelReminder } = useReminders()
 
 // ── State ──────────────────────────────────
 const selectedBatchId = ref(null)
 const entries = ref([])
+const schedules = ref([])
 const loading = ref(false)
+
+// Medication Log Modal
 const showLogModal = ref(false)
 const submitting = ref(false)
 const formError = ref('')
 const formSuccess = ref(false)
 const editingMedicationId = ref(null)
+
+// Schedule Modal
+const showScheduleModal = ref(false)
+const selectedScheduleDate = ref('')
+const editingScheduleData = ref(null)
 
 // ── Form helpers ──────────────────────────
 const getTodayString = () => {
@@ -322,52 +306,12 @@ const vaccineCount = computed(() => {
   return entries.value.filter(e => isVaccine(e.medicine_type)).length
 })
 
+const upcomingCount = computed(() => {
+  return schedules.value.filter(s => s.status === 'pending').length
+})
+
 const resolvedCount = computed(() => {
   return entries.value.filter(e => e.outcome_note && e.outcome_note.trim().length > 0).length
-})
-
-const activeCohortAge = computed(() => {
-  if (!activeBatchObj.value?.start_date) return 0
-  const start = new Date(activeBatchObj.value.start_date)
-  const today = new Date()
-  start.setHours(0,0,0,0)
-  today.setHours(0,0,0,0)
-  const diffTime = today - start
-  return diffTime >= 0 ? Math.ceil(diffTime / (1000 * 60 * 60 * 24)) : 0
-})
-
-const vaccineSchedule = computed(() => {
-  if (!activeBatchObj.value) return []
-  const age = activeCohortAge.value
-  
-  const schedule = [
-    { day: 1, name: "Marek's Vaccine", type: 'Hatchery' },
-    { day: 7, name: 'Gumboro (Dose 1)', type: 'Water/Oral' },
-    { day: 14, name: 'Newcastle (Dose 1)', type: 'Ocular/Water' },
-    { day: 21, name: 'Gumboro (Dose 2)', type: 'Water/Oral' },
-    { day: 28, name: 'Newcastle (Dose 2)', type: 'Water/Oral' }
-  ]
-
-  return schedule.map(item => {
-    const isLogged = entries.value.some(e => {
-      if (!isVaccine(e.medicine_type)) return false
-      const nameLower = e.medicine_type.toLowerCase()
-      const itemLower = item.name.toLowerCase().split(' ')[0]
-      return nameLower.includes(itemLower)
-    })
-
-    let status = 'pending'
-    if (isLogged) {
-      status = 'completed'
-    } else if (age >= item.day) {
-      status = 'overdue'
-    }
-
-    return {
-      ...item,
-      status
-    }
-  })
 })
 
 const isVaccine = (typeStr) => {
@@ -385,20 +329,100 @@ const tableHeaders = computed(() => [
 ])
 
 // ── Data fetching ──────────────────────────
-const fetchEntries = async () => {
+const fetchData = async () => {
   if (!selectedBatchId.value) return
   loading.value = true
   try {
-    entries.value = await api.medications.list(selectedBatchId.value)
+    const [meds, scheds] = await Promise.all([
+      api.medications.list(selectedBatchId.value),
+      api.schedules.list(selectedBatchId.value)
+    ])
+    entries.value = meds
+    schedules.value = scheds
   } catch (err) {
-    console.error('Failed to load medication history:', err)
+    console.error('Failed to load medication/schedule data:', err)
   } finally {
     loading.value = false
   }
 }
 
 const onBatchChange = () => {
-  fetchEntries()
+  fetchData()
+}
+
+// ── Schedule Logic ───────────────────────
+const openScheduleModal = (dateStr) => {
+  selectedScheduleDate.value = dateStr || getTodayString()
+  editingScheduleData.value = null
+  showScheduleModal.value = true
+}
+
+const editSchedule = (item) => {
+  editingScheduleData.value = { ...item }
+  selectedScheduleDate.value = item.scheduled_date
+  showScheduleModal.value = true
+}
+
+const closeScheduleModal = () => {
+  showScheduleModal.value = false
+  editingScheduleData.value = null
+}
+
+const saveSchedule = async (payload) => {
+  submitting.value = true
+  try {
+    let savedItem
+    if (editingScheduleData.value) {
+      savedItem = await api.schedules.update(editingScheduleData.value.id, payload)
+      toast.success(t('calendar.schedule_updated'))
+    } else {
+      payload.batch_id = selectedBatchId.value
+      savedItem = await api.schedules.create(payload)
+      toast.success(t('calendar.schedule_created'))
+    }
+    
+    // Handle reminders
+    if (savedItem.remind_at) {
+      await scheduleReminder(
+        `sched_${savedItem.id}`,
+        savedItem.title,
+        `Treatment scheduled for batch #${selectedBatchId.value}`,
+        savedItem.remind_at
+      )
+    } else {
+      await cancelReminder(`sched_${savedItem.id}`)
+    }
+    
+    await fetchData()
+    closeScheduleModal()
+  } catch (err) {
+    toast.error(err.message || 'Failed to save schedule')
+  } finally {
+    submitting.value = false
+  }
+}
+
+const deleteSchedule = async (id) => {
+  if (!confirm(t('calendar.confirm_delete'))) return
+  try {
+    await api.schedules.delete(id)
+    await cancelReminder(`sched_${id}`)
+    await fetchData()
+    toast.success(t('calendar.schedule_deleted'))
+  } catch (err) {
+    toast.error('Failed to delete schedule')
+  }
+}
+
+const markScheduleComplete = async (item) => {
+  try {
+    await api.schedules.complete(item.id)
+    await cancelReminder(`sched_${item.id}`)
+    await fetchData()
+    toast.success(t('calendar.marked_complete'))
+  } catch (err) {
+    toast.error('Failed to mark complete')
+  }
 }
 
 // ── Log Modal Actions ───────────────────────
@@ -432,7 +456,7 @@ const deleteMedication = async (id) => {
   if (!confirm('Are you sure you want to delete this medication entry?')) return
   try {
     await api.medications.delete(id)
-    await fetchEntries()
+    await fetchData()
     toast.success('Medication entry deleted successfully')
   } catch (err) {
     alert('Failed to delete medication entry: ' + err.message)
@@ -464,7 +488,7 @@ const submitMedication = async () => {
       toast.success('Medication dosage logged')
     }
     formSuccess.value = true
-    await fetchEntries()
+    await fetchData()
     closeModal()
   } catch (err) {
     formError.value = err.message || 'Failed to save medication entry.'
@@ -480,23 +504,18 @@ const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleDateString(undefined, options)
 }
 
-const formatDateShort = (dateStr) => {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-}
-
 // ── Lifecycle & Watchers ──────────────────
 watch(() => store.activeBatch, (newVal) => {
   if (newVal && !selectedBatchId.value) {
     selectedBatchId.value = newVal.id
-    fetchEntries()
+    fetchData()
   }
 }, { immediate: true })
 
 onMounted(() => {
   if (store.activeBatch) {
     selectedBatchId.value = store.activeBatch.id
-    fetchEntries()
+    fetchData()
   }
 })
 </script>
