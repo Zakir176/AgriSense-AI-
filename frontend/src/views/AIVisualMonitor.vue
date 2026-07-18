@@ -487,7 +487,7 @@
         <div class="space-y-6 animate-fade-in-up delay-100">
 
           <!-- Live Video Canvas -->
-          <AgriCard padding="none">
+          <AgriCard id="ai-live-feed-card" padding="none">
             <template #header>
               <div class="flex items-center gap-2">
                 <span class="material-icons-outlined text-emerald-600 dark:text-emerald-400">videocam</span>
