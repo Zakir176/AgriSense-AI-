@@ -9,17 +9,17 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#f2f8f5',
-          100: '#e2f0e8',
-          200: '#c4e2d2',
-          300: '#99cbb2',
-          400: '#68ae8a',
-          500: '#40916c', // Main green
-          600: '#2d6a4f', // Deep nature green
-          700: '#21503b',
-          800: '#1b3f2f',
-          900: '#153125',
-          950: '#0c1b14',
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#22c55e',
+          600: '#16a34a',
+          700: '#15803d', // Main vibrant green
+          800: '#166534',
+          900: '#14532d',
+          950: '#052e16',
         },
         secondary: {
           50: '#fdfbf7',
@@ -50,8 +50,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        heading: ['Poppins', 'Inter', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        heading: ['Plus Jakarta Sans', 'Poppins', 'sans-serif'],
       },
       spacing: {
         'xs': '4px',
@@ -79,6 +79,7 @@ export default {
   safelist: [
     'translate-x-0',
     '-translate-x-full',
+    'translate-x-full',
     'md:translate-x-0',
     'md:w-0',
   ],
