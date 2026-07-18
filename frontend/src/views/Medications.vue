@@ -30,6 +30,7 @@
       </div>
     </div>
 
+
     <!-- ─── No batch selected state ─── -->
     <div v-if="!selectedBatchId" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-16 text-center animate-fade-in-up delay-100">
       <span class="material-icons-outlined text-4xl text-gray-300 dark:text-gray-700 block mb-3">vaccines</span>
@@ -73,6 +74,7 @@
 
       <!-- ─── Interactive Treatment Calendar ─── -->
       <TreatmentCalendar
+        id="treatment-calendar-panel"
         :schedules="schedules"
         :batch-start-date="activeBatchObj?.start_date"
         @open-schedule="openScheduleModal"
