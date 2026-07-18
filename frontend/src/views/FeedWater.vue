@@ -706,9 +706,9 @@ const printLedger = () => {
             <div class="subtitle">Poultry Ledger Report</div>
           </div>
           <div class="meta-area">
-            <strong>Cohort:</strong> \${batchInfo}<br>
-            <strong>Date Range:</strong> \${dateRange}<br>
-            <strong>Report Date:</strong> \${new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+            <strong>Cohort:</strong> ${batchInfo}<br>
+            <strong>Date Range:</strong> ${dateRange}<br>
+            <strong>Report Date:</strong> ${new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
         </div>
         <table>
@@ -725,7 +725,7 @@ const printLedger = () => {
             </tr>
           </thead>
           <tbody>
-            \${tableRowsHtml}
+            ${tableRowsHtml}
           </tbody>
         </table>
         <div class="footer">
