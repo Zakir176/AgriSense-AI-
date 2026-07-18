@@ -119,7 +119,7 @@
       </AgriCard>
 
       <!-- ─── Readings Table ─── -->
-      <AgriCard class="animate-fade-in-up delay-350" padding="none">
+      <AgriCard id="readings-table-card" class="animate-fade-in-up delay-350" padding="none">
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">table_chart</span>
