@@ -93,7 +93,7 @@
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
       <!-- Alert Queue (left / wide) -->
-      <AgriCard class="xl:col-span-2 animate-fade-in-up delay-250" padding="none">
+      <AgriCard id="dashboard-alerts-card" class="xl:col-span-2 animate-fade-in-up delay-250" padding="none" glass>
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">inbox</span>
@@ -134,7 +134,7 @@
           <div
             v-for="(alert, index) in unackAlerts.slice(0, 8)"
             :key="alert.id"
-            class="flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-darkbg-100 transition animate-fade-in-up"
+            class="flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-darkbg-100 transition animate-fade-in-up active-press"
             :class="getStaggerDelayClass(index)"
           >
             <div class="mt-0.5 shrink-0 h-7 w-7 rounded-lg flex items-center justify-center"
@@ -166,7 +166,7 @@
       <div class="flex flex-col gap-5">
 
         <!-- Active Batch Card -->
-        <AgriCard class="animate-fade-in-up delay-300" padding="none">
+        <AgriCard class="animate-fade-in-up delay-300" padding="none" glass>
           <template #header>
             <div class="flex items-center gap-2">
               <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">inventory_2</span>
@@ -216,14 +216,14 @@
         </AgriCard>
 
         <!-- Quick Links -->
-        <AgriCard class="animate-fade-in-up delay-350">
+        <AgriCard id="dashboard-quick-links" class="animate-fade-in-up delay-350" glass>
           <p class="text-xs font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-3">{{ $t('dashboard.quick_links') }}</p>
           <div class="grid grid-cols-2 gap-2">
             <router-link
               v-for="ql in quickLinks"
               :key="ql.path"
               :to="ql.path"
-              class="flex flex-col items-center gap-2 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-primary-200 dark:hover:border-primary-900 hover:bg-primary-50/40 dark:hover:bg-primary-950/20 active:scale-95 transition-all duration-150 group text-center"
+              class="flex flex-col items-center gap-2 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-primary-200 dark:hover:border-primary-900 hover:bg-primary-50/40 dark:hover:bg-primary-950/20 active-press transition-all duration-150 group text-center"
             >
               <div class="h-9 w-9 rounded-xl bg-gray-50 dark:bg-darkbg-100 flex items-center justify-center group-hover:bg-primary-50 dark:group-hover:bg-primary-950/50 transition">
                 <span class="material-icons-outlined text-[20px] text-gray-400 dark:text-gray-500 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition">{{ ql.icon }}</span>
@@ -239,7 +239,7 @@
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
 
       <!-- Recent Feed/Water Readings -->
-      <AgriCard class="animate-fade-in-up delay-400" padding="none">
+      <AgriCard class="animate-fade-in-up delay-400" padding="none" glass>
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">opacity</span>
@@ -283,7 +283,7 @@
       </AgriCard>
 
       <!-- All Batches Status Table -->
-      <AgriCard class="animate-fade-in-up delay-500" padding="none">
+      <AgriCard class="animate-fade-in-up delay-500" padding="none" glass>
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">layers</span>
