@@ -16,5 +16,6 @@ class Batch(Base):
     readings = relationship("FeedWaterReading", back_populates="batch", cascade="all, delete-orphan")
     growth_samples = relationship("GrowthSample", back_populates="batch", cascade="all, delete-orphan")
     medications = relationship("MedicationEntry", back_populates="batch", cascade="all, delete-orphan")
+    scheduled_treatments = relationship("ScheduledTreatment", back_populates="batch", cascade="all, delete-orphan")
     alerts = relationship("Alert", back_populates="batch", cascade="all, delete-orphan")
     media_clips = relationship("MediaClip", back_populates="batch", cascade="all, delete-orphan")
