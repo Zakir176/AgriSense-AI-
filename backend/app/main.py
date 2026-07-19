@@ -11,7 +11,7 @@ from .models.user_farm import UserFarmAssociation
 
 # Import all models to register on Base
 from .models import Base
-from .routers import auth, farms, batches, readings, growth, medications, alerts, inference, spatial_trends, audio
+from .routers import auth, farms, batches, readings, growth, medications, alerts, inference, spatial_trends, audio, scheduled_treatments
 
 # Auto-create tables (practical for Phase 1 mockup)
 Base.metadata.create_all(bind=engine)
@@ -62,9 +62,25 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown logic (nothing needed for Phase 1)
 
+tags_metadata = [
+    {"name": "Auth", "description": "Authentication and JWT token management."},
+    {"name": "Farms", "description": "Farm entity management and role-based access."},
+    {"name": "Batches", "description": "Poultry batch lifecycle and archiving."},
+    {"name": "Readings", "description": "Daily feed, water, and mortality logs."},
+    {"name": "Growth", "description": "Weekly weight sampling and Cobb 500 reference tracking."},
+    {"name": "Medications", "description": "Historical medical and vaccination logs."},
+    {"name": "Scheduled Treatments", "description": "Interactive calendar for planning future treatments."},
+    {"name": "Alerts", "description": "Heuristic anomaly alerts (mortality spikes, consumption drops)."},
+    {"name": "Inference", "description": "YOLOv8 visual monitoring, flock counting, and activity scoring."},
+    {"name": "Spatial Trends", "description": "Heatmaps and spatial distribution analysis."},
+    {"name": "Audio", "description": "Audio telemetry for heuristic distress call classification."}
+]
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
+    description="AgriSense AI API Service — Intelligent Poultry Farm Management.\n\nProvides endpoints for offline-first synchronization, YOLOv8 visual audits, audio telemetry, and daily farm metric logging.",
     version=settings.VERSION,
+    openapi_tags=tags_metadata,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     lifespan=lifespan
 )
@@ -102,6 +118,7 @@ app.include_router(alerts.router, prefix=settings.API_V1_STR)
 app.include_router(inference.router, prefix=settings.API_V1_STR)
 app.include_router(spatial_trends.router, prefix=settings.API_V1_STR)
 app.include_router(audio.router, prefix=settings.API_V1_STR)
+app.include_router(scheduled_treatments.router, prefix=settings.API_V1_STR)
 
 from fastapi.staticfiles import StaticFiles
 import os
