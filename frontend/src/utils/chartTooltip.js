@@ -6,7 +6,9 @@ export const externalTooltipHandler = (context) => {
   if (!tooltipEl) {
     tooltipEl = document.createElement('div');
     tooltipEl.classList.add('chartjs-tooltip');
-    tooltipEl.style.background = 'rgba(255, 255, 255, 0.95)';
+    tooltipEl.style.background = 'rgba(255, 255, 255, 0.7)';
+    tooltipEl.style.backdropFilter = 'blur(12px)';
+    tooltipEl.style.webkitBackdropFilter = 'blur(12px)';
     tooltipEl.style.borderRadius = '12px';
     tooltipEl.style.color = '#1f2937'; // gray-800
     tooltipEl.style.opacity = 1;
@@ -22,7 +24,7 @@ export const externalTooltipHandler = (context) => {
     
     // Dark mode check
     if (document.documentElement.classList.contains('dark')) {
-      tooltipEl.style.background = 'rgba(27, 27, 30, 0.95)';
+      tooltipEl.style.background = 'rgba(27, 27, 30, 0.7)';
       tooltipEl.style.color = '#f9fafb'; // gray-50
       tooltipEl.style.border = '1px solid rgba(255, 255, 255, 0.1)';
     }
@@ -41,7 +43,7 @@ export const externalTooltipHandler = (context) => {
     const titleLines = tooltip.title || [];
     const bodyLines = tooltip.body.map(b => b.lines);
 
-    let innerHtml = '<div style="font-family: Inter, sans-serif;">';
+    let innerHtml = '<div style="font-family: \'Plus Jakarta Sans\', sans-serif;">';
 
     titleLines.forEach(title => {
       innerHtml += `<div style="font-weight: 800; font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: ${document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'};">${title}</div>`;
