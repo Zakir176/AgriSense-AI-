@@ -6,8 +6,8 @@ class MedicationEntry(Base):
     __tablename__ = "medication_entries"
 
     id = Column(Integer, primary_key=True, index=True)
-    batch_id = Column(Integer, ForeignKey("batches.id"), nullable=False)
-    date = Column(Date, nullable=False)
+    batch_id = Column(Integer, ForeignKey("batches.id"), nullable=False, index=True)
+    date = Column(Date, nullable=False, index=True)
     medicine_type = Column(String, nullable=False)
     dosage = Column(String, nullable=False)
     outcome_note = Column(String, nullable=True)
