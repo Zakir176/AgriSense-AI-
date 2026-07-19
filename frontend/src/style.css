@@ -25,7 +25,7 @@
 /* Global Styles */
 body {
   @apply bg-gray-50 text-gray-900 dark:bg-darkbg-100 dark:text-gray-100 transition-colors duration-200;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
