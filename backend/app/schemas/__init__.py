@@ -6,6 +6,7 @@ from .growth import GrowthSampleBase, GrowthSampleCreate, GrowthSampleUpdate, Gr
 from .medication import MedicationEntryBase, MedicationEntryCreate, MedicationEntryUpdate, MedicationEntryResponse
 from .alert import AlertBase, AlertCreate, AlertUpdate, AlertResponse
 from .media import MediaClipBase, MediaClipCreate, MediaClipResponse, InferenceResultBase, InferenceResultCreate, InferenceResultResponse
+from .scheduled_treatment import ScheduledTreatmentBase, ScheduledTreatmentCreate, ScheduledTreatmentUpdate, ScheduledTreatmentResponse
 
 __all__ = [
     "UserBase", "UserCreate", "UserResponse", "Token", "TokenData",
@@ -15,6 +16,7 @@ __all__ = [
     "GrowthSampleBase", "GrowthSampleCreate", "GrowthSampleUpdate", "GrowthSampleResponse", "GrowthRateSummary",
     "MedicationEntryBase", "MedicationEntryCreate", "MedicationEntryUpdate", "MedicationEntryResponse",
     "AlertBase", "AlertCreate", "AlertUpdate", "AlertResponse",
+    "ScheduledTreatmentBase", "ScheduledTreatmentCreate", "ScheduledTreatmentUpdate", "ScheduledTreatmentResponse",
     "MediaClipBase", "MediaClipCreate", "MediaClipResponse",
     "InferenceResultBase", "InferenceResultCreate", "InferenceResultResponse"
 ]
