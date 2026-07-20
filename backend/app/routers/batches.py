@@ -25,6 +25,32 @@ def create_batch(batch: BatchCreate, db: Session = Depends(get_db), current_user
     db.add(db_batch)
     db.commit()
     db.refresh(db_batch)
+    
+    # Auto-generate standard broiler vaccination schedule
+    from datetime import timedelta
+    from ..models.scheduled_treatment import ScheduledTreatment
+    
+    default_schedules = [
+        {"day": 1, "title": "Marek's Vaccine", "type": "vaccine", "notes": "Hatchery (often pre-administered)"},
+        {"day": 7, "title": "Gumboro (Dose 1)", "type": "vaccine", "notes": "Water/Oral administration"},
+        {"day": 14, "title": "Newcastle (Dose 1)", "type": "vaccine", "notes": "Ocular or Water administration"},
+        {"day": 21, "title": "Gumboro (Dose 2)", "type": "vaccine", "notes": "Water/Oral administration"},
+        {"day": 28, "title": "Newcastle (Dose 2)", "type": "vaccine", "notes": "Water/Oral administration"}
+    ]
+    
+    for sched in default_schedules:
+        target_date = db_batch.start_date + timedelta(days=sched["day"] - 1)
+        db_schedule = ScheduledTreatment(
+            batch_id=db_batch.id,
+            title=sched["title"],
+            treatment_type=sched["type"],
+            scheduled_date=target_date,
+            notes=sched["notes"]
+        )
+        db.add(db_schedule)
+        
+    db.commit()
+    
     return db_batch
 
 @router.get("", response_model=List[BatchResponse])
