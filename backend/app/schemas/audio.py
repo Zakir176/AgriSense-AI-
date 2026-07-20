@@ -17,3 +17,10 @@ class AudioConfigResponse(AudioConfigBase):
 
     class Config:
         from_attributes = True
+
+class AudioClassificationResponse(BaseModel):
+    distressProb: int
+    severity: str
+    dominantPeak: str
+    cohesion: int
+    description: str
