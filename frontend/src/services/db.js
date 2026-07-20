@@ -1,8 +1,9 @@
 import { openDB } from 'idb'
 
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STORE_API_CACHE = 'api-cache'
 const STORE_SYNC_QUEUE = 'sync-queue'
+const STORE_REMINDERS = 'reminders'
 
 const getDBName = () => {
   const token = localStorage.getItem('agrisense_token')
@@ -21,10 +22,10 @@ const getDBName = () => {
   }
 }
 
-const initDB = async () => {
+export const initDB = async () => {
   const dbName = getDBName()
   return openDB(dbName, DB_VERSION, {
-    upgrade(db) {
+    upgrade(db, oldVersion, newVersion, transaction) {
       if (!db.objectStoreNames.contains(STORE_API_CACHE)) {
         // Cache for GET requests (key is URL)
         db.createObjectStore(STORE_API_CACHE, { keyPath: 'url' })
@@ -36,6 +37,9 @@ const initDB = async () => {
           autoIncrement: true
         })
         queueStore.createIndex('timestamp', 'timestamp')
+      }
+      if (!db.objectStoreNames.contains(STORE_REMINDERS)) {
+        db.createObjectStore(STORE_REMINDERS, { keyPath: 'id' })
       }
     }
   })
@@ -73,4 +77,20 @@ export const getSyncQueue = async () => {
 export const removeFromSyncQueue = async (id) => {
   const db = await initDB()
   await db.delete(STORE_SYNC_QUEUE, id)
+}
+
+// ---- Reminder Methods ----
+export const addReminder = async (reminder) => {
+  const db = await initDB()
+  await db.put(STORE_REMINDERS, reminder)
+}
+
+export const getReminders = async () => {
+  const db = await initDB()
+  return db.getAll(STORE_REMINDERS)
+}
+
+export const removeReminder = async (id) => {
+  const db = await initDB()
+  await db.delete(STORE_REMINDERS, id)
 }
