@@ -48,7 +48,7 @@
         </p>
 
         <!-- Feature cards -->
-        <div class="grid grid-cols-2 gap-3 mb-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
           <div class="group bg-white/5 hover:bg-white/9 backdrop-blur-sm border border-white/8 hover:border-white/18 rounded-2xl p-4 transition-all duration-300 cursor-default">
             <div class="flex items-center space-x-2 mb-2">
               <span class="material-icons-outlined text-primary-400 text-[18px]">videocam</span>

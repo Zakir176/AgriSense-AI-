@@ -188,7 +188,7 @@
           icon="layers"
         />
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <AgriInput
             v-model.number="newBatch.bird_count"
             type="number"

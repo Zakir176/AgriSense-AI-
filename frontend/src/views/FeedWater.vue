@@ -217,7 +217,7 @@
           icon="calendar_today"
         />
 
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <!-- Feed Input -->
           <AgriInput
             v-model.number="form.feed_kg"
