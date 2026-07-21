@@ -111,7 +111,7 @@
             :value="totalMortality"
             icon="warning"
             icon-color-class="bg-red-50 dark:bg-red-950/40 text-red-550 dark:text-red-400"
-            :trend="`\${mortalityRate.toFixed(1)}% \${$t('analytics.loss')}`"
+            :trend="`${mortalityRate.toFixed(1)}% ${$t('analytics.loss')}`"
             trend-direction="neutral"
             :trend-good="mortalityRate <= 5"
             :subtext="$t('analytics.allowable_limit')"
