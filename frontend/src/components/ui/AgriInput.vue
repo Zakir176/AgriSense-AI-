@@ -15,7 +15,7 @@
       <!-- Left Icon -->
       <span
         v-if="icon"
-        class="absolute left-3.5 material-icons-outlined text-gray-450 dark:text-gray-500 pointer-events-none select-none text-[18px]"
+        class="absolute left-3.5 material-icons-outlined text-gray-450 dark:text-gray-500 pointer-events-none select-none text-[18px] flex items-center justify-center"
       >
         {{ icon }}
       </span>
@@ -46,13 +46,13 @@
       <!-- Right Indicator Icons (e.g., error alert, success checkmark) -->
       <span
         v-if="error"
-        class="absolute right-3.5 material-icons-outlined text-status-danger text-[18px] pointer-events-none select-none animate-pulse"
+        class="absolute right-3.5 material-icons-outlined text-status-danger text-[18px] pointer-events-none select-none animate-pulse flex items-center justify-center"
       >
         error_outline
       </span>
       <span
         v-else-if="success"
-        class="absolute right-3.5 material-icons-outlined text-status-success text-[18px] pointer-events-none select-none"
+        class="absolute right-3.5 material-icons-outlined text-status-success text-[18px] pointer-events-none select-none flex items-center justify-center"
       >
         check_circle_outline
       </span>

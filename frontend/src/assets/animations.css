@@ -146,6 +146,11 @@
   will-change: transform;
 }
 
+.animate-float {
+  animation: floatWave 3s ease-in-out infinite;
+  will-change: transform;
+}
+
 .animate-pop-marker {
   animation: popMarker 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   will-change: transform, opacity;

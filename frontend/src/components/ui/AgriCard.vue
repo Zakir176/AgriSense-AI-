@@ -1,12 +1,12 @@
 <template>
   <div
-    class="rounded-2xl border transition-all duration-300 overflow-hidden bg-white dark:bg-darkbg-50/70 border-gray-200 dark:border-gray-800"
+    class="rounded-2xl border transition-all duration-300 overflow-hidden bg-white dark:bg-darkbg-50/70 border-gray-150 dark:border-white/5"
     :class="[
       paddingClasses[padding] || paddingClasses.md,
       {
-        'hover:-translate-y-1 hover:shadow-lg': hoverLift,
-        'shadow-sm': !hoverLift,
-        'glass-panel bg-white/70 dark:bg-darkbg-50/75': glass
+        'hover:-translate-y-1 hover:shadow-xl': hoverLift,
+        'shadow-sm hover:shadow-md': !hoverLift,
+        'glass-panel !border-white/40 dark:!border-darkbg-50/20 bg-white/70 dark:bg-darkbg-50/75': glass
       }
     ]"
   >

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="glass-panel border-white/20 dark:border-darkbg-50/20 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between"
+    class="group glass-panel border-white/20 dark:border-darkbg-50/20 rounded-2xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
   >
     <!-- Skeleton Loading -->
     <div v-if="loading" class="space-y-3">
@@ -21,7 +21,7 @@
         </span>
         <div
           v-if="icon"
-          class="h-8 w-8 rounded-xl flex items-center justify-center transition-all duration-300"
+          class="shrink-0 h-8 w-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-md"
           :class="iconColorClass || 'bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400'"
         >
           <span class="material-icons-outlined text-[17px] leading-none">{{ icon }}</span>

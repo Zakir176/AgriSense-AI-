@@ -1,10 +1,13 @@
 <template>
   <div class="space-y-6">
 
+    <!-- Background Ambient Orb -->
+    <div class="fixed -top-20 left-1/4 w-96 h-96 bg-primary-400/20 dark:bg-primary-900/20 rounded-full blur-[100px] -z-10 pointer-events-none animate-float"></div>
+
     <!-- ─── Header ─── -->
-    <div class="flex items-start justify-between animate-fade-in-up">
+    <div class="flex items-start justify-between animate-fade-in-up relative z-10">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('dashboard.title') }}</h1>
+        <h1 class="text-3xl font-extrabold tracking-tight text-gradient-primary pb-1">{{ $t('dashboard.title') }}</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
           {{ $t('dashboard.subtitle') }}
           <span class="font-semibold text-gray-700 dark:text-gray-300">{{ store.currentFarm?.name || 'Prime Nest Poultry' }}</span>
@@ -134,7 +137,7 @@
           <div
             v-for="(alert, index) in unackAlerts.slice(0, 8)"
             :key="alert.id"
-            class="flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-darkbg-100 transition animate-fade-in-up active-press"
+            class="group flex items-start gap-3 px-5 py-3.5 hover:bg-white dark:hover:bg-darkbg-50 transition-all duration-300 hover:pl-6 hover:shadow-sm animate-fade-in-up active-press"
             :class="getStaggerDelayClass(index)"
           >
             <div class="mt-0.5 shrink-0 h-7 w-7 rounded-lg flex items-center justify-center"
