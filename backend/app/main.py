@@ -142,13 +142,13 @@ async def rtsp_stream(websocket: WebSocket, batch_id: int):
     try:
         from .models.batch import Batch
         from .models.reading import FeedWaterReading
+        from sqlalchemy import func
         batch = db.query(Batch).filter(Batch.id == batch_id).first()
         if not batch:
             await websocket.send_json({"error": "Batch not found"})
             await websocket.close()
             return
-        readings = db.query(FeedWaterReading).filter(FeedWaterReading.batch_id == batch_id).all()
-        cumulative_mortality = sum(r.mortality_count or 0 for r in readings)
+        cumulative_mortality = db.query(func.sum(FeedWaterReading.mortality_count)).filter(FeedWaterReading.batch_id == batch_id).scalar() or 0
         expected_count = max(0, batch.bird_count - cumulative_mortality)
     finally:
         db.close()

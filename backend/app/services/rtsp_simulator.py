@@ -88,8 +88,8 @@ class RTSPSimulator:
             # Draw telemetry on frame
             cv2.putText(frame, f"Tracked: {len(self.birds)}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
-            # 3. Encode to JPEG
-            _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
+            # 3. Encode to JPEG asynchronously to prevent blocking event loop
+            _, buffer = await asyncio.to_thread(cv2.imencode, '.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
             frame_b64 = base64.b64encode(buffer).decode('utf-8')
             
             # 4. Generate Telemetry JSON
