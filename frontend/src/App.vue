@@ -1,6 +1,8 @@
 <template>
   <div class="h-screen bg-[#f4f7f4] text-gray-850 dark:bg-[#0f1412] dark:text-gray-150 flex font-sans transition-colors duration-200">
     <Toast />
+    <TourGuide />
+    <SyncDrawer />
     <!-- Render raw router-view for blank layout pages (like Login) -->
     <router-view v-if="isBlankLayout" class="flex-1 h-full" />
 
@@ -37,6 +39,7 @@
             v-for="item in navItems" 
             :key="item.path" 
             :to="item.path"
+            :id="item.key === 'feed_water' ? 'nav-feed-water' : (item.key === 'ai_monitor' ? 'nav-ai-monitor' : 'nav-' + item.key)"
             class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-medium transition group"
             :class="[
               isRouteActive(item.path)
@@ -52,10 +55,17 @@
         </nav>
 
         <!-- Sidebar Footer / Logout -->
-        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
+          <button 
+            @click="startTourGuide"
+            class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary-50 hover:bg-primary-100 dark:bg-primary-950/20 dark:hover:bg-primary-950/40 border border-primary-200/30 dark:border-primary-900/30 rounded-xl text-sm font-bold text-primary-750 dark:text-primary-400 transition cursor-pointer"
+          >
+            <span class="material-icons-outlined text-base">help_outline</span>
+            <span>{{ $t('tour.restart') }}</span>
+          </button>
           <button 
             @click="handleLogout"
-            class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium text-red-650 hover:bg-red-50 hover:border-red-200/30 dark:text-red-400 dark:hover:bg-red-950/20 border border-transparent dark:hover:border-red-900/30 transition"
+            class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium text-red-650 hover:bg-red-50 hover:border-red-200/30 dark:text-red-400 dark:hover:bg-red-950/20 border border-transparent dark:hover:border-red-900/30 transition cursor-pointer"
           >
             <span class="material-icons-outlined text-lg">logout</span>
             <span>{{ $t('app.sign_out') }}</span>
@@ -102,22 +112,21 @@
             </div>
           </div>
           
-          <div class="flex items-center space-x-4">
+          <div id="header-actions" class="flex items-center space-x-4">
             <!-- Offline Indicator -->
-            <div v-if="isOffline" class="flex items-center space-x-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-700 dark:text-amber-400 text-xs font-bold">
+            <div v-if="isOffline" class="flex items-center space-x-1.5 px-2 sm:px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-700 dark:text-amber-400 text-xs font-bold">
               <span class="material-icons-outlined text-sm">wifi_off</span>
-              <span>{{ $t('app.offline_mode') }}</span>
+              <span class="hidden sm:inline">{{ $t('app.offline_mode') }}</span>
             </div>
             <div v-if="isSyncing" class="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-700 dark:text-blue-400 text-xs font-bold">
               <span class="material-icons-outlined text-sm animate-spin">sync</span>
               <span>{{ $t('app.syncing') }}</span>
             </div>
-            <!-- Manual Sync Trigger Button -->
+            <!-- Manual Sync Trigger Button (opens Sync Drawer) -->
             <button 
               v-if="syncQueueLength > 0"
-              @click="syncOfflineData" 
+              @click="toggleDrawer" 
               class="flex items-center space-x-1.5 px-2 md:px-3 py-1.5 bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-900 rounded-lg text-primary-750 dark:text-primary-400 text-xs font-black animate-pulse hover:bg-primary-100 dark:hover:bg-primary-900/50 transition focus:outline-none cursor-pointer"
-              :disabled="isSyncing"
               aria-label="Pending Sync Queue"
             >
               <span class="material-icons-outlined text-sm animate-spin" v-if="isSyncing">sync</span>
@@ -190,7 +199,7 @@
             </div>
 
             <!-- User Panel -->
-            <div class="flex items-center space-x-3 border-l border-gray-200 dark:border-gray-800 pl-3 md:pl-4">
+            <div id="site-header-role" class="flex items-center space-x-3 border-l border-gray-200 dark:border-gray-800 pl-3 md:pl-4">
               <div class="hidden sm:flex flex-col text-right">
                 <span class="text-sm font-semibold text-gray-800 dark:text-white">
                   {{ store.currentUser ? store.currentUser.full_name || store.currentUser.username : $t('app.guest') }}
@@ -224,8 +233,11 @@ import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from './services/api'
 import { store } from './services/store'
-import { getSyncQueue, removeFromSyncQueue } from './services/db'
 import Toast from './components/Toast.vue'
+import TourGuide from './components/TourGuide.vue'
+import SyncDrawer from './components/SyncDrawer.vue'
+import { useSyncManager } from './composables/useSyncManager'
+import { useReminders } from './composables/useReminders'
 import { useI18n } from 'vue-i18n'
 
 const { locale } = useI18n()
@@ -401,67 +413,16 @@ const acknowledgeAlert = async (id) => {
   }
 }
 
-// Background Sync Management
-const isOffline = ref(!navigator.onLine)
-const isSyncing = ref(false)
-const syncQueueLength = ref(0)
-
-const updateQueueLength = async () => {
-  try {
-    const queue = await getSyncQueue()
-    syncQueueLength.value = queue.length
-  } catch (error) {
-    console.error('Failed to get sync queue length:', error)
-  }
-}
-
-const handleOnline = async () => {
-  isOffline.value = false
-  await syncOfflineData()
-}
-
-const handleOffline = () => {
-  isOffline.value = true
-}
-
-const syncOfflineData = async () => {
-  if (isSyncing.value) return
-  isSyncing.value = true
-  await updateQueueLength()
-  
-  try {
-    const queue = await getSyncQueue()
-    if (queue.length > 0) {
-      console.log(`[Sync] Found ${queue.length} items to sync`)
-      for (const item of queue) {
-        try {
-          const apiBase = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1'
-          await fetch(`${apiBase}${item.url}`, {
-            method: item.method,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('agrisense_token')}`
-            },
-            body: item.payload ? JSON.stringify(item.payload) : undefined
-          })
-          await removeFromSyncQueue(item.id)
-          await updateQueueLength()
-          console.log(`[Sync] Successfully synced request ${item.id}`)
-        } catch (err) {
-          console.error(`[Sync] Failed to sync request ${item.id}:`, err)
-          // Stop syncing on first error to preserve order
-          break
-        }
-      }
-      
-      // Refresh the app state by calling initApp to fetch fresh data
-      await initApp()
-    }
-  } finally {
-    isSyncing.value = false
-    await updateQueueLength()
-  }
-}
+// Background Sync Management (delegated to useSyncManager composable)
+const {
+  isOffline,
+  isSyncing,
+  queueLength: syncQueueLength,
+  toggleDrawer,
+  syncAll,
+  initialize: initSyncManager,
+  destroy: destroySyncManager
+} = useSyncManager()
 
 const formatDate = (dateStr) => {
   if (!dateStr) return ''
@@ -478,8 +439,6 @@ watch(isBlankLayout, (newBlank) => {
   }
 })
 
-let syncQueueInterval = null
-
 onMounted(async () => {
   // Respect user preference, default to light mode (false) if none exists
   const savedTheme = localStorage.getItem('theme')
@@ -494,32 +453,38 @@ onMounted(async () => {
   await router.isReady()
   initApp()
   
-  // Periodically check for alerts and sync queue size
+  setTimeout(() => {
+    const token = localStorage.getItem('agrisense_token')
+    const onboarded = localStorage.getItem('agrisense_onboarded')
+    if (token && !onboarded && !isBlankLayout.value) {
+      startTourGuide()
+    }
+  }, 1000)
+  
+  // Periodically check for alerts
   alertsInterval = setInterval(() => {
     fetchAlerts()
   }, 30000)
 
-  await updateQueueLength()
-  syncQueueInterval = setInterval(updateQueueLength, 3000)
-
-  // Register online/offline listeners
-  window.addEventListener('online', handleOnline)
-  window.addEventListener('offline', handleOffline)
+  // Initialize sync manager (handles queue polling, online/offline listeners)
+  initSyncManager()
+  
+  // Initialize reminders
+  const { checkPendingReminders } = useReminders()
+  checkPendingReminders()
   
   // Close dropdowns when clicking outside
   document.addEventListener('click', handleClickOutside)
   
-  // Check if we came online while the page was closed/reloading
+  // Auto-sync if we came online while the page was closed/reloading
   if (navigator.onLine) {
-    syncOfflineData()
+    syncAll()
   }
 })
 
 onUnmounted(() => {
   clearInterval(alertsInterval)
-  clearInterval(syncQueueInterval)
-  window.removeEventListener('online', handleOnline)
-  window.removeEventListener('offline', handleOffline)
+  destroySyncManager()
   document.removeEventListener('click', handleClickOutside)
 })
 
@@ -540,6 +505,12 @@ const isRouteActive = (path) => {
     return route.path === '/dashboard'
   }
   return route.path.startsWith(path)
+}
+
+const startTourGuide = () => {
+  store.tour.active = true
+  store.tour.currentStep = 0
+  router.push('/dashboard')
 }
 
 const handleLogout = () => {

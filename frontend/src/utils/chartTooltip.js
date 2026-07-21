@@ -18,18 +18,20 @@ export const externalTooltipHandler = (context) => {
     tooltipEl.style.marginTop = '-10px';
     tooltipEl.style.transition = 'all .2s ease';
     tooltipEl.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)';
-    tooltipEl.style.border = '1px solid rgba(0, 0, 0, 0.05)';
     tooltipEl.style.padding = '12px';
     tooltipEl.style.zIndex = 100;
-    
-    // Dark mode check
-    if (document.documentElement.classList.contains('dark')) {
-      tooltipEl.style.background = 'rgba(27, 27, 30, 0.7)';
-      tooltipEl.style.color = '#f9fafb'; // gray-50
-      tooltipEl.style.border = '1px solid rgba(255, 255, 255, 0.1)';
-    }
-
     chart.canvas.parentNode.appendChild(tooltipEl);
+  }
+
+  // Update theme styles dynamically so it responds to dark mode toggles
+  if (document.documentElement.classList.contains('dark')) {
+    tooltipEl.style.background = 'rgba(27, 27, 30, 0.7)';
+    tooltipEl.style.color = '#f9fafb'; // gray-50
+    tooltipEl.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+  } else {
+    tooltipEl.style.background = 'rgba(255, 255, 255, 0.7)';
+    tooltipEl.style.color = '#1f2937'; // gray-800
+    tooltipEl.style.border = '1px solid rgba(0, 0, 0, 0.05)';
   }
 
   // Hide if no tooltip
@@ -72,6 +74,16 @@ export const externalTooltipHandler = (context) => {
   }
 
   const position = context.chart.canvas.getBoundingClientRect();
+
+  // Responsive alignment to prevent tooltip from overflowing the canvas
+  const halfWidth = tooltipEl.offsetWidth / 2;
+  let transformX = '-50%';
+  if (tooltip.caretX < halfWidth + 10) {
+    transformX = '0%';
+  } else if (tooltip.caretX > position.width - halfWidth - 10) {
+    transformX = '-100%';
+  }
+  tooltipEl.style.transform = `translate(${transformX}, -100%)`;
 
   // Display, position, and set styles for font
   tooltipEl.style.opacity = 1;
