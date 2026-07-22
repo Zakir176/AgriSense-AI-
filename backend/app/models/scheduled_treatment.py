@@ -16,5 +16,10 @@ class ScheduledTreatment(Base):
     status = Column(String, default="pending")                # "pending" | "completed" | "skipped"
     completed_date = Column(Date, nullable=True)
     remind_at = Column(DateTime, nullable=True)               # Optional reminder datetime
+    prescribed_by = Column(String, nullable=True)             # e.g. "Dr. Sarah Jenkins (Veterinarian)"
+    administered_by = Column(String, nullable=True)            # e.g. "Evans Kabwe (Farmhand)"
+    digital_signature = Column(String, nullable=True)         # Verification hash / sign-off string
+    reminder_channel = Column(String, default="browser")      # "browser" | "sms" | "both"
+    phone_number = Column(String, nullable=True)              # Optional phone number for SMS reminders
 
     batch = relationship("Batch", back_populates="scheduled_treatments")
