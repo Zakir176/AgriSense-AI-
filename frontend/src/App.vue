@@ -520,7 +520,7 @@ const handleLogout = () => {
   store.activeBatch = null
   store.batchesList = []
   store.farmsList = []
-  router.push({ name: 'Login' })
+  router.push({ name: 'Landing' })
 }
 </script>
 
