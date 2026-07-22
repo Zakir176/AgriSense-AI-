@@ -138,3 +138,6 @@ AgriSense AI stores request payloads in the browser's IndexedDB when offline. Yo
        DATABASE_URL=sqlite:///./agrisense.db
        ```
        Then re-run the database seeder: `python seed_data.py`.
+
+### Q4: What is `frontend/take_screenshots.js`?
+*   **Answer**: `take_screenshots.js` is an optional developer utility script powered by Puppeteer used to capture automated documentation screenshots (`Docs/assets/`). It is a developer tool and not part of the application runtime.
