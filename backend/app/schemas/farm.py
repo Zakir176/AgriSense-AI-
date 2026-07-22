@@ -1,5 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional
+
+VALID_ROLES = {"owner", "veterinarian", "farmhand", "data_analyst"}
 
 class FarmBase(BaseModel):
     name: str
@@ -23,8 +25,22 @@ class FarmMemberAdd(BaseModel):
     username: str
     role: str
 
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v):
+        if v not in VALID_ROLES:
+            raise ValueError(f"Invalid role '{v}'. Must be one of: {', '.join(sorted(VALID_ROLES))}")
+        return v
+
 class FarmMemberUpdate(BaseModel):
     role: str
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v):
+        if v not in VALID_ROLES:
+            raise ValueError(f"Invalid role '{v}'. Must be one of: {', '.join(sorted(VALID_ROLES))}")
+        return v
 
 class FarmMemberResponse(BaseModel):
     user_id: int
