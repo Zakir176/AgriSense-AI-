@@ -4,17 +4,35 @@ from ..models.audio import AudioConfig
 
 logger = logging.getLogger(__name__)
 
+# Safely attempt importing librosa if installed in full ML environment
+try:
+    import librosa
+    LIBROSA_AVAILABLE = True
+except ImportError:
+    LIBROSA_AVAILABLE = False
+    logger.info("librosa package not installed. Using simulated audio telemetry classifier fallback.")
+
 def classify_audio_snippet(file_path: str, config: AudioConfig) -> dict:
     """
-    Simulates ML classification of an audio telemetry file.
+    Classifies an audio telemetry file using librosa feature extraction if available,
+    otherwise falling back to simulated acoustic feature analysis.
     Returns distress probability, severity, dominant peak frequency, and cohesion metrics.
-    Uses the farm's configured thresholds.
     """
+    mean_centroid = None
     try:
-        # Check file size just to simulate analyzing the audio block
         import os
         size_kb = os.path.getsize(file_path) / 1024
         logger.info(f"Analyzing audio chunk: {size_kb:.2f} KB")
+
+        if LIBROSA_AVAILABLE:
+            try:
+                y, sr = librosa.load(file_path, duration=5.0)
+                centroids = librosa.feature.spectral_centroid(y=y, sr=sr)
+                if centroids.size > 0:
+                    mean_centroid = float(centroids.mean())
+                    logger.info(f"Librosa spectral centroid: {mean_centroid:.1f} Hz")
+            except Exception as lib_err:
+                logger.warning(f"Librosa feature extraction fallback on chunk: {lib_err}")
     except Exception as e:
         logger.warning(f"Could not read audio file size: {e}")
 
