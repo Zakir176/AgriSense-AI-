@@ -153,8 +153,13 @@ async def rtsp_stream(websocket: WebSocket, batch_id: int):
     finally:
         db.close()
 
-    from .services.rtsp_simulator import RTSPSimulator
-    simulator = RTSPSimulator(expected_count=min(expected_count, 80))  # cap for performance
+    try:
+        from .services.rtsp_simulator import RTSPSimulator
+        simulator = RTSPSimulator(expected_count=min(expected_count, 80))  # cap for performance
+    except (ImportError, ModuleNotFoundError):
+        await websocket.send_json({"error": "OpenCV / NumPy dependencies not installed for RTSP simulation."})
+        await websocket.close()
+        return
 
     try:
         async for payload in simulator.stream_frames():
