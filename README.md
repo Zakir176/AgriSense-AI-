@@ -16,8 +16,13 @@
 ---
 
 <div align="center">
+  <img src="Docs/assets/landing.jpg" width="800" alt="AgriSense AI Landing Portal" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px;">
+  <p><em>AgriSense AI Operator Portal & Interactive 3D Edge Hardware Telemetry.</em></p>
+</div>
+
+<div align="center">
   <img src="Docs/assets/dashboard.jpg" width="800" alt="AgriSense AI Dashboard" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px;">
-  <p><em>Real-time Dashboard showing huddling risk, offline sync status, and farm vitals.</em></p>
+  <p><em>Real-time Farm Dashboard showing live flock counts, mortality alerts, and operational summary.</em></p>
 </div>
 
 <div align="center" style="display: flex; justify-content: center; gap: 20px;">
@@ -50,6 +55,9 @@ To explore specific sections of the project in detail, please refer to the follo
 *   🏗️ **[System Architecture Guide (ARCHITECTURE.md)](./ARCHITECTURE.md)**: Explains the three-tier topology, component breakdown, database ER diagrams (including RBAC tables), system flow diagrams, and custom YOLOv8 centroids displacement math.
 *   🛠️ **[Developer & Operator Setup Guide (DEVELOPER_GUIDE.md)](./DEVELOPER_GUIDE.md)**: Detailed OS-specific virtual environment activation commands, seeder execution instructions, video processing optimizations, and a troubleshooting FAQ.
 *   🤝 **[Contributing Guidelines (CONTRIBUTING.md)](./CONTRIBUTING.md)**: Standards for branch management, commit messages, and submitting PRs.
+
+> [!NOTE]
+> **Developer Utility**: The `frontend/take_screenshots.js` file is an automated Puppeteer script used solely for generating documentation screenshot assets (`Docs/assets/`). It is a developer helper tool and not part of the application runtime.
 
 ---
 
