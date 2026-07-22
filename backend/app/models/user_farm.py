@@ -8,7 +8,7 @@ class UserFarmAssociation(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     farm_id = Column(Integer, ForeignKey("farms.id", ondelete="CASCADE"), nullable=False)
-    role = Column(String, nullable=False, default="operator")  # owner | operator | viewer
+    role = Column(String, nullable=False, default="farmhand")  # owner | veterinarian | farmhand | data_analyst
 
     # Define relationships
     user = relationship("User", back_populates="user_farms")
