@@ -82,9 +82,9 @@ docker-compose up -d
 cd backend
 python -m venv venv
 
-# Activate venv:
-# Windows (PowerShell): .\venv\Scripts\Activate.ps1
-# macOS/Linux: source venv/bin/activate
+Activate venv:
+Windows (PowerShell): .\venv\Scripts\Activate.ps1
+macOS/Linux: source venv/bin/activate
 
 # For production / Railway deploy (no ultralytics overhead, falls back to mock inference):
 # pip install -r requirements.txt
