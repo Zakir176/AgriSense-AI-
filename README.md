@@ -60,9 +60,9 @@ docker-compose up -d
 cd backend
 python -m venv venv
 
-# Activate venv:
-# Windows (PowerShell): .\venv\Scripts\Activate.ps1
-# macOS/Linux: source venv/bin/activate
+Activate venv:
+Windows (PowerShell): .\venv\Scripts\Activate.ps1
+macOS/Linux: source venv/bin/activate
 
 pip install -r requirements.txt
 python seed_data.py  # Seeds pilot farm and realistic daily metrics
