@@ -4,11 +4,11 @@
     <!-- ─── Header ─── -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Growth Monitoring</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('growth.title') }}</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-          Monitor weight gains, standard deviations, and daily growth rates for
+          {{ $t('growth.subtitle') }}
           <span v-if="activeBatchObj" class="font-bold text-gray-700 dark:text-gray-300">Batch #{{ activeBatchObj.id }} · {{ activeBatchObj.breed }}</span>
-          <span v-else class="italic text-gray-450">no active batch</span>
+          <span v-else class="italic text-gray-450">{{ $t('growth.no_active') }}</span>
         </p>
       </div>
       <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -17,7 +17,7 @@
           <AgriSelect
             v-model="selectedBatchId"
             :options="batchOptions"
-            placeholder="Select cohort batch"
+            :placeholder="$t('growth.select_batch')"
             @change="onBatchChange"
           />
         </div>
@@ -26,17 +26,15 @@
           icon="add"
           :disabled="!selectedBatchId"
           @click="showLogModal = true"
-        >
-          Record Weight
-        </AgriButton>
+        >{{ $t('growth.record_weight') }}</AgriButton>
       </div>
     </div>
 
     <!-- ─── No batch selected state ─── -->
     <div v-if="!selectedBatchId" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-16 text-center animate-fade-in-up delay-100">
       <span class="material-icons-outlined text-4xl text-gray-300 dark:text-gray-700 block mb-3">scale</span>
-      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">Select a batch above to view growth analytics.</p>
-      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Growth curves and target deviations are calculated per cohort.</p>
+      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">{{ $t('growth.select_view') }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $t('growth.calculated_desc') }}</p>
     </div>
 
     <template v-else>
@@ -44,7 +42,7 @@
       <!-- ─── Summary KPIs (Staggered load) ─── -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <AgriStatCard
-          label="Average Weight"
+          :label="$t('growth.avg_weight')"
           :value="latestSample ? latestSample.avg_weight_g : 0"
           suffix=" g"
           icon="balance"
@@ -53,35 +51,35 @@
           :trend="latestSample ? `${latestSample.deviation >= 0 ? '+' : ''}${latestSample.deviation.toFixed(1)}%` : '—'"
           :trend-direction="latestSample && latestSample.deviation >= 0 ? 'up' : 'down'"
           :trend-good="latestSample ? latestSample.deviation >= 0 : null"
-          :subtext="latestSample ? 'vs breed weight target' : 'No weight samples recorded'"
+          :subtext="latestSample ? $t('growth.vs_target') : $t('growth.no_samples')"
           class="animate-fade-in-up delay-100"
         />
 
         <AgriStatCard
-          label="Daily Growth Rate"
+          :label="$t('growth.daily_growth')"
           :value="latestSample && latestSample.growthRate > 0 ? latestSample.growthRate : 0"
           :decimals="1"
           suffix=" g/d"
           icon="trending_up"
           icon-color-class="bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400"
           :loading="tableLoading"
-          subtext="Target: 50-70 g / cohort day"
+          :subtext="$t('growth.target_growth')"
           class="animate-fade-in-up delay-150"
         />
 
         <AgriStatCard
-          label="Last Sample Size"
+          :label="$t('growth.last_sample_size')"
           :value="latestSample ? latestSample.sample_size : 0"
           suffix=" birds"
           icon="groups"
           icon-color-class="bg-blue-50 dark:bg-blue-950/40 text-blue-500"
           :loading="tableLoading"
-          subtext="Recommended sample is >= 20"
+          :subtext="$t('growth.recommended_sample')"
           class="animate-fade-in-up delay-200"
         />
 
         <AgriStatCard
-          label="Cohort Age"
+          :label="$t('growth.cohort_age')"
           :value="activeCohortAge"
           suffix=" days"
           icon="calendar_today"
@@ -97,11 +95,11 @@
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">stacked_line_chart</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Growth Curve Comparison</h2>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('growth.curve_comparison') }}</h2>
           </div>
           <div class="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wider">
-            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-primary-500"></span> <span class="text-gray-400">Actual (g)</span></span>
-            <span class="flex items-center gap-1"><span class="h-0.5 w-3 bg-gray-400 dark:bg-gray-600 border-t border-dashed"></span> <span class="text-gray-400">Breed Target (Ross 308)</span></span>
+            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-primary-500"></span> <span class="text-gray-400">{{ $t('growth.actual') }}</span></span>
+            <span class="flex items-center gap-1"><span class="h-0.5 w-3 bg-gray-400 dark:bg-gray-600 border-t border-dashed"></span> <span class="text-gray-400">{{ $t('growth.breed_target') }}</span></span>
           </div>
         </template>
 
@@ -110,8 +108,8 @@
         </div>
         <div v-else-if="samples.length === 0" class="h-72 flex flex-col items-center justify-center text-sm text-gray-400 dark:text-gray-500 p-6 text-center">
           <span class="material-icons-outlined text-3xl mb-2 text-gray-300 dark:text-gray-700">query_stats</span>
-          <p class="font-bold text-gray-700 dark:text-gray-300">No telemetry charts available</p>
-          <p class="text-xs mt-1">Record weight samples to view the FCR growth curve comparison.</p>
+          <p class="font-bold text-gray-700 dark:text-gray-300">{{ $t('growth.no_charts') }}</p>
+          <p class="text-xs mt-1">{{ $t('growth.record_to_view') }}</p>
         </div>
         <div v-else class="p-4">
           <canvas ref="chartCanvas" class="w-full" style="height: 280px;"></canvas>
@@ -123,8 +121,8 @@
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">table_chart</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Growth Logs</h2>
-            <span class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ samples.length }} samples</span>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('growth.logs') }}</h2>
+            <span class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ samples.length }} {{ $t('growth.samples') }}</span>
           </div>
         </template>
 
@@ -180,24 +178,24 @@
     <!-- ─── Record Weight Modal (AgriModal) ─── -->
     <AgriModal
       :show="showLogModal"
-      :title="editingSampleId ? 'Edit Weight Record' : 'Record Cohort Weight'"
+      :title="editingSampleId ? $t('growth.edit_record') : $t('growth.record_cohort_weight')"
       @close="closeModal"
     >
       <form @submit.prevent="submitSample" class="space-y-4">
         <AgriInput
           v-model="form.date"
           type="date"
-          label="Weighing Date"
+          :label="$t('growth.weighing_date')"
           required
           icon="calendar_today"
         />
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <AgriInput
             v-model.number="form.avg_weight_g"
             type="number"
             min="1"
-            label="Average Weight (grams)"
+            :label="$t('growth.avg_weight_grams')"
             required
             placeholder="e.g. 350"
             icon="balance"
@@ -206,7 +204,7 @@
             v-model.number="form.sample_size"
             type="number"
             min="1"
-            label="Sample Size (Birds)"
+            :label="$t('growth.sample_size_birds')"
             required
             placeholder="20"
             icon="people"
@@ -224,16 +222,14 @@
             variant="outline"
             class="flex-1"
             @click="closeModal"
-          >
-            Cancel
-          </AgriButton>
+          >{{ $t('growth.cancel') }}</AgriButton>
           <AgriButton
             type="submit"
             variant="primary"
             class="flex-1"
             :loading="submitting"
           >
-            {{ editingSampleId ? 'Save Changes' : 'Save Record' }}
+            {{ editingSampleId ? $t('growth.save_changes') : $t('growth.save_record') }}
           </AgriButton>
         </div>
       </form>
@@ -247,6 +243,7 @@ import { store } from '../services/store'
 import { api } from '../services/api'
 import { Chart, registerables } from 'chart.js'
 import { useToast } from '../composables/useToast'
+import { useI18n } from 'vue-i18n'
 
 // Design System components
 import AgriButton from '../components/ui/AgriButton.vue'
@@ -261,6 +258,7 @@ import AgriSelect from '../components/ui/AgriSelect.vue'
 Chart.register(...registerables)
 
 const toast = useToast()
+const { t } = useI18n()
 
 // ── State ──────────────────────────────────
 const selectedBatchId = ref(null)
@@ -348,7 +346,8 @@ const activeCohortAge = computed(() => {
   const today = new Date()
   start.setHours(0,0,0,0)
   today.setHours(0,0,0,0)
-  return Math.ceil(Math.abs(today - start) / (1000 * 60 * 60 * 24))
+  const diffTime = today - start
+  return diffTime >= 0 ? Math.ceil(diffTime / (1000 * 60 * 60 * 24)) : 0
 })
 
 // Calculate daily growth rates between consecutive samples
@@ -381,15 +380,15 @@ const enrichedSamples = computed(() => {
   return enriched.reverse()
 })
 
-const tableHeaders = [
-  { text: 'Date', value: 'date', align: 'left' },
-  { text: 'Age (Days)', value: 'age', align: 'right' },
-  { text: 'Sample Size', value: 'sample_size', align: 'right' },
-  { text: 'Avg Weight (g)', value: 'avg_weight_g', align: 'right' },
-  { text: 'Growth Rate', value: 'growthRate', align: 'right' },
-  { text: 'Deviation', value: 'deviation', align: 'right' },
-  { text: 'Actions', value: 'actions', align: 'right' }
-]
+const tableHeaders = computed(() => [
+  { text: t('growth.date'), value: 'date', align: 'left' },
+  { text: t('growth.age_days'), value: 'age', align: 'right' },
+  { text: t('growth.sample_size'), value: 'sample_size', align: 'right' },
+  { text: t('growth.avg_weight_g'), value: 'avg_weight_g', align: 'right' },
+  { text: t('growth.growth_rate'), value: 'growthRate', align: 'right' },
+  { text: t('growth.deviation'), value: 'deviation', align: 'right' },
+  { text: t('growth.actions'), value: 'actions', align: 'right' }
+])
 
 // ── Data fetching ──────────────────────────
 const fetchSamples = async () => {
@@ -441,13 +440,50 @@ const renderChart = () => {
         {
           label: 'Actual (g)',
           data: sorted.map(s => s.avg_weight_g),
-          borderColor: '#2d6a4f',
-          backgroundColor: 'rgba(45, 106, 79, 0.08)',
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.04)',
           borderWidth: 2.5,
           tension: 0.3,
           fill: true,
-          pointRadius: 4,
-          pointBackgroundColor: '#2d6a4f',
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          pointBackgroundColor: (ctx) => {
+            const idx = ctx.dataIndex;
+            const s = sorted[idx];
+            if (!s) return '#10b981';
+            const dev = s.deviation;
+            if (Math.abs(dev) > 10) return '#ef4444'; // Critical
+            if (Math.abs(dev) > 5) return '#f59e0b';   // Warning
+            return '#10b981'; // Optimal
+          },
+          pointBorderColor: (ctx) => {
+            const idx = ctx.dataIndex;
+            const s = sorted[idx];
+            if (!s) return '#047857';
+            const dev = s.deviation;
+            if (Math.abs(dev) > 10) return '#b91c1c';
+            if (Math.abs(dev) > 5) return '#d97706';
+            return '#047857';
+          },
+          pointBorderWidth: 2,
+        },
+        {
+          label: 'Breed Target Upper (+5%)',
+          data: sorted.map(s => s.target_weight_g * 1.05),
+          borderColor: 'transparent',
+          backgroundColor: 'transparent',
+          pointRadius: 0,
+          fill: false,
+          tension: 0.3
+        },
+        {
+          label: 'Breed Target Lower (-5%)',
+          data: sorted.map(s => s.target_weight_g * 0.95),
+          borderColor: 'transparent',
+          backgroundColor: isDark ? 'rgba(16, 185, 129, 0.05)' : 'rgba(46, 117, 89, 0.05)',
+          pointRadius: 0,
+          fill: '-1', // Fills down to Upper Target (dataset 1)
+          tension: 0.3
         },
         {
           label: 'Breed Target (Ross 308)',
@@ -480,8 +516,39 @@ const renderChart = () => {
           padding: 10,
           titleFont: { weight: 'bold', size: 12 },
           bodyFont: { size: 11 },
+          filter: (tooltipItem) => {
+            // Only show labels for Actual (0) and Breed Target (3)
+            return tooltipItem.datasetIndex === 0 || tooltipItem.datasetIndex === 3;
+          },
           callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(0)} g`
+            title: (tooltipItems) => {
+              const idx = tooltipItems[0].dataIndex;
+              const s = sorted[idx];
+              return `Cohort Age: Day ${s.age} (${s.date})`;
+            },
+            label: (ctx) => {
+              const idx = ctx.dataIndex;
+              const s = sorted[idx];
+              if (!s) return '';
+              
+              if (ctx.datasetIndex === 0) {
+                const devText = s.deviation >= 0 ? `+${s.deviation.toFixed(1)}%` : `${s.deviation.toFixed(1)}%`;
+                let status = 'Optimal Growth';
+                if (Math.abs(s.deviation) > 10) {
+                  status = s.deviation > 0 ? 'Critical Overweight 🚨' : 'Critical Underweight 🚨';
+                } else if (Math.abs(s.deviation) > 5) {
+                  status = s.deviation > 0 ? 'Overweight Warning ⚠️' : 'Underweight Warning ⚠️';
+                }
+                return [
+                  `Actual Weight: ${s.avg_weight_g} g`,
+                  `Breed Target: ${s.target_weight_g.toFixed(0)} g`,
+                  `Deviation: ${devText} (${status})`
+                ];
+              } else if (ctx.datasetIndex === 3) {
+                return `Standard Target: ${ctx.parsed.y.toFixed(0)} g`;
+              }
+              return `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(0)} g`;
+            }
           }
         }
       },
@@ -581,9 +648,9 @@ const formatDateShort = (dateStr) => {
 
 const getDeviationClass = (dev) => {
   if (dev === null || dev === undefined) return 'text-gray-400'
-  if (dev >= 5) return 'text-emerald-600 dark:text-emerald-450 font-bold'
-  if (dev <= -5) return 'text-status-danger font-bold animate-pulse'
-  return 'text-gray-650 dark:text-gray-400'
+  if (Math.abs(dev) > 10) return 'text-status-danger font-bold animate-pulse'
+  if (Math.abs(dev) > 5) return 'text-amber-600 dark:text-amber-400 font-bold'
+  return 'text-emerald-600 dark:text-emerald-450 font-bold'
 }
 
 // ── Lifecycle & Watchers ──────────────────

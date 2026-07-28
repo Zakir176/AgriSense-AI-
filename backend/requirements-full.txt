@@ -1,0 +1,6 @@
+# Includes all base requirements plus CV/AI dependencies
+-r requirements.txt
+ultralytics>=8.0.0
+opencv-python-headless>=4.8.0
+numpy>=1.24.0
+librosa>=0.10.0

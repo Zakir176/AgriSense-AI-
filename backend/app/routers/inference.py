@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 import os
 import shutil
@@ -67,8 +68,7 @@ def upload_video_for_inference(
     from ..models.reading import FeedWaterReading
     from ..models.alert import Alert
     
-    readings = db.query(FeedWaterReading).filter(FeedWaterReading.batch_id == batch_id).all()
-    cumulative_mortality = sum(r.mortality_count or 0 for r in readings)
+    cumulative_mortality = db.query(func.sum(FeedWaterReading.mortality_count)).filter(FeedWaterReading.batch_id == batch_id).scalar() or 0
     expected_count = max(0, batch.bird_count - cumulative_mortality)
     
     bird_count_est = inf_data["bird_count_est"]
