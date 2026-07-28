@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
 import os
-import shutil
 import uuid
 from ..database import get_db
 from ..config import settings
@@ -18,7 +17,7 @@ from .auth import get_current_user, get_user_farm
 router = APIRouter(prefix="/inference", tags=["Inference"])
 
 @router.post("/video", response_model=MediaClipResponse, status_code=status.HTTP_201_CREATED)
-def upload_video_for_inference(
+async def upload_video_for_inference(
     batch_id: int = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -34,15 +33,34 @@ def upload_video_for_inference(
 
     # Verify directory exists
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    
-    # Save the file
-    file_extension = os.path.splitext(file.filename)[1]
+
+    # Fix 1.8: Sanitise filename to prevent path traversal
+    safe_filename = os.path.basename(file.filename or "upload")
+    file_extension = os.path.splitext(safe_filename)[1].lower()
+
+    # Fix 1.3a: Validate file extension against allowlist
+    if file_extension not in settings.ALLOWED_VIDEO_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{file_extension}'. Allowed: {', '.join(sorted(settings.ALLOWED_VIDEO_EXTENSIONS))}"
+        )
+
+    # Fix 1.3b: Enforce maximum upload size (read in chunks, reject if oversized)
+    max_bytes = settings.UPLOAD_MAX_MB * 1024 * 1024
+    content = await file.read(max_bytes + 1)
+    if len(content) > max_bytes:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large. Maximum allowed size is {settings.UPLOAD_MAX_MB} MB."
+        )
+
+    # Save the file with a UUID name to avoid collisions and mask original filename
     unique_filename = f"{uuid.uuid4()}{file_extension}"
     file_path = os.path.join(settings.UPLOAD_DIR, unique_filename)
-    
+
     try:
         with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+            buffer.write(content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save uploaded file: {e}")
         
