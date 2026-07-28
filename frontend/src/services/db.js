@@ -6,20 +6,10 @@ const STORE_SYNC_QUEUE = 'sync-queue'
 const STORE_REMINDERS = 'reminders'
 
 const getDBName = () => {
-  const token = localStorage.getItem('agrisense_token')
-  if (!token) return 'agrisense-db-default'
-  try {
-    const base64Url = token.split('.')[1]
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-    }).join(''))
-    const payload = JSON.parse(jsonPayload)
-    const username = payload.sub || 'default'
-    return `agrisense-db-${username}`
-  } catch (e) {
-    return 'agrisense-db-default'
-  }
+  // Fix 1.5: Use stored username (set on login) instead of decoding the JWT without
+  // signature verification — decoding an unsigned JWT client-side is a trust boundary violation.
+  const username = localStorage.getItem('agrisense_username') || 'default'
+  return `agrisense-db-${username}`
 }
 
 export const initDB = async () => {
