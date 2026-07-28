@@ -295,6 +295,36 @@ export const api = {
     }
   },
 
+  // Schedules
+  schedules: {
+    list(batchId = null) {
+      const url = batchId ? `/schedules?batch_id=${batchId}` : '/schedules'
+      return request(url)
+    },
+    create(data) {
+      return request('/schedules', {
+        method: 'POST',
+        body: data
+      })
+    },
+    update(id, data) {
+      return request(`/schedules/${id}`, {
+        method: 'PUT',
+        body: data
+      })
+    },
+    delete(id) {
+      return request(`/schedules/${id}`, {
+        method: 'DELETE'
+      })
+    },
+    complete(id) {
+      return request(`/schedules/${id}/complete`, {
+        method: 'POST'
+      })
+    }
+  },
+
   // Alerts
   alerts: {
     list(batchId = null, unacknowledgedOnly = false) {
@@ -483,6 +513,16 @@ export const api = {
       return request(`/audio/config/${farmId}`, {
         method: 'PUT',
         body: data
+      })
+    },
+    classify(farmId, fileBlob) {
+      const formData = new FormData()
+      formData.append('farm_id', farmId)
+      formData.append('file', fileBlob, 'snippet.webm')
+
+      return request('/audio/classify', {
+        method: 'POST',
+        body: formData
       })
     }
   }

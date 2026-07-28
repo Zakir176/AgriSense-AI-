@@ -146,6 +146,11 @@
   will-change: transform;
 }
 
+.animate-float {
+  animation: floatWave 3s ease-in-out infinite;
+  will-change: transform;
+}
+
 .animate-pop-marker {
   animation: popMarker 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   will-change: transform, opacity;
@@ -197,6 +202,19 @@
   .animate-scale-in {
     animation-duration: 0.18s !important;
   }
+}
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 12s linear infinite;
 }
 
 /* Accessibility Support: prefers-reduced-motion override */

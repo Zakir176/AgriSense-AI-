@@ -49,9 +49,7 @@
           size="sm"
           icon="login"
           @click="triggerPortalWarp"
-        >
-          Operator Portal
-        </AgriButton>
+        >{{ $t('landing.op_portal') }}</AgriButton>
       </div>
     </header>
 
@@ -65,16 +63,15 @@
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
           </span>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-primary-700 dark:text-primary-400">PWA Offline Enabled</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-primary-700 dark:text-primary-400">{{ $t('landing.pwa_enabled') }}</span>
         </div>
 
-        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-gray-900 dark:text-white">
-          Precision Poultry <br class="hidden sm:inline"/>
-          <span class="bg-gradient-to-r from-primary-600 via-primary-500 to-emerald-500 dark:from-primary-400 dark:to-emerald-400 bg-clip-text text-transparent">Driven by Local AI</span>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-gray-900 dark:text-white">{{ $t('landing.precision_poultry') }} <br class="hidden sm:inline"/>
+          <span class="bg-gradient-to-r from-primary-600 via-primary-500 to-emerald-500 dark:from-primary-400 dark:to-emerald-400 bg-clip-text text-transparent">{{ $t('landing.driven_by_ai') }}</span>
         </h1>
 
         <p class="text-base text-gray-550 dark:text-gray-450 leading-relaxed max-w-xl">
-          Empowering smallholder poultry farmers across Africa with offline-first farm telemetry, YOLOv8 video flock counting, and respiratory distress audio classification. Built to operate reliably in low-connectivity rural environments.
+          {{ $t('landing.hero_desc') }}
         </p>
 
         <!-- Actions -->
@@ -84,32 +81,28 @@
             size="lg"
             icon="arrow_forward"
             @click="triggerPortalWarp"
-          >
-            Launch Farm Portal
-          </AgriButton>
+          >{{ $t('landing.launch_portal') }}</AgriButton>
           <AgriButton
             variant="outline"
             size="lg"
             icon="play_circle_outline"
             @click="scrollToDemo"
-          >
-            Explore Live Demo
-          </AgriButton>
+          >{{ $t('landing.explore_demo') }}</AgriButton>
         </div>
 
         <!-- Mini Stats -->
         <div class="grid grid-cols-3 gap-6 pt-8 border-t border-gray-250/60 dark:border-gray-800/80 max-w-lg">
           <div>
             <p class="text-2xl font-black text-primary-600 dark:text-primary-400">98.4%</p>
-            <p class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider mt-0.5">YOLO Count Accuracy</p>
+            <p class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider mt-0.5">{{ $t('landing.yolo_accuracy') }}</p>
           </div>
           <div>
             <p class="text-2xl font-black text-primary-600 dark:text-primary-400">100%</p>
-            <p class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider mt-0.5">Offline Write Uptime</p>
+            <p class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider mt-0.5">{{ $t('landing.offline_uptime') }}</p>
           </div>
           <div>
             <p class="text-2xl font-black text-primary-600 dark:text-primary-400">&lt;2.2s</p>
-            <p class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider mt-0.5">Anomaly Audio Alerts</p>
+            <p class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider mt-0.5">{{ $t('landing.anomaly_alerts') }}</p>
           </div>
         </div>
       </div>
@@ -127,7 +120,7 @@
             :class="activeHeroTab === '3d' ? 'bg-white dark:bg-darkbg-50 text-primary-600 dark:text-primary-400 shadow-sm border border-gray-200/50 dark:border-gray-800/60' : 'text-gray-450 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-350'"
           >
             <span class="material-icons-outlined text-sm">view_in_ar</span>
-            <span>3D Edge Hub</span>
+            <span>{{ $t('landing.edge_hub') }}</span>
           </button>
           <button 
             @click="activeHeroTab = 'feed'"
@@ -135,7 +128,7 @@
             :class="activeHeroTab === 'feed' ? 'bg-white dark:bg-darkbg-50 text-primary-600 dark:text-primary-400 shadow-sm border border-gray-200/50 dark:border-gray-800/60' : 'text-gray-450 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-350'"
           >
             <span class="material-icons-outlined text-sm">videocam</span>
-            <span>Live Vision Feed</span>
+            <span>{{ $t('landing.live_vision') }}</span>
           </button>
         </div>
 
@@ -201,10 +194,10 @@
       <div class="max-w-7xl mx-auto px-6">
         <!-- Subheading -->
         <div class="text-center space-y-3 max-w-xl mx-auto mb-16">
-          <h2 class="text-xs uppercase font-bold text-primary-600 dark:text-primary-400 tracking-widest">Technological Core</h2>
-          <h3 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">Engineered for Sub-Saharan Resilience</h3>
+          <h2 class="text-xs uppercase font-bold text-primary-600 dark:text-primary-400 tracking-widest">{{ $t('landing.tech_core') }}</h2>
+          <h3 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">{{ $t('landing.engineered_for') }}</h3>
           <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-            Our platform merges state-of-the-art vision models and low-connectivity system designs to serve the unique operational environments of African smallholders.
+            {{ $t('landing.engineered_desc') }}
           </p>
         </div>
 
@@ -216,13 +209,13 @@
               <div class="h-12 w-12 rounded-2xl bg-primary-100 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center transition-colors group-hover:bg-primary-500 group-hover:text-white">
                 <span class="material-icons-outlined text-2xl">wifi_off</span>
               </div>
-              <h4 class="text-lg font-bold text-gray-950 dark:text-white leading-snug">Local-First & Offline Sync</h4>
+              <h4 class="text-lg font-bold text-gray-950 dark:text-white leading-snug">{{ $t('landing.local_first') }}</h4>
               <p class="text-xs text-gray-550 dark:text-gray-400 leading-relaxed">
-                Powered by IndexedDB caching. Records feed quantities, water consumption, weight samples, and vaccination logs completely offline. Saves modifications to a sync queue and pushes data automatically once network recovery occurs.
+                {{ $t('landing.local_desc') }}
               </p>
             </div>
             <div class="pt-6 text-xs font-bold text-primary-600 dark:text-primary-400 flex items-center gap-1">
-              <span>Read cache architecture</span>
+              <span>{{ $t('landing.read_cache') }}</span>
               <span class="material-icons-outlined text-sm">chevron_right</span>
             </div>
           </div>
@@ -233,13 +226,13 @@
               <div class="h-12 w-12 rounded-2xl bg-primary-100 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center transition-colors group-hover:bg-primary-500 group-hover:text-white">
                 <span class="material-icons-outlined text-2xl">videocam</span>
               </div>
-              <h4 class="text-lg font-bold text-gray-950 dark:text-white leading-snug">YOLOv8 AI Vision Feed</h4>
+              <h4 class="text-lg font-bold text-gray-950 dark:text-white leading-snug">{{ $t('landing.yolov8_ai') }}</h4>
               <p class="text-xs text-gray-550 dark:text-gray-400 leading-relaxed">
-                Processes video frames using lightweight YOLOv8 models. Measures bird counts, spatial distribution densities, and alerts operations if flocks show low mobility or cluster patterns indicating cold temperature stress.
+                {{ $t('landing.yolov8_desc') }}
               </p>
             </div>
             <div class="pt-6 text-xs font-bold text-primary-600 dark:text-primary-400 flex items-center gap-1">
-              <span>Explore object maps</span>
+              <span>{{ $t('landing.explore_object') }}</span>
               <span class="material-icons-outlined text-sm">chevron_right</span>
             </div>
           </div>
