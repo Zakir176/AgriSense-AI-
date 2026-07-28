@@ -76,19 +76,48 @@ The AI compares the estimated bird count against the **expected count** (initial
 
 ---
 
-## 🔌 4. Offline Mode & Background Sync
+## 🎤 4. Audio Telemetry & Distress Call Classifier
 
-AgriSense AI is designed to work in remote coops with poor or non-existent cellular connection.
+The **Audio Insight** panel allows you to use your device's microphone to monitor the flock's acoustic environment for respiratory illnesses or stress.
 
-### 4.1 How Offline Mode Works
-*   **Offline Access**: When you lose connection, you can still view cached charts, batch history, and navigate the app.
+### 4.1 Running an Audio Scan
+1. Navigate to **Audio Insight** from the sidebar.
+2. Select your active batch and ensure microphone permissions are granted.
+3. Click **Start Recording** to capture a 3-second audio slice of the coop.
+4. The audio is processed by the heuristic classifier to analyze RMS volume and spectral centroids.
+
+### 4.2 Interpreting Results
+*   **Respiratory Distress**: Detected via short, sharp spikes in amplitude (coughing/sneezing).
+*   **Environmental Stress**: Prolonged high-volume frequencies (loud chirping) suggesting temperature spikes or predators.
+*   Results are evaluated against the custom sensitivity thresholds (configurable by Farm Owners).
+
+---
+
+## 📅 5. Interactive Treatment Calendar
+
+Proactively plan vaccinations and vitamin cycles rather than just logging them after the fact.
+
+1. Navigate to **Flock Health** from the sidebar.
+2. In the Treatment Planner tab, click **Schedule Treatment**.
+3. Input the treatment type (e.g., Vaccination, Vitamin), date, dosage, and notes.
+4. (Optional) Set a browser push notification reminder.
+5. When the scheduled date arrives, click **Complete** to automatically execute the treatment and archive it into the batch's historical medication log.
+
+---
+
+## 🔌 6. Offline Mode & Mobile Native App
+
+AgriSense AI is built for remote environments with poor cellular connectivity.
+
+### 6.1 How Offline Mode Works
 *   **Local Caching**: The app stores data locally in the browser's secure database (**IndexedDB**), keeping a separate database instance for each operator username.
-*   **Offline Data Entry**: You can fill out and submit daily metrics logs, growth updates, and medication records while offline.
+*   **Offline Data Entry**: You can submit daily logs, growth updates, scheduled treatments, and medication records while offline.
 
-### 4.2 Sync Indicator & Verification
-*   **Offline Status**: A persistent red badge labeled `Offline Mode` appears in the navigation bar when connection is lost.
-*   **Online Status & Syncing**: When internet access is restored:
-    1.  The status badge changes to `Online` and flashes a `Syncing...` icon.
-    2.  The queue of offline-logged events is processed in sequence.
-    3.  A green notification toast will confirm: `Successfully synced offline records`.
-    4.  All dashboard charts and data logs will refresh to show the updated server records.
+### 6.2 Sync Indicator & Verification
+*   **Offline Status**: A red badge labeled `Offline Mode` appears in the navigation bar when connection is lost.
+*   **Online Status & Syncing**: When internet access is restored, the badge changes to `Online` and flashes a `Syncing...` icon. The queue of offline-logged events is processed sequentially.
+
+### 6.3 Android and iOS Mobile Shell
+AgriSense AI can be installed as a standalone native application on your phone, powered by Capacitor.js.
+*   **Android**: Install the `.apk` directly to your Android device.
+*   The native shell provides deeper integration with local storage and background processes, ensuring maximum reliability for offline queueing at remote farms.

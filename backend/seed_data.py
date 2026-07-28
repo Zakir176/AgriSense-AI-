@@ -61,6 +61,7 @@ from app.models.medication import MedicationEntry
 from app.models.alert import Alert
 from app.models.media import MediaClip, InferenceResult
 from app.models.user_farm import UserFarmAssociation
+from app.models.scheduled_treatment import ScheduledTreatment
 
 # Must match the scheme configured in app/routers/auth.py
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
@@ -362,10 +363,93 @@ def seed():
     db.add_all(build_growth_samples(batch_archived, archived_start, max_days=42))
     db.commit()
 
-    # ── 5. Medication Entries — Evans' real schedule ──────────────────────────
+    # ── 5. Medication Entries & Scheduled Treatments ─────────────────────────
     db.add_all(build_medications(batch_active,   active_start,   max_days=21))
     db.add_all(build_medications(batch_archived, archived_start, max_days=42))
     db.commit()
+
+    # Scheduled Treatments with Prescribers & Digital Sign-offs
+    db.add_all([
+        ScheduledTreatment(
+            batch_id=batch_active.id,
+            title="Gumboro (IBD) Vaccine - Primary",
+            treatment_type="vaccine",
+            scheduled_date=active_start + datetime.timedelta(days=9),
+            dosage="3.0 mL in 3 L drinking water",
+            notes="Administered via drinking water after 2-hour water withholding.",
+            status="completed",
+            completed_date=active_start + datetime.timedelta(days=9),
+            prescribed_by="Dr. Sarah Jenkins (Veterinarian)",
+            administered_by="Evans Kabwe (Farmhand)",
+            digital_signature="SIG-AGRI-GUMBORO-001",
+            reminder_channel="browser"
+        ),
+        ScheduledTreatment(
+            batch_id=batch_active.id,
+            title="Newcastle Disease Vaccine - Primary",
+            treatment_type="vaccine",
+            scheduled_date=active_start + datetime.timedelta(days=13),
+            dosage="4.2 mL in 4 L drinking water",
+            notes="First Newcastle vaccination. Ensure cold water supply.",
+            status="completed",
+            completed_date=active_start + datetime.timedelta(days=13),
+            prescribed_by="Dr. Sarah Jenkins (Veterinarian)",
+            administered_by="Evans Kabwe (Farmhand)",
+            digital_signature="SIG-AGRI-NEWCASTLE-001",
+            reminder_channel="browser"
+        ),
+        ScheduledTreatment(
+            batch_id=batch_active.id,
+            title="Gumboro (IBD) Vaccine - Booster",
+            treatment_type="vaccine",
+            scheduled_date=active_start + datetime.timedelta(days=17),
+            dosage="5.4 mL in 5 L drinking water",
+            notes="Booster dose administered successfully.",
+            status="completed",
+            completed_date=active_start + datetime.timedelta(days=17),
+            prescribed_by="Dr. Sarah Jenkins (Veterinarian)",
+            administered_by="Evans Kabwe (Farmhand)",
+            digital_signature="SIG-AGRI-GUMBORO-002",
+            reminder_channel="browser"
+        ),
+        ScheduledTreatment(
+            batch_id=batch_active.id,
+            title="Newcastle Disease Vaccine - Booster",
+            treatment_type="vaccine",
+            scheduled_date=today, # Due Today / Overdue signoff
+            dosage="6.3 mL in 6 L drinking water",
+            notes="Ensure 2-hour water withholding prior to administration. Check flock condition.",
+            status="pending",
+            prescribed_by="Dr. Sarah Jenkins (Veterinarian)",
+            reminder_channel="browser"
+        ),
+        ScheduledTreatment(
+            batch_id=batch_active.id,
+            title="Organic Mash Antibiotic Booster Course",
+            treatment_type="medication",
+            scheduled_date=today + datetime.timedelta(days=3),
+            dosage="3 tablespoons in 20 L drinking water",
+            notes="Weekly preventive antibiotic booster to support immunity.",
+            status="pending",
+            prescribed_by="Dr. Sarah Jenkins (Veterinarian)",
+            reminder_channel="sms",
+            phone_number="+260971234567"
+        ),
+        ScheduledTreatment(
+            batch_id=batch_active.id,
+            title="Coccidiosis & Vitamin Booster",
+            treatment_type="supplement",
+            scheduled_date=today + datetime.timedelta(days=7),
+            dosage="10 g in 20 L water",
+            notes="Pre-slaughter health booster and gut health support.",
+            status="pending",
+            prescribed_by="Dr. Sarah Jenkins (Veterinarian)",
+            reminder_channel="both",
+            phone_number="+260971234567"
+        )
+    ])
+    db.commit()
+
 
     # ── 6. Alerts ─────────────────────────────────────────────────────────────
     db.add_all([

@@ -6,8 +6,8 @@ class FeedWaterReading(Base):
     __tablename__ = "feed_water_readings"
 
     id = Column(Integer, primary_key=True, index=True)
-    batch_id = Column(Integer, ForeignKey("batches.id"), nullable=False)
-    date = Column(Date, nullable=False)
+    batch_id = Column(Integer, ForeignKey("batches.id"), nullable=False, index=True)
+    date = Column(Date, nullable=False, index=True)
     feed_kg = Column(Float, nullable=False)
     water_litres = Column(Float, nullable=False)
     mortality_count = Column(Integer, default=0)

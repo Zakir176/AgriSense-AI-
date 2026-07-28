@@ -1,10 +1,10 @@
-from pydantic_settings import BaseSettings
-from pydantic import ConfigDict, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "AgriSense AI API"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
+    FRONTEND_URL: str = ""
     
     # Database
     DATABASE_URL: str = "postgresql://postgres:postgrespassword@localhost:5432/agrisense"
