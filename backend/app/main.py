@@ -71,11 +71,19 @@ def seed_database():
             default_user = User(
                 username="operator",
                 hashed_password=get_password_hash("prime_nest_2026"),
-                full_name="Evans Kabwe"
+                full_name="Evans Kabwe",
+                is_admin=True
             )
             db.add(default_user)
             db.commit()
-            print("Successfully seeded database with default user 'operator' (password: prime_nest_2026)")
+            print("Successfully seeded database with default user 'operator'")
+        else:
+            # Ensure existing operator has admin privileges (migration guard)
+            existing_op = db.query(User).filter(User.username == "operator").first()
+            if existing_op and not existing_op.is_admin:
+                existing_op.is_admin = True
+                db.commit()
+                print("Promoted existing 'operator' user to admin")
 
         # Seed default user-farm relationship
         from .models.user_farm import UserFarmAssociation
