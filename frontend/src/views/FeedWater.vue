@@ -4,11 +4,11 @@
     <!-- ─── Header ─── -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Feed & Water Logs</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('feed.title') }}</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-          Record daily consumption and monitor rolling deviations for
+          {{ $t('feed.subtitle') }}
           <span v-if="store.activeBatch" class="font-bold text-gray-700 dark:text-gray-300">Batch #{{ store.activeBatch.id }} · {{ store.activeBatch.breed }}</span>
-          <span v-else class="italic text-gray-450">no active batch</span>
+          <span v-else class="italic text-gray-450">{{ $t('feed.no_active') }}</span>
         </p>
       </div>
       <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -17,7 +17,7 @@
           <AgriSelect
             v-model="selectedBatchId"
             :options="batchOptions"
-            placeholder="Select cohort batch"
+            :placeholder="$t('feed.select_batch')"
             @change="onBatchChange"
           />
         </div>
@@ -26,17 +26,15 @@
           icon="add"
           :disabled="!selectedBatchId"
           @click="showLogModal = true"
-        >
-          Log Reading
-        </AgriButton>
+        >{{ $t('feed.log_reading') }}</AgriButton>
       </div>
     </div>
 
     <!-- ─── No batch selected state ─── -->
     <div v-if="!selectedBatchId" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-16 text-center animate-fade-in-up delay-100">
       <span class="material-icons-outlined text-4xl text-gray-300 dark:text-gray-700 block mb-3">opacity</span>
-      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">Select a batch above to view feed and water logs.</p>
-      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Readings are tracked per-batch. Choose an active cohort to start.</p>
+      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">{{ $t('feed.select_view') }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $t('feed.tracked_desc') }}</p>
     </div>
 
     <template v-else>
@@ -45,7 +43,7 @@
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="animate-fade-in-up delay-100">
           <AgriStatCard
-            label="Total Readings"
+            :label="$t('feed.total_readings')"
             :value="readings.length"
             icon="bar_chart"
             icon-color-class="bg-blue-50 dark:bg-blue-950/40 text-blue-500"
@@ -55,7 +53,7 @@
         </div>
         <div class="animate-fade-in-up delay-150">
           <AgriStatCard
-            label="Latest Feed"
+            :label="$t('feed.latest_feed')"
             :value="readings.length > 0 ? readings[0].feed_kg : 0"
             :decimals="1"
             suffix=" kg"
@@ -67,7 +65,7 @@
         </div>
         <div class="animate-fade-in-up delay-200">
           <AgriStatCard
-            label="Latest Water"
+            :label="$t('feed.latest_water')"
             :value="readings.length > 0 ? readings[0].water_litres : 0"
             :decimals="1"
             suffix=" L"
@@ -79,11 +77,11 @@
         </div>
         <div class="animate-fade-in-up delay-250">
           <AgriStatCard
-            label="Flagged Readings"
+            :label="$t('feed.flagged_readings')"
             :value="flaggedCount"
             icon="warning"
             :icon-color-class="flaggedCount > 0 ? 'bg-red-50 dark:bg-red-950/40 text-red-500' : 'bg-gray-50 dark:bg-darkbg-100 text-gray-400'"
-            :trend="flaggedCount > 0 ? 'Review anomalies' : 'Optimal'"
+            :trend="flaggedCount > 0 ? $t('feed.review_anomalies') : $t('feed.optimal')"
             :trend-direction="flaggedCount > 0 ? 'up' : 'neutral'"
             :trend-good="flaggedCount === 0"
             :loading="tableLoading"
@@ -98,12 +96,12 @@
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">show_chart</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Consumption Trends</h2>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('feed.consumption_trends') }}</h2>
           </div>
           <div class="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wider">
-            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-primary-500"></span> <span class="text-gray-400">Feed</span></span>
-            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-blue-500"></span> <span class="text-gray-400">Water</span></span>
-            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-sm bg-primary-300/40 border border-primary-300"></span> <span class="text-gray-400">7d Avg</span></span>
+            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-primary-500"></span> <span class="text-gray-400">{{ $t('feed.feed') }}</span></span>
+            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-blue-500"></span> <span class="text-gray-400">{{ $t('feed.water') }}</span></span>
+            <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-sm bg-primary-300/40 border border-primary-300"></span> <span class="text-gray-400">{{ $t('feed.avg_7d') }}</span></span>
           </div>
         </template>
 
@@ -112,8 +110,8 @@
         </div>
         <div v-else-if="summaryData.length < 2" class="h-72 flex flex-col items-center justify-center text-sm text-gray-400 dark:text-gray-500 p-6 text-center">
           <span class="material-icons-outlined text-3xl mb-2 text-gray-300 dark:text-gray-700">timeline</span>
-          <p class="font-bold text-gray-700 dark:text-gray-300">Insufficient Data Points</p>
-          <p class="text-xs mt-1">Need at least 2 logged readings to chart historical FCR and consumption trends.</p>
+          <p class="font-bold text-gray-700 dark:text-gray-300">{{ $t('feed.insufficient_data') }}</p>
+          <p class="text-xs mt-1">{{ $t('feed.need_at_least_2') }}</p>
         </div>
         <div v-else class="p-4">
           <canvas ref="chartCanvas" class="w-full" style="height: 280px;"></canvas>
@@ -121,12 +119,30 @@
       </AgriCard>
 
       <!-- ─── Readings Table ─── -->
-      <AgriCard class="animate-fade-in-up delay-350" padding="none">
+      <AgriCard id="readings-table-card" class="animate-fade-in-up delay-350" padding="none">
         <template #header>
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-[18px] text-gray-500 dark:text-gray-400">table_chart</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">All Readings Log</h2>
-            <span class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ readings.length }} entries</span>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('feed.all_readings') }}</h2>
+            <span class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ readings.length }} {{ $t('feed.entries') }}</span>
+          </div>
+          <div v-if="readings.length > 0" class="flex items-center gap-2">
+            <button
+              @click="exportCSV"
+              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-darkbg-100 rounded-lg border border-gray-250 dark:border-gray-800 transition-all shadow-sm shrink-0"
+              title="Download CSV"
+            >
+              <span class="material-icons-outlined text-sm">download</span>
+              <span>{{ $t('feed.export_csv') }}</span>
+            </button>
+            <button
+              @click="printLedger"
+              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-darkbg-100 rounded-lg border border-gray-250 dark:border-gray-800 transition-all shadow-sm shrink-0"
+              title="Print PDF Report"
+            >
+              <span class="material-icons-outlined text-sm">print</span>
+              <span>{{ $t('feed.print_ledger') }}</span>
+            </button>
           </div>
         </template>
 
@@ -188,7 +204,7 @@
     <!-- ─── Log Reading Modal (AgriModal) ─── -->
     <AgriModal
       :show="showLogModal"
-      :title="editingReadingId ? 'Edit Consumption Log' : 'Log Daily Readings'"
+      :title="editingReadingId ? $t('feed.edit_log') : $t('feed.log_daily')"
       @close="closeModal"
     >
       <form @submit.prevent="submitReading" class="space-y-4">
@@ -196,12 +212,12 @@
         <AgriInput
           v-model="form.date"
           type="date"
-          label="Reading Date"
+          :label="$t('feed.reading_date')"
           required
           icon="calendar_today"
         />
 
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <!-- Feed Input -->
           <AgriInput
             v-model.number="form.feed_kg"
@@ -229,7 +245,7 @@
             v-model.number="form.mortality_count"
             type="number"
             min="0"
-            label="Mortality"
+            :label="$t('feed.mortality')"
             required
             placeholder="0"
             icon="warning"
@@ -247,16 +263,14 @@
             variant="outline"
             class="flex-1"
             @click="closeModal"
-          >
-            Cancel
-          </AgriButton>
+          >{{ $t('feed.cancel') }}</AgriButton>
           <AgriButton
             type="submit"
             variant="primary"
             class="flex-1"
             :loading="submitting"
           >
-            {{ editingReadingId ? 'Save Changes' : 'Save Reading' }}
+            {{ editingReadingId ? $t('feed.save_changes') : $t('feed.save_reading') }}
           </AgriButton>
         </div>
       </form>
@@ -270,6 +284,7 @@ import { store } from '../services/store'
 import { api } from '../services/api'
 import { Chart, registerables } from 'chart.js'
 import { useToast } from '../composables/useToast'
+import { useI18n } from 'vue-i18n'
 
 // Design System components
 import AgriButton from '../components/ui/AgriButton.vue'
@@ -284,6 +299,7 @@ import AgriSelect from '../components/ui/AgriSelect.vue'
 Chart.register(...registerables)
 
 const toast = useToast()
+const { t } = useI18n()
 
 // ── State ──────────────────────────────────
 const selectedBatchId = ref(null)
@@ -338,15 +354,15 @@ const enrichedReadings = computed(() => {
   })
 })
 
-const tableHeaders = [
-  { text: 'Date', value: 'date', align: 'left' },
-  { text: 'Feed (kg)', value: 'feed_kg', align: 'right' },
-  { text: 'Water (L)', value: 'water_litres', align: 'right' },
-  { text: 'Mortality', value: 'mortality_count', align: 'right' },
-  { text: 'Feed Δ%', value: '_feedDevPct', align: 'right' },
-  { text: 'Status', value: 'status', align: 'center' },
-  { text: 'Actions', value: 'actions', align: 'right' }
-]
+const tableHeaders = computed(() => [
+  { text: t('feed.date'), value: 'date', align: 'left' },
+  { text: t('feed.feed_kg'), value: 'feed_kg', align: 'right' },
+  { text: t('feed.water_l'), value: 'water_litres', align: 'right' },
+  { text: t('feed.mortality'), value: 'mortality_count', align: 'right' },
+  { text: t('feed.feed_delta'), value: '_feedDevPct', align: 'right' },
+  { text: t('feed.status'), value: 'status', align: 'center' },
+  { text: t('feed.actions'), value: 'actions', align: 'right' }
+])
 
 // ── Data fetching ──────────────────────────
 const fetchReadings = async () => {
@@ -567,6 +583,168 @@ const closeModal = () => {
 }
 
 // ── Helpers ──────────────────────────────────
+const getCohortAgeAtDate = (readingDateStr) => {
+  if (!store.activeBatch?.start_date) return '—'
+  const start = new Date(store.activeBatch.start_date)
+  const readingDate = new Date(readingDateStr)
+  start.setHours(0,0,0,0)
+  readingDate.setHours(0,0,0,0)
+  const diffTime = readingDate - start
+  const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return days >= 0 ? days : 0
+}
+
+const exportCSV = () => {
+  if (summaryData.value.length === 0) return
+  
+  const headers = [
+    'Date',
+    'Cohort Age (Days)',
+    'Feed Consumed (kg)',
+    'Water Consumed (Liters)',
+    'Daily Mortality (Birds)',
+    'Cumulative Mortality (Birds)',
+    'Feed Conversion Ratio (FCR)',
+    '7d Feed Avg (kg)',
+    '7d Water Avg (Liters)',
+    'Feed Deviation (%)',
+    'Water Deviation (%)'
+  ]
+
+  const rows = summaryData.value.map(row => {
+    const age = getCohortAgeAtDate(row.date)
+    const fcrVal = row.feed_conversion_ratio ? row.feed_conversion_ratio.toFixed(2) : '—'
+    const feedDev = row.feed_deviation_pct !== null ? `${row.feed_deviation_pct > 0 ? '+' : ''}${row.feed_deviation_pct}` : '—'
+    const waterDev = row.water_deviation_pct !== null ? `${row.water_deviation_pct > 0 ? '+' : ''}${row.water_deviation_pct}` : '—'
+    
+    return [
+      row.date,
+      age,
+      row.feed_kg.toFixed(1),
+      row.water_litres.toFixed(1),
+      row.mortality_count || 0,
+      row.cumulative_mortality || 0,
+      fcrVal,
+      row.feed_rolling_avg_7d.toFixed(1),
+      row.water_rolling_avg_7d.toFixed(1),
+      feedDev,
+      waterDev
+    ]
+  })
+
+  const csvString = [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute('download', `AgriSense_Batch_${selectedBatchId.value}_Telemetry_Report.csv`)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+const printLedger = () => {
+  if (summaryData.value.length === 0) return
+  
+  const printWindow = window.open('', '_blank')
+  
+  let tableRowsHtml = ''
+  summaryData.value.forEach(row => {
+    const age = getCohortAgeAtDate(row.date)
+    const fcrVal = row.feed_conversion_ratio ? row.feed_conversion_ratio.toFixed(2) : '—'
+    const statusText = row.flagged_abnormal ? 'FLAGGED' : 'NORMAL'
+    const statusColor = row.flagged_abnormal ? 'color: #dc2626; font-weight: bold;' : 'color: #16a34a;'
+    
+    tableRowsHtml += `
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <td style="padding: 10px 8px; text-align: left;">${formatDate(row.date)}</td>
+        <td style="padding: 10px 8px; text-align: center;">${age}</td>
+        <td style="padding: 10px 8px; text-align: right;">${row.feed_kg.toFixed(1)}</td>
+        <td style="padding: 10px 8px; text-align: right;">${row.water_litres.toFixed(1)}</td>
+        <td style="padding: 10px 8px; text-align: center;">${row.mortality_count || 0}</td>
+        <td style="padding: 10px 8px; text-align: center;">${row.cumulative_mortality || 0}</td>
+        <td style="padding: 10px 8px; text-align: center; font-weight: bold;">${fcrVal}</td>
+        <td style="padding: 10px 8px; text-align: center; ${statusColor}">${statusText}</td>
+      </tr>
+    `
+  })
+
+  const batchInfo = store.activeBatch 
+    ? `Batch #${store.activeBatch.id} - ${store.activeBatch.breed} (${store.activeBatch.bird_count} birds)` 
+    : 'All Batches'
+  const dateRange = summaryData.value.length > 0 
+    ? `From ${formatDate(summaryData.value[0].date)} to ${formatDate(summaryData.value[summaryData.value.length - 1].date)}` 
+    : ''
+
+  printWindow.document.write(`
+    \x3chtml\x3e
+      \x3chead\x3e
+        \x3ctitle\x3eAgriSense AI - Telemetry Ledger Report\x3c/title\x3e
+        \x3cstyle\x3e
+          body { font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #111827; padding: 25px; line-height: 1.5; background-color: #fff; }
+          .header { border-bottom: 2px solid #10b981; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+          .logo-area { display: flex; flex-direction: column; }
+          .logo { font-size: 26px; font-weight: 800; color: #059669; letter-spacing: -0.025em; }
+          .logo span { color: #10b981; }
+          .subtitle { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-top: 2px; }
+          .meta-area { font-size: 13px; color: #374151; text-align: right; line-height: 1.6; }
+          table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+          th { background-color: #f9fafb; padding: 10px 8px; font-weight: 700; border-bottom: 2px solid #e5e7eb; color: #4b5563; }
+          td { border-bottom: 1px solid #e5e7eb; color: #1f2937; }
+          .footer { margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 15px; font-size: 11px; color: #9ca3af; text-align: center; }
+          @media print {
+            body { padding: 0; }
+            button { display: none; }
+          }
+        \x3c/style\x3e
+      \x3c/head\x3e
+      \x3cbody\x3e
+        <div class="header">
+          <div class="logo-area">
+            <div class="logo">AgriSense <span>AI</span></div>
+            <div class="subtitle">Poultry Ledger Report</div>
+          </div>
+          <div class="meta-area">
+            <strong>Cohort:</strong> ${batchInfo}<br>
+            <strong>Date Range:</strong> ${dateRange}<br>
+            <strong>Report Date:</strong> ${new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align: left;">Date</th>
+              <th style="text-align: center;">Age (Days)</th>
+              <th style="text-align: right;">Feed (kg)</th>
+              <th style="text-align: right;">Water (L)</th>
+              <th style="text-align: center;">Mortality (Birds)</th>
+              <th style="text-align: center;">Cumulative</th>
+              <th style="text-align: center;">FCR</th>
+              <th style="text-align: center;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml}
+          </tbody>
+        </table>
+        <div class="footer">
+          Generated automatically by AgriSense AI Precision Poultry System &copy; 2026. All rights reserved.
+        </div>
+        \x3cscript\x3e
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+              window.close();
+            }, 300);
+          }
+        \x3c/script\x3e
+      \x3c/body\x3e
+    \x3c/html\x3e
+  `)
+  printWindow.document.close()
+}
+
 const formatDate = (dateStr) => {
   if (!dateStr) return '—'
   return new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })

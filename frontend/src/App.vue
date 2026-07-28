@@ -1,6 +1,8 @@
 <template>
   <div class="h-screen bg-[#f4f7f4] text-gray-850 dark:bg-[#0f1412] dark:text-gray-150 flex font-sans transition-colors duration-200">
     <Toast />
+    <TourGuide />
+    <SyncDrawer />
     <!-- Render raw router-view for blank layout pages (like Login) -->
     <router-view v-if="isBlankLayout" class="flex-1 h-full" />
 
@@ -37,6 +39,7 @@
             v-for="item in navItems" 
             :key="item.path" 
             :to="item.path"
+            :id="item.key === 'feed_water' ? 'nav-feed-water' : (item.key === 'ai_monitor' ? 'nav-ai-monitor' : 'nav-' + item.key)"
             class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-medium transition group"
             :class="[
               isRouteActive(item.path)
@@ -47,18 +50,25 @@
             <span class="material-icons-outlined text-lg" :class="isRouteActive(item.path) ? 'text-primary-600 dark:text-primary-400' : 'text-gray-450 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-white'">
               {{ item.icon }}
             </span>
-            <span>{{ item.name }}</span>
+            <span>{{ $t('nav.' + item.key) }}</span>
           </router-link>
         </nav>
 
         <!-- Sidebar Footer / Logout -->
-        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
+          <button 
+            @click="startTourGuide"
+            class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary-50 hover:bg-primary-100 dark:bg-primary-950/20 dark:hover:bg-primary-950/40 border border-primary-200/30 dark:border-primary-900/30 rounded-xl text-sm font-bold text-primary-750 dark:text-primary-400 transition cursor-pointer"
+          >
+            <span class="material-icons-outlined text-base">help_outline</span>
+            <span>{{ $t('tour.restart') }}</span>
+          </button>
           <button 
             @click="handleLogout"
-            class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium text-red-650 hover:bg-red-50 hover:border-red-200/30 dark:text-red-400 dark:hover:bg-red-950/20 border border-transparent dark:hover:border-red-900/30 transition"
+            class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium text-red-650 hover:bg-red-50 hover:border-red-200/30 dark:text-red-400 dark:hover:bg-red-950/20 border border-transparent dark:hover:border-red-900/30 transition cursor-pointer"
           >
             <span class="material-icons-outlined text-lg">logout</span>
-            <span>Sign Out</span>
+            <span>{{ $t('app.sign_out') }}</span>
           </button>
         </div>
       </aside>
@@ -98,35 +108,34 @@
               </select>
             </div>
             <div v-else>
-              Site: <span class="text-gray-850 dark:text-gray-200 font-semibold">{{ store.currentFarm ? store.currentFarm.name : 'Loading...' }}</span>
+              {{ $t('app.site') }} <span class="text-gray-850 dark:text-gray-200 font-semibold">{{ store.currentFarm ? store.currentFarm.name : $t('app.loading') }}</span>
             </div>
           </div>
           
-          <div class="flex items-center space-x-4">
+          <div id="header-actions" class="flex items-center space-x-4">
             <!-- Offline Indicator -->
-            <div v-if="isOffline" class="flex items-center space-x-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-700 dark:text-amber-400 text-xs font-bold">
+            <div v-if="isOffline" class="flex items-center space-x-1.5 px-2 sm:px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-700 dark:text-amber-400 text-xs font-bold">
               <span class="material-icons-outlined text-sm">wifi_off</span>
-              <span>Offline Mode</span>
+              <span class="hidden sm:inline">{{ $t('app.offline_mode') }}</span>
             </div>
             <div v-if="isSyncing" class="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-700 dark:text-blue-400 text-xs font-bold">
               <span class="material-icons-outlined text-sm animate-spin">sync</span>
-              <span>Syncing...</span>
+              <span>{{ $t('app.syncing') }}</span>
             </div>
-            <!-- Manual Sync Trigger Button -->
+            <!-- Manual Sync Trigger Button (opens Sync Drawer) -->
             <button 
               v-if="syncQueueLength > 0"
-              @click="syncOfflineData" 
+              @click="toggleDrawer" 
               class="flex items-center space-x-1.5 px-2 md:px-3 py-1.5 bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-900 rounded-lg text-primary-750 dark:text-primary-400 text-xs font-black animate-pulse hover:bg-primary-100 dark:hover:bg-primary-900/50 transition focus:outline-none cursor-pointer"
-              :disabled="isSyncing"
               aria-label="Pending Sync Queue"
             >
               <span class="material-icons-outlined text-sm animate-spin" v-if="isSyncing">sync</span>
               <span class="material-icons-outlined text-sm" v-else>cloud_upload</span>
-              <span class="hidden sm:inline">Pending Sync ({{ syncQueueLength }})</span>
+              <span class="hidden sm:inline">{{ $t('app.pending_sync') }} ({{ syncQueueLength }})</span>
               <span class="sm:hidden">{{ syncQueueLength }}</span>
             </button>
             <!-- Notifications Bell -->
-            <div class="relative">
+            <div class="relative" data-dropdown="notifications">
               <button 
                 @click="toggleNotifications"
                 class="p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none relative"
@@ -142,12 +151,12 @@
               <!-- Dropdown -->
               <div v-if="showNotifications" class="absolute right-0 mt-2 w-80 bg-white dark:bg-darkbg-50 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden z-50">
                 <div class="p-3 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-darkbg-100">
-                  <span class="font-bold text-sm text-gray-800 dark:text-white">Notifications</span>
-                  <span class="text-xs bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded-full font-bold">{{ unreadAlertsCount }} New</span>
+                  <span class="font-bold text-sm text-gray-800 dark:text-white">{{ $t('app.notifications') }}</span>
+                  <span class="text-xs bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded-full font-bold">{{ unreadAlertsCount }} {{ $t('app.new') }}</span>
                 </div>
                 <div class="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
                   <div v-if="alerts.length === 0" class="p-4 text-center text-xs text-gray-500">
-                    No new alerts.
+                    {{ $t('app.no_alerts') }}
                   </div>
                   <div v-for="alert in alerts" :key="alert.id" class="p-3 hover:bg-gray-50 dark:hover:bg-darkbg-100 transition flex gap-3 items-start cursor-pointer" @click="acknowledgeAlert(alert.id)">
                     <span class="material-icons-outlined text-[16px] mt-0.5" :class="alert.severity === 'critical' ? 'text-red-500' : 'text-amber-500'">
@@ -155,7 +164,7 @@
                     </span>
                     <div class="flex-1">
                       <p class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ alert.message }}</p>
-                      <p class="text-[10px] text-gray-500 mt-1">Click to dismiss</p>
+                      <p class="text-[10px] text-gray-500 mt-1">{{ $t('app.dismiss') }}</p>
                     </div>
                   </div>
                 </div>
@@ -173,14 +182,30 @@
               </span>
             </button>
 
+            <!-- Language Switcher -->
+            <div class="relative" data-dropdown="language">
+              <button 
+                @click="showLanguageDropdown = !showLanguageDropdown"
+                class="flex items-center justify-center p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none"
+                aria-label="Switch Language"
+              >
+                <span class="material-icons-outlined text-lg">language</span>
+                <span class="text-xs font-bold ml-1 uppercase">{{ $i18n.locale }}</span>
+              </button>
+              <div v-if="showLanguageDropdown" class="absolute right-0 mt-2 w-32 bg-white dark:bg-darkbg-50 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden z-50">
+                <button @click="changeLanguage('en')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'en' }">English</button>
+                <button @click="changeLanguage('ny')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'ny' }">Nyanja</button>
+              </div>
+            </div>
+
             <!-- User Panel -->
-            <div class="flex items-center space-x-3 border-l border-gray-200 dark:border-gray-800 pl-3 md:pl-4">
+            <div id="site-header-role" class="flex items-center space-x-3 border-l border-gray-200 dark:border-gray-800 pl-3 md:pl-4">
               <div class="hidden sm:flex flex-col text-right">
                 <span class="text-sm font-semibold text-gray-800 dark:text-white">
-                  {{ store.currentUser ? store.currentUser.full_name || store.currentUser.username : 'Guest' }}
+                  {{ store.currentUser ? store.currentUser.full_name || store.currentUser.username : $t('app.guest') }}
                 </span>
                 <span class="text-[10px] uppercase font-bold tracking-wider text-primary-650 dark:text-primary-400">
-                  {{ store.currentFarm && store.currentFarm.role ? store.currentFarm.role : 'Guest' }}
+                  {{ store.currentFarm && store.currentFarm.role ? store.currentFarm.role : $t('app.guest') }}
                 </span>
               </div>
               <div class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-850 text-primary-700 dark:text-white flex items-center justify-center text-sm font-bold border border-primary-250 dark:border-primary-700 shrink-0">
@@ -208,11 +233,24 @@ import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from './services/api'
 import { store } from './services/store'
-import { getSyncQueue, removeFromSyncQueue } from './services/db'
 import Toast from './components/Toast.vue'
+import TourGuide from './components/TourGuide.vue'
+import SyncDrawer from './components/SyncDrawer.vue'
+import { useSyncManager } from './composables/useSyncManager'
+import { useReminders } from './composables/useReminders'
+import { useI18n } from 'vue-i18n'
 
+const { locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
+
+const showLanguageDropdown = ref(false)
+
+const changeLanguage = (lang) => {
+  locale.value = lang
+  localStorage.setItem('language', lang)
+  showLanguageDropdown.value = false
+}
 
 const isBlankLayout = computed(() => route.meta.layout === 'blank')
 
@@ -250,7 +288,18 @@ const handleFarmChange = async (farm) => {
   try {
     const batches = await api.batches.list(farm.id)
     store.batchesList = batches
-    const active = batches.find(b => b.status === 'active')
+    
+    // Check if there is a saved focused batch ID in localStorage
+    const savedFocusedId = localStorage.getItem('agrisense_focused_batch_id')
+    let active = null
+    if (savedFocusedId) {
+      active = batches.find(b => b.id === parseInt(savedFocusedId) && b.status === 'active')
+    }
+    
+    if (!active) {
+      active = batches.find(b => b.status === 'active')
+    }
+    
     if (active) {
       store.activeBatch = active
     } else if (batches.length > 0) {
@@ -291,8 +340,17 @@ const initApp = async () => {
       const batches = await api.batches.list(store.currentFarm.id)
       store.batchesList = batches
       
-      // 4. Set first active batch as active
-      const active = batches.find(b => b.status === 'active')
+      // 4. Restore focused batch selection if stored, otherwise default to first active batch
+      const savedFocusedId = localStorage.getItem('agrisense_focused_batch_id')
+      let active = null
+      if (savedFocusedId) {
+        active = batches.find(b => b.id === parseInt(savedFocusedId) && b.status === 'active')
+      }
+      
+      if (!active) {
+        active = batches.find(b => b.status === 'active')
+      }
+      
       if (active) {
         store.activeBatch = active
       } else if (batches.length > 0) {
@@ -335,6 +393,17 @@ const toggleNotifications = () => {
   }
 }
 
+const handleClickOutside = (e) => {
+  // Close language dropdown if clicking outside its container
+  if (showLanguageDropdown.value && !e.target.closest('[data-dropdown="language"]')) {
+    showLanguageDropdown.value = false
+  }
+  // Close notifications dropdown if clicking outside its container
+  if (showNotifications.value && !e.target.closest('[data-dropdown="notifications"]')) {
+    showNotifications.value = false
+  }
+}
+
 const acknowledgeAlert = async (id) => {
   try {
     await api.alerts.update(id, { acknowledged: true })
@@ -344,67 +413,16 @@ const acknowledgeAlert = async (id) => {
   }
 }
 
-// Background Sync Management
-const isOffline = ref(!navigator.onLine)
-const isSyncing = ref(false)
-const syncQueueLength = ref(0)
-
-const updateQueueLength = async () => {
-  try {
-    const queue = await getSyncQueue()
-    syncQueueLength.value = queue.length
-  } catch (error) {
-    console.error('Failed to get sync queue length:', error)
-  }
-}
-
-const handleOnline = async () => {
-  isOffline.value = false
-  await syncOfflineData()
-}
-
-const handleOffline = () => {
-  isOffline.value = true
-}
-
-const syncOfflineData = async () => {
-  if (isSyncing.value) return
-  isSyncing.value = true
-  await updateQueueLength()
-  
-  try {
-    const queue = await getSyncQueue()
-    if (queue.length > 0) {
-      console.log(`[Sync] Found ${queue.length} items to sync`)
-      for (const item of queue) {
-        try {
-          const apiBase = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1'
-          await fetch(`${apiBase}${item.url}`, {
-            method: item.method,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('agrisense_token')}`
-            },
-            body: item.payload ? JSON.stringify(item.payload) : undefined
-          })
-          await removeFromSyncQueue(item.id)
-          await updateQueueLength()
-          console.log(`[Sync] Successfully synced request ${item.id}`)
-        } catch (err) {
-          console.error(`[Sync] Failed to sync request ${item.id}:`, err)
-          // Stop syncing on first error to preserve order
-          break
-        }
-      }
-      
-      // Refresh the app state by calling initApp to fetch fresh data
-      await initApp()
-    }
-  } finally {
-    isSyncing.value = false
-    await updateQueueLength()
-  }
-}
+// Background Sync Management (delegated to useSyncManager composable)
+const {
+  isOffline,
+  isSyncing,
+  queueLength: syncQueueLength,
+  toggleDrawer,
+  syncAll,
+  initialize: initSyncManager,
+  destroy: destroySyncManager
+} = useSyncManager()
 
 const formatDate = (dateStr) => {
   if (!dateStr) return ''
@@ -421,8 +439,6 @@ watch(isBlankLayout, (newBlank) => {
   }
 })
 
-let syncQueueInterval = null
-
 onMounted(async () => {
   // Respect user preference, default to light mode (false) if none exists
   const savedTheme = localStorage.getItem('theme')
@@ -437,41 +453,51 @@ onMounted(async () => {
   await router.isReady()
   initApp()
   
-  // Periodically check for alerts and sync queue size
+  setTimeout(() => {
+    const token = localStorage.getItem('agrisense_token')
+    const onboarded = localStorage.getItem('agrisense_onboarded')
+    if (token && !onboarded && !isBlankLayout.value) {
+      startTourGuide()
+    }
+  }, 1000)
+  
+  // Periodically check for alerts
   alertsInterval = setInterval(() => {
     fetchAlerts()
   }, 30000)
 
-  await updateQueueLength()
-  syncQueueInterval = setInterval(updateQueueLength, 3000)
-
-  // Register online/offline listeners
-  window.addEventListener('online', handleOnline)
-  window.addEventListener('offline', handleOffline)
+  // Initialize sync manager (handles queue polling, online/offline listeners)
+  initSyncManager()
   
-  // Check if we came online while the page was closed/reloading
+  // Initialize reminders
+  const { checkPendingReminders } = useReminders()
+  checkPendingReminders()
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', handleClickOutside)
+  
+  // Auto-sync if we came online while the page was closed/reloading
   if (navigator.onLine) {
-    syncOfflineData()
+    syncAll()
   }
 })
 
 onUnmounted(() => {
   clearInterval(alertsInterval)
-  clearInterval(syncQueueInterval)
-  window.removeEventListener('online', handleOnline)
-  window.removeEventListener('offline', handleOffline)
+  destroySyncManager()
+  document.removeEventListener('click', handleClickOutside)
 })
 
 const navItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
-  { name: 'Batches', path: '/batches', icon: 'layers' },
-  { name: 'Feed & Water', path: '/readings', icon: 'opacity' },
-  { name: 'Flock Growth', path: '/growth', icon: 'show_chart' },
-  { name: 'Medications', path: '/medications', icon: 'vaccines' },
-  { name: 'AI Visual Monitor', path: '/inference', icon: 'videocam' },
-  { name: 'Audio Insights', path: '/audio', icon: 'hearing' },
-  { name: 'Analytics', path: '/analytics', icon: 'analytics' },
-  { name: 'Farm Settings', path: '/farm-settings', icon: 'settings' }
+  { key: 'dashboard', path: '/dashboard', icon: 'dashboard' },
+  { key: 'batches', path: '/batches', icon: 'layers' },
+  { key: 'feed_water', path: '/readings', icon: 'opacity' },
+  { key: 'flock_growth', path: '/growth', icon: 'show_chart' },
+  { key: 'medications', path: '/medications', icon: 'vaccines' },
+  { key: 'ai_monitor', path: '/inference', icon: 'videocam' },
+  { key: 'audio', path: '/audio', icon: 'hearing' },
+  { key: 'analytics', path: '/analytics', icon: 'analytics' },
+  { key: 'settings', path: '/farm-settings', icon: 'settings' }
 ]
 
 const isRouteActive = (path) => {
@@ -481,6 +507,12 @@ const isRouteActive = (path) => {
   return route.path.startsWith(path)
 }
 
+const startTourGuide = () => {
+  store.tour.active = true
+  store.tour.currentStep = 0
+  router.push('/dashboard')
+}
+
 const handleLogout = () => {
   localStorage.removeItem('agrisense_token')
   store.currentUser = null
@@ -488,7 +520,7 @@ const handleLogout = () => {
   store.activeBatch = null
   store.batchesList = []
   store.farmsList = []
-  router.push({ name: 'Login' })
+  router.push({ name: 'Landing' })
 }
 </script>
 

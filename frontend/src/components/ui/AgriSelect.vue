@@ -24,7 +24,7 @@
 
       <!-- Animated Chevron -->
       <span
-        class="material-icons-outlined text-gray-450 dark:text-gray-500 text-[18px] transition-transform duration-200"
+        class="shrink-0 material-icons-outlined text-gray-450 dark:text-gray-500 text-[18px] transition-transform duration-200"
         :class="{ 'rotate-180': isOpen }"
       >
         expand_more
