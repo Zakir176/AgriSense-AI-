@@ -93,19 +93,13 @@ Activate the virtual environment:
 source venv/bin/activate
 ```
 
-<<<<<<< Updated upstream
 # For production / Railway deploy (no ultralytics overhead, falls back to mock inference):
 # pip install -r requirements.txt
 
 # For local dev with real AI inference (YOLOv8):
-pip install -r requirements-full.txt
+pip install -r requirements-full.txt(At initialisation or if not installed already)
 
-python seed_data.py  # Seeds pilot farm and realistic daily metrics
-=======
-Then install dependencies and start the server:
-```bash
-pip install -r requirements.txt
->>>>>>> Stashed changes
+python seed_data.py  # Seeds pilot farm and realistic daily metrics(At initialisation)
 uvicorn app.main:app --reload --port 8000
 ```
 *   API Docs: [http://localhost:8000/docs](http://localhost:8000/docs) (Swagger Interactive UI)
