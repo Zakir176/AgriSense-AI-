@@ -81,24 +81,56 @@ docker-compose up -d
 ```bash
 cd backend
 python -m venv venv
+```
 
-# Activate venv:
-# Windows (PowerShell): .\venv\Scripts\Activate.ps1
-# macOS/Linux: source venv/bin/activate
+Activate the virtual environment:
+```powershell
+# Windows (PowerShell)
+.\venv\Scripts\Activate.ps1
+```
+```bash
+# macOS / Linux
+source venv/bin/activate
+```
 
 # For production / Railway deploy (no ultralytics overhead, falls back to mock inference):
 # pip install -r requirements.txt
 
 # For local dev with real AI inference (YOLOv8):
-pip install -r requirements-full.txt
+pip install -r requirements-full.txt(At initialisation or if not installed already)
 
-python seed_data.py  # Seeds pilot farm and realistic daily metrics
+python seed_data.py  # Seeds pilot farm and realistic daily metrics(At initialisation)
 uvicorn app.main:app --reload --port 8000
 ```
 *   API Docs: [http://localhost:8000/docs](http://localhost:8000/docs) (Swagger Interactive UI)
 *   Default Credentials: Username `operator`, Password `prime_nest_2026`
 
-### 4 — Frontend UI Setup
+### 4 — Database Migrations (Alembic)
+
+AgriSense AI uses **Alembic** to manage database schema migrations. Run migrations **after** starting the database container and **before** starting the backend for the first time (or after pulling new changes that include model updates).
+
+> **Windows:** prefix the command with `.\venv\Scripts\` if the venv is not activated.
+
+```bash
+# Apply all pending migrations to bring the schema up to date
+alembic upgrade head
+
+# Roll back the most recent migration
+alembic downgrade -1
+
+# Show the current applied migration revision
+alembic current
+
+# Show the full migration history
+alembic history
+
+# Auto-generate a new migration after changing a SQLAlchemy model
+alembic revision --autogenerate -m "describe_your_change"
+```
+
+> **Note:** `alembic upgrade head` is idempotent — it is safe to re-run; it will skip revisions that are already applied.
+
+### 5 — Frontend UI Setup
 Open a second terminal:
 ```bash
 cd frontend
