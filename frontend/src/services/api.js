@@ -56,6 +56,7 @@ async function request(path, options = {}) {
     if (!response.ok) {
       if (response.status === 401 && path !== '/auth/token') {
         localStorage.removeItem('agrisense_token')
+        localStorage.removeItem('agrisense_username')
         window.location.href = '/login'
       }
       let errorDetail = 'Request failed'
@@ -127,6 +128,9 @@ export const api = {
       })
       if (result && result.access_token) {
         localStorage.setItem('agrisense_token', result.access_token)
+        // Fix 1.5: Store username explicitly so db.js can create a per-user IndexedDB
+        // without decoding the JWT payload without signature verification.
+        localStorage.setItem('agrisense_username', username)
       }
       return result
     },
