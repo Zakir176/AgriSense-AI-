@@ -137,14 +137,14 @@
                 size="sm"
                 icon="edit"
                 @click="editMedication(item)"
-              />
+              >{{ $t('meds.edit') || 'Edit' }}</AgriButton>
               <AgriButton
                 variant="ghost"
                 size="sm"
                 icon="delete"
                 class="text-red-500 hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20"
                 @click="deleteMedication(item.id)"
-              />
+              >{{ $t('meds.delete') || 'Delete' }}</AgriButton>
             </div>
           </template>
         </AgriTable>
