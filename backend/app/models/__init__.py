@@ -10,6 +10,7 @@ from .auth import User
 from .user_farm import UserFarmAssociation
 from .audio import AudioConfig
 from .scheduled_treatment import ScheduledTreatment
+from .inventory import InventoryAdjustment
 
 # Ensure they are loaded to metadata
 __all__ = [
@@ -23,6 +24,7 @@ __all__ = [
     "MediaClip",
     "InferenceResult",
     "ScheduledTreatment",
+    "InventoryAdjustment",
     "User",
     "UserFarmAssociation"
 ]
