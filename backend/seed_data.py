@@ -276,6 +276,7 @@ def build_medications(batch, start_date, max_days):
 def seed():
     random.seed(42)  # Reproducible output
 
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     db: Session = SessionLocal()
 
