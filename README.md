@@ -92,6 +92,9 @@ Activate the virtual environment:
 # macOS / Linux
 source venv/bin/activate
 ```
+```bash
+uvicorn app.main:app --reload --port 8000
+```
 
 # For production / Railway deploy (no ultralytics overhead, falls back to mock inference):
 # pip install -r requirements.txt
@@ -100,7 +103,6 @@ source venv/bin/activate
 pip install -r requirements-full.txt(At initialisation or if not installed already)
 
 python seed_data.py  # Seeds pilot farm and realistic daily metrics(At initialisation)
-uvicorn app.main:app --reload --port 8000
 ```
 *   API Docs: [http://localhost:8000/docs](http://localhost:8000/docs) (Swagger Interactive UI)
 *   Default Credentials: Username `operator`, Password `prime_nest_2026`
