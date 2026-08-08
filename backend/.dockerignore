@@ -1,0 +1,17 @@
+# Ignore virtual environments and caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local SQLite database (not needed in container)
+*.db
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Scratch files
+scratch/
