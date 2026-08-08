@@ -129,7 +129,7 @@
           <div v-if="readings.length > 0" class="flex items-center gap-2">
             <button
               @click="exportCSV"
-              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-darkbg-100 rounded-lg border border-gray-250 dark:border-gray-800 transition-all shadow-sm shrink-0"
+              class="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-darkbg-100 rounded-lg border border-gray-250 dark:border-gray-800 transition-all shadow-sm shrink-0 whitespace-nowrap"
               title="Download CSV"
             >
               <span class="material-icons-outlined text-sm">download</span>
@@ -137,7 +137,7 @@
             </button>
             <button
               @click="printLedger"
-              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-darkbg-100 rounded-lg border border-gray-250 dark:border-gray-800 transition-all shadow-sm shrink-0"
+              class="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-darkbg-100 rounded-lg border border-gray-250 dark:border-gray-800 transition-all shadow-sm shrink-0 whitespace-nowrap"
               title="Print PDF Report"
             >
               <span class="material-icons-outlined text-sm">print</span>
