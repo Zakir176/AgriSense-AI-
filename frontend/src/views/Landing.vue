@@ -38,7 +38,7 @@
         <!-- Floating Theme Toggle -->
         <button
           @click="toggleTheme"
-          class="p-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-darkbg-50/80 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400"
+          class="p-2 rounded-xl bg-white/80 dark:bg-darkbg-50/80 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400"
           aria-label="Toggle Theme"
         >
           <span class="material-icons-outlined text-lg block">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
