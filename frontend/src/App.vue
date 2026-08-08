@@ -17,58 +17,95 @@
 
       <!-- Sidebar -->
       <aside 
-        class="fixed inset-y-0 left-0 z-40 flex flex-col bg-white dark:bg-[#181e1b] border-r border-gray-200 dark:border-gray-800 overflow-hidden shrink-0 transition-all duration-300 w-64 md:static md:inset-auto md:z-auto"
-        :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-0'"
+        class="fixed inset-y-0 left-0 z-40 flex flex-col bg-white dark:bg-[#181e1b] border-r border-gray-200 dark:border-gray-800 overflow-hidden shrink-0 transition-all duration-300 md:static md:inset-auto md:z-auto"
+        :class="[
+          isSidebarCollapsed ? 'md:w-24' : 'md:w-64',
+          isSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0'
+        ]"
       >
         <!-- Logo -->
-        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-800">
-          <span class="text-xl font-extrabold tracking-wider text-primary-600 dark:text-primary-400">AGRISENSE AI</span>
+        <div class="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 transition-all duration-300" :class="isSidebarCollapsed ? 'px-3' : 'px-4'">
+          <div class="flex items-center min-w-0 overflow-hidden">
+            <!-- Full Logo with title when expanded -->
+            <img 
+              v-if="!isSidebarCollapsed" 
+              src="./assets/logo_full.png" 
+              alt="AgriSense AI" 
+              class="h-10 sm:h-11 max-w-[185px] object-contain" 
+            />
+            <!-- Icon-only Logo emblem when collapsed -->
+            <img 
+              v-else 
+              src="./assets/logo_icon.png" 
+              alt="AgriSense AI" 
+              class="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0" 
+            />
+          </div>
+
+          <!-- Desktop Collapse Button (Borderless) -->
+          <button 
+            @click="toggleSidebarCollapse"
+            class="hidden md:flex items-center justify-center p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-500 dark:text-gray-400 transition cursor-pointer shrink-0"
+            :title="isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'"
+            aria-label="Toggle Sidebar Collapse"
+          >
+            <span class="material-icons-outlined text-lg block leading-none">
+              {{ isSidebarCollapsed ? 'chevron_right' : 'chevron_left' }}
+            </span>
+          </button>
+
           <!-- Mobile Close Button -->
           <button 
             @click="isSidebarOpen = false"
-            class="md:hidden p-1.5 rounded-lg border border-gray-150 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-850 transition text-gray-500 dark:text-gray-400 focus:outline-none cursor-pointer"
+            class="md:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition text-gray-500 dark:text-gray-400 focus:outline-none cursor-pointer shrink-0"
             aria-label="Close Sidebar"
           >
-            <span class="material-icons-outlined text-lg block">close</span>
+            <span class="material-icons-outlined text-lg block leading-none">close</span>
           </button>
         </div>
 
         <!-- Navigation Links -->
-        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+        <nav class="flex-1 py-6 space-y-1.5 overflow-y-auto" :class="isSidebarCollapsed ? 'px-2' : 'px-4'">
           <router-link 
             v-for="item in navItems" 
             :key="item.path" 
             :to="item.path"
             :id="item.key === 'feed_water' ? 'nav-feed-water' : (item.key === 'ai_monitor' ? 'nav-ai-monitor' : 'nav-' + item.key)"
-            class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-medium transition group"
+            class="flex items-center py-2.5 rounded-xl text-sm font-medium transition group relative"
             :class="[
+              isSidebarCollapsed ? 'justify-center px-0' : 'px-4 space-x-3',
               isRouteActive(item.path)
                 ? 'bg-primary-50 text-primary-700 border border-primary-200/50 dark:bg-primary-950/60 dark:text-primary-400 dark:border-primary-900/50'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/40 hover:text-gray-900 dark:hover:text-white border border-transparent'
             ]"
+            :title="isSidebarCollapsed ? $t('nav.' + item.key) : ''"
           >
-            <span class="material-icons-outlined text-lg" :class="isRouteActive(item.path) ? 'text-primary-600 dark:text-primary-400' : 'text-gray-450 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-white'">
+            <span class="material-icons-outlined text-lg shrink-0" :class="isRouteActive(item.path) ? 'text-primary-600 dark:text-primary-400' : 'text-gray-450 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-white'">
               {{ item.icon }}
             </span>
-            <span>{{ $t('nav.' + item.key) }}</span>
+            <span v-if="!isSidebarCollapsed" class="truncate transition-opacity duration-200">{{ $t('nav.' + item.key) }}</span>
           </router-link>
         </nav>
 
         <!-- Sidebar Footer / Logout -->
-        <div class="p-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
+        <div class="p-3 border-t border-gray-200 dark:border-gray-800 space-y-2">
           <button 
             @click="startTourGuide"
-            class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary-50 hover:bg-primary-100 dark:bg-primary-950/20 dark:hover:bg-primary-950/40 border border-primary-200/30 dark:border-primary-900/30 rounded-xl text-sm font-bold text-primary-750 dark:text-primary-400 transition cursor-pointer"
+            class="w-full flex items-center justify-center py-2 bg-primary-50 hover:bg-primary-100 dark:bg-primary-950/20 dark:hover:bg-primary-950/40 border border-primary-200/30 dark:border-primary-900/30 rounded-xl text-sm font-bold text-primary-750 dark:text-primary-400 transition cursor-pointer"
+            :class="isSidebarCollapsed ? 'px-0' : 'px-4 space-x-2'"
+            :title="isSidebarCollapsed ? $t('tour.restart') : ''"
           >
-            <span class="material-icons-outlined text-base">help_outline</span>
-            <span>{{ $t('tour.restart') }}</span>
+            <span class="material-icons-outlined text-base shrink-0">help_outline</span>
+            <span v-if="!isSidebarCollapsed" class="truncate">{{ $t('tour.restart') }}</span>
           </button>
           <button 
             @click="handleLogout"
-            class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium text-red-650 hover:bg-red-50 hover:border-red-200/30 dark:text-red-400 dark:hover:bg-red-950/20 border border-transparent dark:hover:border-red-900/30 transition cursor-pointer"
+            class="w-full flex items-center justify-center py-2.5 rounded-xl text-sm font-medium text-red-650 hover:bg-red-50 hover:border-red-200/30 dark:text-red-400 dark:hover:bg-red-950/20 border border-transparent dark:hover:border-red-900/30 transition cursor-pointer"
+            :class="isSidebarCollapsed ? 'px-0' : 'px-4 space-x-2'"
+            :title="isSidebarCollapsed ? $t('app.sign_out') : ''"
           >
-            <span class="material-icons-outlined text-lg">logout</span>
-            <span>{{ $t('app.sign_out') }}</span>
+            <span class="material-icons-outlined text-lg shrink-0">logout</span>
+            <span v-if="!isSidebarCollapsed" class="truncate">{{ $t('app.sign_out') }}</span>
           </button>
         </div>
       </aside>
@@ -87,7 +124,7 @@
               <span class="material-icons-outlined text-lg block">{{ isSidebarOpen ? 'menu_open' : 'menu' }}</span>
             </button>
             <!-- Mobile-only logo (desktop has logo in sidebar) -->
-            <span class="md:hidden text-xl font-extrabold tracking-wider text-primary-600 dark:text-primary-400">AGRISENSE AI</span>
+            <img src="./assets/logo_full.png" alt="AgriSense AI" class="md:hidden h-7 object-contain" />
           </div>
           <div class="hidden md:block text-sm text-gray-500 dark:text-gray-400">
             <label for="farm-selector" class="sr-only">Switch Farm</label>
@@ -138,7 +175,7 @@
             <div class="relative" data-dropdown="notifications">
               <button 
                 @click="toggleNotifications"
-                class="p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none relative"
+                class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none relative"
                 aria-label="Notifications"
               >
                 <span class="material-icons-outlined text-lg block">notifications</span>
@@ -174,7 +211,7 @@
             <!-- Theme Toggle Button -->
             <button 
               @click="toggleTheme" 
-              class="p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none"
+              class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none"
               aria-label="Toggle Theme"
             >
               <span class="material-icons-outlined text-lg block">
@@ -186,7 +223,7 @@
             <div class="relative" data-dropdown="language">
               <button 
                 @click="showLanguageDropdown = !showLanguageDropdown"
-                class="flex items-center justify-center p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none"
+                class="flex items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800/60 transition text-gray-500 dark:text-gray-400 focus:outline-none"
                 aria-label="Switch Language"
               >
                 <span class="material-icons-outlined text-lg">language</span>
@@ -257,6 +294,14 @@ const isBlankLayout = computed(() => route.meta.layout === 'blank')
 // Responsive Mobile Sidebar Management
 // Open by default on desktop, closed on mobile — resolved in onMounted
 const isSidebarOpen = ref(true)
+
+// Desktop Sidebar Minimal Icon Mode Collapse
+const isSidebarCollapsed = ref(localStorage.getItem('sidebar_collapsed') === 'true')
+
+const toggleSidebarCollapse = () => {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value
+  localStorage.setItem('sidebar_collapsed', isSidebarCollapsed.value)
+}
 
 watch(() => route.path, () => {
   // Only auto-close on mobile navigation
