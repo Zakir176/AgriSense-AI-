@@ -17,17 +17,11 @@ heuristic fallback (audio_classifier.py) to measure RMS volume and spectral cent
 router = APIRouter(prefix="/audio", tags=["Audio"])
 
 @router.get("/config/{farm_id}", response_model=AudioConfigResponse)
-<<<<<<< Updated upstream
-def get_audio_config(farm_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def get_audio_config(farm_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Retrieve the current audio configuration for a specific farm.
     If no configuration exists, a default profile (80% cough threshold, 65% chirp threshold) is generated.
     """
-    # Verify farm exists
-=======
-def get_audio_config(farm_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    # Fix 1.4: Verify farm exists AND that the current user is associated with it
->>>>>>> Stashed changes
     farm = db.query(Farm).filter(Farm.id == farm_id).first()
     if not farm:
         raise HTTPException(status_code=404, detail="Farm not found")
@@ -45,15 +39,11 @@ def get_audio_config(farm_id: int, db: Session = Depends(get_db), current_user: 
     return config
 
 @router.put("/config/{farm_id}", response_model=AudioConfigResponse)
-<<<<<<< Updated upstream
-def update_audio_config(farm_id: int, config_update: AudioConfigUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def update_audio_config(farm_id: int, config_update: AudioConfigUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Update the audio telemetry thresholds (cough_threshold_pct and chirp_threshold_pct)
     for a specific farm. Adjusting these values calibrates the sensitivity of the anomaly detection.
     """
-=======
-def update_audio_config(farm_id: int, config_update: AudioConfigUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    # Fix 1.4: Verify user has access to this farm before allowing config update
     farm = db.query(Farm).filter(Farm.id == farm_id).first()
     if not farm:
         raise HTTPException(status_code=404, detail="Farm not found")
@@ -61,8 +51,6 @@ def update_audio_config(farm_id: int, config_update: AudioConfigUpdate, db: Sess
     assoc = get_user_farm(farm_id, current_user, db)
     if assoc.role == "viewer":
         raise HTTPException(status_code=403, detail="Viewer role does not have permission to update audio config")
-
->>>>>>> Stashed changes
     config = db.query(AudioConfig).filter(AudioConfig.farm_id == farm_id).first()
     if not config:
         # Create it first

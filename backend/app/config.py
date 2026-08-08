@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -10,7 +11,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://postgres:postgrespassword@localhost:5432/agrisense"
     
     # Auth (Simple operator account)
-    SECRET_KEY: str = "change-this-to-a-very-secure-random-secret-key-in-production"
+    SECRET_KEY: str = "4f8a12b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
     
@@ -34,7 +35,7 @@ class Settings(BaseSettings):
             )
         return v
 
-    model_config = ConfigDict(
+    model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True,
         extra="ignore"
