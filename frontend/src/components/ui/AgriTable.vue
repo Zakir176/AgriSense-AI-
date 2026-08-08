@@ -7,7 +7,7 @@
           <th
             v-for="header in headers"
             :key="header.value"
-            class="px-6 py-4.5 transition-colors select-none whitespace-nowrap"
+            class="px-6 py-4 transition-colors select-none whitespace-nowrap"
             :class="[
               header.align === 'right' ? 'text-right' : header.align === 'center' ? 'text-center' : 'text-left',
               { 'cursor-pointer hover:bg-gray-100/55 dark:hover:bg-darkbg-50/80': header.sortable }
@@ -29,7 +29,7 @@
         <!-- Loading State (Skeleton Rows) -->
         <template v-if="loading">
           <tr v-for="rowIndex in 3" :key="rowIndex" class="transition-colors">
-            <td v-for="header in headers" :key="header.value" class="px-6 py-4.5">
+            <td v-for="header in headers" :key="header.value" class="px-6 py-4">
               <AgriSkeleton type="text" :class="header.align === 'right' ? 'ml-auto w-12' : 'w-24'" />
             </td>
           </tr>
