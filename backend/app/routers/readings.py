@@ -6,6 +6,7 @@ from ..database import get_db
 from ..models.reading import FeedWaterReading
 from ..models.batch import Batch
 from ..models.growth import GrowthSample
+from ..models.inventory import InventoryAdjustment
 from ..schemas.reading import FeedWaterReadingCreate, FeedWaterReadingResponse, FeedWaterReadingUpdate, ReadingSummary
 from ..services.rules_engine import check_reading_anomalies
 from .auth import get_current_user, get_user_farm
@@ -54,6 +55,21 @@ def create_reading(reading: FeedWaterReadingCreate, db: Session = Depends(get_db
     db.add(db_reading)
     db.commit()
     db.refresh(db_reading)
+
+    # Sync explicit InventoryAdjustment if mortality_count > 0
+    if db_reading.mortality_count and db_reading.mortality_count > 0:
+        inv_adj = InventoryAdjustment(
+            batch_id=db_reading.batch_id,
+            date=db_reading.date,
+            adjustment_type="mortality",
+            quantity_delta=-db_reading.mortality_count,
+            source="daily_reading",
+            reference_id=db_reading.id,
+            notes=f"Auto-recorded from daily feed/water reading #{db_reading.id}"
+        )
+        db.add(inv_adj)
+        db.commit()
+
     return db_reading
 
 @router.get("", response_model=List[FeedWaterReadingResponse])
