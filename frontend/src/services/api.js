@@ -218,6 +218,22 @@ export const api = {
     }
   },
 
+  // Inventory
+  inventory: {
+    list(batchId) {
+      return request(`/inventory/batch/${batchId}`)
+    },
+    create(batchId, data) {
+      return request(`/inventory/batch/${batchId}`, {
+        method: 'POST',
+        body: data
+      })
+    },
+    getSummary(batchId) {
+      return request(`/inventory/batch/${batchId}/summary`)
+    }
+  },
+
   // Readings (Feed & Water)
   readings: {
     list(batchId = null) {
