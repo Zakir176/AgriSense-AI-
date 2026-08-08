@@ -11,7 +11,7 @@ from .models.user_farm import UserFarmAssociation
 
 # Import all models to register on Base
 from .models import Base
-from .routers import auth, farms, batches, readings, growth, medications, alerts, inference, spatial_trends, audio, scheduled_treatments
+from .routers import auth, farms, batches, readings, growth, medications, alerts, inference, spatial_trends, audio, scheduled_treatments, inventory
 
 # Auto-create tables (practical for Phase 1 mockup)
 Base.metadata.create_all(bind=engine)
@@ -127,6 +127,7 @@ app.include_router(inference.router, prefix=settings.API_V1_STR)
 app.include_router(spatial_trends.router, prefix=settings.API_V1_STR)
 app.include_router(audio.router, prefix=settings.API_V1_STR)
 app.include_router(scheduled_treatments.router, prefix=settings.API_V1_STR)
+app.include_router(inventory.router, prefix=settings.API_V1_STR)
 
 from fastapi.staticfiles import StaticFiles
 import os
