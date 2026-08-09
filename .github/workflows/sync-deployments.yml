@@ -22,6 +22,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --unset-all http.https://github.com/.extraheader || true
+          git config --global --unset-all credential.helper || true
           git subtree split --prefix=frontend -b temp-front-sync
           git push https://x-access-token:${SYNC_TOKEN}@github.com/Zakir176/AgriSense-AI-Frontend.git temp-front-sync:main --force
 
@@ -29,5 +31,6 @@ jobs:
         env:
           SYNC_TOKEN: ${{ secrets.DEPLOY_SYNC_TOKEN }}
         run: |
+          git config --unset-all http.https://github.com/.extraheader || true
           git subtree split --prefix=backend -b temp-back-sync
           git push https://x-access-token:${SYNC_TOKEN}@github.com/Zakir176/AgriSense-AI-Backend.git temp-back-sync:main --force
