@@ -234,6 +234,25 @@ export const api = {
     }
   },
 
+  // Financial Intelligence
+  financial: {
+    getSummary(batchId) {
+      return request(`/financial/batch/${batchId}/summary`)
+    },
+    getForecast(batchId, pricePerBird) {
+      return request(`/financial/batch/${batchId}/forecast?expected_price_per_bird=${pricePerBird}`)
+    },
+    getProfitLoss(batchId) {
+      return request(`/financial/batch/${batchId}/profit-loss`)
+    },
+    createExpense(batchId, data) {
+      return request(`/financial/batch/${batchId}/expenses`, { method: 'POST', body: data })
+    },
+    listExpenses(batchId) {
+      return request(`/financial/batch/${batchId}/expenses`)
+    }
+  },
+
   // Readings (Feed & Water)
   readings: {
     list(batchId = null) {
