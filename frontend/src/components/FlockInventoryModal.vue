@@ -33,6 +33,34 @@
         />
       </div>
 
+      <!-- Sale-specific financial fields -->
+      <div v-if="form.adjustment_type === 'sale'" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <AgriInput
+          v-model.number="form.unit_price_zmw"
+          type="number"
+          label="Price per Bird (ZMW)"
+          min="0"
+          step="0.01"
+          placeholder="e.g. 85.00"
+          icon="payments"
+        />
+        <AgriInput
+          v-model="form.buyer_name"
+          type="text"
+          label="Buyer Name (Optional)"
+          placeholder="e.g. Shoprite Lusaka"
+          icon="person"
+        />
+      </div>
+
+      <!-- Computed sale total preview -->
+      <div
+        v-if="form.adjustment_type === 'sale' && form.unit_price_zmw && form.quantity"
+        class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 px-3.5 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/30"
+      >
+        💰 Sale Total: ZMW {{ (form.quantity * form.unit_price_zmw).toFixed(2) }}
+      </div>
+
       <div>
         <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Notes / Reason Details</label>
         <textarea
@@ -94,7 +122,9 @@ const form = reactive({
   adjustment_type: 'sale',
   quantity: 1,
   date: new Date().toISOString().split('T')[0],
-  notes: ''
+  notes: '',
+  unit_price_zmw: null,
+  buyer_name: ''
 })
 
 watch(() => props.show, (newVal) => {
@@ -103,6 +133,8 @@ watch(() => props.show, (newVal) => {
     form.quantity = 1
     form.date = new Date().toISOString().split('T')[0]
     form.notes = ''
+    form.unit_price_zmw = null
+    form.buyer_name = ''
     errorMsg.value = ''
   }
 })
@@ -118,12 +150,18 @@ async function handleSubmit() {
 
   try {
     const delta = ['mortality', 'sale', 'cull'].includes(form.adjustment_type) ? -form.quantity : form.quantity
-    emit('success', {
+    const payload = {
       adjustment_type: form.adjustment_type,
       quantity_delta: delta,
       date: form.date,
       notes: form.notes
-    })
+    }
+    // Attach financial fields for sales
+    if (form.adjustment_type === 'sale') {
+      if (form.unit_price_zmw) payload.unit_price_zmw = form.unit_price_zmw
+      if (form.buyer_name) payload.buyer_name = form.buyer_name
+    }
+    emit('success', payload)
   } catch (err) {
     errorMsg.value = err.message || 'Failed to submit adjustment'
   } finally {
