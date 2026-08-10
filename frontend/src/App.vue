@@ -542,6 +542,7 @@ const navItems = [
   { key: 'ai_monitor', path: '/inference', icon: 'videocam' },
   { key: 'audio', path: '/audio', icon: 'hearing' },
   { key: 'analytics', path: '/analytics', icon: 'analytics' },
+  { key: 'financial', path: '/financial', icon: 'payments' },
   { key: 'settings', path: '/farm-settings', icon: 'settings' }
 ]
 
