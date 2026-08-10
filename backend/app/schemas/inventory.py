@@ -7,6 +7,9 @@ class InventoryAdjustmentBase(BaseModel):
     adjustment_type: str  # mortality | sale | cull | addition | correction
     quantity_delta: int
     notes: Optional[str] = None
+    unit_price_zmw: Optional[float] = None
+    buyer_name: Optional[str] = None
+    total_amount_zmw: Optional[float] = None
 
 class InventoryAdjustmentCreate(InventoryAdjustmentBase):
     pass
@@ -17,6 +20,9 @@ class InventoryAdjustmentResponse(InventoryAdjustmentBase):
     source: str
     reference_id: Optional[int] = None
     created_at: datetime
+    unit_price_zmw: Optional[float] = None
+    buyer_name: Optional[str] = None
+    total_amount_zmw: Optional[float] = None
 
     class Config:
         from_attributes = True
