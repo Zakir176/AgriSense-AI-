@@ -11,6 +11,7 @@ from .user_farm import UserFarmAssociation
 from .audio import AudioConfig
 from .scheduled_treatment import ScheduledTreatment
 from .inventory import InventoryAdjustment
+from .expense import Expense
 
 # Ensure they are loaded to metadata
 __all__ = [
@@ -25,6 +26,7 @@ __all__ = [
     "InferenceResult",
     "ScheduledTreatment",
     "InventoryAdjustment",
+    "Expense",
     "User",
     "UserFarmAssociation"
 ]
