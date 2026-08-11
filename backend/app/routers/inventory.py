@@ -33,13 +33,21 @@ def create_inventory_adjustment(
     elif adj_type == "addition" and delta < 0:
         delta = abs(delta)
 
+    # Auto-compute total for sales with a price
+    total_amount = None
+    if adj_type == "sale" and adjustment.unit_price_zmw:
+        total_amount = abs(delta) * adjustment.unit_price_zmw
+
     db_adj = InventoryAdjustment(
         batch_id=batch_id,
         date=adjustment.date,
         adjustment_type=adj_type,
         quantity_delta=delta,
         source="manual_entry",
-        notes=adjustment.notes
+        notes=adjustment.notes,
+        unit_price_zmw=adjustment.unit_price_zmw,
+        buyer_name=adjustment.buyer_name,
+        total_amount_zmw=total_amount
     )
 
     db.add(db_adj)
