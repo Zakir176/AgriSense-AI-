@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from ..database import Base
@@ -15,5 +15,10 @@ class InventoryAdjustment(Base):
     reference_id = Column(Integer, nullable=True)     # e.g. reading_id if auto-created
     notes = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # Financial fields (for sales)
+    unit_price_zmw = Column(Float, nullable=True)    # price per bird in ZMW (for sales only)
+    buyer_name = Column(String, nullable=True)       # optional buyer name for audit trail
+    total_amount_zmw = Column(Float, nullable=True)  # computed: quantity * unit_price (stored for audit)
 
     batch = relationship("Batch", back_populates="inventory_adjustments")
