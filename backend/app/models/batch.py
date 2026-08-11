@@ -20,3 +20,4 @@ class Batch(Base):
     alerts = relationship("Alert", back_populates="batch", cascade="all, delete-orphan")
     media_clips = relationship("MediaClip", back_populates="batch", cascade="all, delete-orphan")
     inventory_adjustments = relationship("InventoryAdjustment", back_populates="batch", cascade="all, delete-orphan")
+    expenses = relationship("Expense", back_populates="batch", cascade="all, delete-orphan")
