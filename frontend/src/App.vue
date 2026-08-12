@@ -411,7 +411,9 @@ const initApp = async () => {
   } catch (error) {
     console.error('Session initialization failed:', error)
     localStorage.removeItem('agrisense_token')
-    router.push({ name: 'Login' })
+    if (route.name !== 'Login') {
+      router.push({ name: 'Login' }).catch(() => {})
+    }
   }
 }
 
