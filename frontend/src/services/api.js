@@ -218,6 +218,41 @@ export const api = {
     }
   },
 
+  // Inventory
+  inventory: {
+    list(batchId) {
+      return request(`/inventory/batch/${batchId}`)
+    },
+    create(batchId, data) {
+      return request(`/inventory/batch/${batchId}`, {
+        method: 'POST',
+        body: data
+      })
+    },
+    getSummary(batchId) {
+      return request(`/inventory/batch/${batchId}/summary`)
+    }
+  },
+
+  // Financial Intelligence
+  financial: {
+    getSummary(batchId) {
+      return request(`/financial/batch/${batchId}/summary`)
+    },
+    getForecast(batchId, pricePerBird) {
+      return request(`/financial/batch/${batchId}/forecast?expected_price_per_bird=${pricePerBird}`)
+    },
+    getProfitLoss(batchId) {
+      return request(`/financial/batch/${batchId}/profit-loss`)
+    },
+    createExpense(batchId, data) {
+      return request(`/financial/batch/${batchId}/expenses`, { method: 'POST', body: data })
+    },
+    listExpenses(batchId) {
+      return request(`/financial/batch/${batchId}/expenses`)
+    }
+  },
+
   // Readings (Feed & Water)
   readings: {
     list(batchId = null) {

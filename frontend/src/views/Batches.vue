@@ -111,22 +111,66 @@
               v-show="expandedBatchId === batch.id" 
               class="border-t border-gray-150 dark:border-gray-800/80 bg-gray-50/50 dark:bg-darkbg-100/30 px-6 py-4 overflow-hidden transition-all duration-200"
             >
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Flock Inventory & Audit Ledger</p>
+                <AgriButton
+                  variant="outline"
+                  size="sm"
+                  icon="edit_note"
+                  @click="openInventoryModal(batch)"
+                >Adjust Inventory</AgriButton>
+              </div>
+
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold text-gray-600 dark:text-gray-450">
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('batches.telemetry_status') }}</p>
-                  <p class="text-sm font-bold text-gray-800 dark:text-gray-200">{{ $t('batches.normal_range') }}</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Live Flock Count</p>
+                  <p class="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                    {{ inventorySummaries[batch.id]?.current_live_count ?? batch.bird_count }} head
+                  </p>
                 </div>
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('batches.mortality_rate') }}</p>
-                  <p class="text-sm font-bold text-gray-800 dark:text-gray-200">0.0% (Stable)</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Total Mortality</p>
+                  <p class="text-sm font-bold text-red-500">
+                    {{ inventorySummaries[batch.id]?.total_mortality ?? 0 }} birds
+                  </p>
                 </div>
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('batches.last_log_date') }}</p>
-                  <p class="text-sm font-bold text-gray-800 dark:text-gray-200">{{ formatDate(batch.start_date) }}</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Total Sales / Harvested</p>
+                  <p class="text-sm font-bold text-blue-500">
+                    {{ inventorySummaries[batch.id]?.total_sales ?? 0 }} birds
+                  </p>
                 </div>
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('batches.current_feed_type') }}</p>
-                  <p class="text-sm font-bold text-gray-800 dark:text-gray-200">{{ $t('batches.broiler_starter') }}</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Culls / Corrections</p>
+                  <p class="text-sm font-bold text-gray-800 dark:text-gray-200">
+                    {{ (inventorySummaries[batch.id]?.total_culls || 0) + (inventorySummaries[batch.id]?.total_corrections || 0) }} birds
+                  </p>
+                </div>
+              </div>
+
+              <!-- Inventory Ledger History Stream -->
+              <div v-if="inventorySummaries[batch.id]?.history?.length" class="mt-3 pt-3 border-t border-gray-200/60 dark:border-gray-800">
+                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">Recent Inventory Adjustments</p>
+                <div class="space-y-1.5 max-h-40 overflow-y-auto">
+                  <div
+                    v-for="adj in inventorySummaries[batch.id].history.slice(0, 5)"
+                    :key="adj.id"
+                    class="flex items-center justify-between text-[11px] bg-white dark:bg-darkbg-50 p-2 rounded-lg border border-gray-150 dark:border-gray-800"
+                  >
+                    <div class="flex items-center gap-2">
+                      <span class="px-1.5 py-0.5 rounded font-bold uppercase text-[9px]"
+                        :class="adj.quantity_delta < 0 ? 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'">
+                        {{ adj.adjustment_type }}
+                      </span>
+                      <span class="text-gray-700 dark:text-gray-300 font-medium">{{ adj.notes || 'No description' }}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <span class="font-mono font-bold" :class="adj.quantity_delta < 0 ? 'text-red-500' : 'text-emerald-500'">
+                        {{ adj.quantity_delta > 0 ? '+' : '' }}{{ adj.quantity_delta }}
+                      </span>
+                      <span class="text-gray-400 text-[10px]">{{ adj.date }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -229,6 +273,14 @@
         </div>
       </form>
     </AgriModal>
+
+    <!-- Flock Inventory Adjustment Modal -->
+    <FlockInventoryModal
+      :show="showInventoryModal"
+      :batch-id="selectedInventoryBatch?.id"
+      @close="showInventoryModal = false"
+      @success="handleInventorySubmit"
+    />
   </div>
 </template>
 
@@ -244,18 +296,54 @@ import AgriButton from '../components/ui/AgriButton.vue'
 import AgriInput from '../components/ui/AgriInput.vue'
 import AgriBadge from '../components/ui/AgriBadge.vue'
 import AgriModal from '../components/ui/AgriModal.vue'
+import FlockInventoryModal from '../components/FlockInventoryModal.vue'
 
 const { getStaggerDelayClass } = useAnimations()
+const toast = useToast()
 
 const isLoading = ref(false)
 const showCreateModal = ref(false)
+const showInventoryModal = ref(false)
+const selectedInventoryBatch = ref(null)
+const inventorySummaries = ref({})
 const isSubmitting = ref(false)
 const errorMsg = ref('')
 const editingBatchId = ref(null)
 const expandedBatchId = ref(null)
 
-const toggleExpand = (id) => {
-  expandedBatchId.value = expandedBatchId.value === id ? null : id
+const toggleExpand = async (id) => {
+  if (expandedBatchId.value === id) {
+    expandedBatchId.value = null
+  } else {
+    expandedBatchId.value = id
+    await fetchInventorySummary(id)
+  }
+}
+
+const fetchInventorySummary = async (batchId) => {
+  try {
+    const summary = await api.inventory.getSummary(batchId)
+    inventorySummaries.value[batchId] = summary
+  } catch (err) {
+    console.error('Failed to fetch inventory summary:', err)
+  }
+}
+
+const openInventoryModal = (batch) => {
+  selectedInventoryBatch.value = batch
+  showInventoryModal.value = true
+}
+
+const handleInventorySubmit = async (payload) => {
+  if (!selectedInventoryBatch.value) return
+  try {
+    await api.inventory.create(selectedInventoryBatch.value.id, payload)
+    toast.success('Inventory adjustment logged successfully')
+    showInventoryModal.value = false
+    await fetchInventorySummary(selectedInventoryBatch.value.id)
+  } catch (err) {
+    toast.error(err.message || 'Failed to record inventory adjustment')
+  }
 }
 
 // Initialize form variables
@@ -287,14 +375,18 @@ const loadBatches = async () => {
   try {
     const list = await api.batches.list(store.currentFarm.id)
     store.batchesList = list
+    // Pre-fetch summaries for active batches
+    for (const b of list) {
+      if (b.status === 'active') {
+        fetchInventorySummary(b.id)
+      }
+    }
   } catch (error) {
     console.error('Failed to load cohorts:', error)
   } finally {
     isLoading.value = false
   }
 }
-
-const toast = useToast()
 
 const selectActiveBatch = (batch) => {
   store.activeBatch = batch
@@ -427,7 +519,7 @@ onMounted(() => {
 .slide-height-enter-active,
 .slide-height-leave-active {
   transition: max-height 0.22s ease-in-out, opacity 0.2s ease-in-out, padding 0.22s ease-in-out;
-  max-height: 200px;
+  max-height: 400px;
 }
 .slide-height-enter-from,
 .slide-height-leave-to {

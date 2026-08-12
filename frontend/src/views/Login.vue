@@ -215,7 +215,7 @@
                     name="fullName"
                     type="text"
                     autocomplete="name"
-                    class="block w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700/80 placeholder-gray-350 dark:placeholder-gray-600 text-gray-900 dark:text-white rounded-xl bg-gray-50 dark:bg-[#111816] focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-sm"
+                    class="block w-full pl-11 pr-4 py-3 border border-gray-200 dark:border-gray-700/80 placeholder-gray-350 dark:placeholder-gray-600 text-gray-900 dark:text-white rounded-xl bg-gray-50 dark:bg-[#111816] focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-sm"
                     :placeholder="$t('login.full_name_ph')"
                   />
                 </div>
@@ -235,7 +235,7 @@
                     type="text"
                     required
                     autocomplete="username"
-                    class="block w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700/80 placeholder-gray-350 dark:placeholder-gray-600 text-gray-900 dark:text-white rounded-xl bg-gray-50 dark:bg-[#111816] focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-sm"
+                    class="block w-full pl-11 pr-4 py-3 border border-gray-200 dark:border-gray-700/80 placeholder-gray-350 dark:placeholder-gray-600 text-gray-900 dark:text-white rounded-xl bg-gray-50 dark:bg-[#111816] focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-sm"
                     :placeholder="$t('login.username_ph')"
                   />
                 </div>
@@ -255,7 +255,7 @@
                     :type="showPassword ? 'text' : 'password'"
                     required
                     autocomplete="current-password"
-                    class="block w-full pl-10 pr-11 py-3 border border-gray-200 dark:border-gray-700/80 placeholder-gray-350 dark:placeholder-gray-600 text-gray-900 dark:text-white rounded-xl bg-gray-50 dark:bg-[#111816] focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-sm"
+                    class="block w-full pl-11 pr-11 py-3 border border-gray-200 dark:border-gray-700/80 placeholder-gray-350 dark:placeholder-gray-600 text-gray-900 dark:text-white rounded-xl bg-gray-50 dark:bg-[#111816] focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-sm"
                     :placeholder="$t('login.password_ph')"
                   />
                   <button
