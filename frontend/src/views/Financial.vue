@@ -20,6 +20,17 @@
             @change="onBatchChange"
           />
         </div>
+        <AgriButton
+          variant="secondary"
+          size="sm"
+          :disabled="!selectedBatchId || loading || pdfExporting"
+          @click="downloadFinancialPDF"
+          title="Download PDF Financial Report"
+        >
+          <span v-if="pdfExporting" class="material-icons-outlined text-sm mr-1.5 animate-spin">refresh</span>
+          <span v-else class="material-icons-outlined text-sm mr-1.5 text-red-500">picture_as_pdf</span>
+          <span>{{ pdfExporting ? 'Generating...' : 'Export PDF' }}</span>
+        </AgriButton>
       </div>
     </div>
 
@@ -569,6 +580,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, nextTick, onUnmounted } from 'vue'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
+import logoFullUrl from '../assets/logo_full.png'
 import { store } from '../services/store'
 import { api } from '../services/api'
 import { useAnimations } from '../composables/useAnimations'
@@ -592,6 +606,7 @@ const { getStaggerDelayClass } = useAnimations()
 // ── State ──────────────────────────────────
 const selectedBatchId = ref(null)
 const loading = ref(false)
+const pdfExporting = ref(false)
 
 const summary = ref({
   total_revenue_zmw: 0,
@@ -874,6 +889,223 @@ onMounted(async () => {
     }
   }
 })
+
+// ── PDF Export Functionality ────────────────
+const getBase64ImageFromUrl = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = 'Anonymous'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      const dataURL = canvas.toDataURL('image/png')
+      resolve(dataURL)
+    }
+    img.onerror = (err) => reject(err)
+    img.src = url
+  })
+}
+
+const downloadFinancialPDF = async () => {
+  if (!selectedBatchId.value) return
+  pdfExporting.value = true
+  try {
+    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' })
+    const pageWidth = doc.internal.pageSize.getWidth()
+
+    // 1. Load Logo Image
+    let logoBase64 = null
+    try {
+      logoBase64 = await getBase64ImageFromUrl(logoFullUrl)
+    } catch (e) {
+      console.warn('Could not load logo image for PDF:', e)
+    }
+
+    // 2. Header Block with Logo
+    let headerY = 12
+    if (logoBase64) {
+      // Add logo at top left (width: 44mm, height: 14mm)
+      doc.addImage(logoBase64, 'PNG', 14, headerY, 44, 14)
+    } else {
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(18)
+      doc.setTextColor(22, 163, 74)
+      doc.text('AgriSense AI', 14, headerY + 10)
+    }
+
+    // Header Right Meta Information
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(13)
+    doc.setTextColor(30, 41, 59)
+    doc.text('FINANCIAL INTELLIGENCE REPORT', pageWidth - 14, headerY + 5, { align: 'right' })
+
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.setTextColor(100, 116, 139)
+    const batchLabel = activeBatchObj.value
+      ? `Batch #${activeBatchObj.value.id} (${activeBatchObj.value.breed})`
+      : `Batch #${selectedBatchId.value}`
+    const currentDate = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+
+    doc.text(`Target Batch: ${batchLabel}`, pageWidth - 14, headerY + 10, { align: 'right' })
+    doc.text(`Generated: ${currentDate} | Farm: Prime Nest Poultry`, pageWidth - 14, headerY + 15, { align: 'right' })
+
+    // Green Divider Line
+    headerY += 19
+    doc.setDrawColor(22, 163, 74)
+    doc.setLineWidth(0.8)
+    doc.line(14, headerY, pageWidth - 14, headerY)
+
+    let currentY = headerY + 8
+
+    // 3. Executive Financial KPI Overview
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(10)
+    doc.setTextColor(15, 23, 42)
+    doc.text('1. Executive Financial Overview', 14, currentY)
+    currentY += 4
+
+    const summaryBoxWidth = (pageWidth - 28 - 9) / 4
+    const boxHeight = 16
+
+    const kpis = [
+      { label: 'TOTAL REVENUE', val: `K ${summary.value.total_revenue_zmw.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, sub: `${summary.value.total_birds_sold} birds sold` },
+      { label: 'TOTAL EXPENSES', val: `K ${summary.value.total_expenses_zmw.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, sub: `${Object.keys(summary.value.expenses_by_category).length} categories` },
+      { label: 'GROSS PROFIT', val: `K ${summary.value.gross_profit_zmw.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, sub: summary.value.gross_profit_zmw >= 0 ? 'Profitable' : 'Loss' },
+      { label: 'PROFIT MARGIN', val: `${summary.value.profit_margin_pct.toFixed(1)}%`, sub: getMarginLabel(summary.value.profit_margin_pct) }
+    ]
+
+    kpis.forEach((kpi, idx) => {
+      const boxX = 14 + idx * (summaryBoxWidth + 3)
+      doc.setFillColor(248, 250, 252)
+      doc.setDrawColor(226, 232, 240)
+      doc.setLineWidth(0.3)
+      doc.roundedRect(boxX, currentY, summaryBoxWidth, boxHeight, 2, 2, 'FD')
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(6.5)
+      doc.setTextColor(100, 116, 139)
+      doc.text(kpi.label, boxX + 3, currentY + 4.5)
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9.5)
+      doc.setTextColor(15, 23, 42)
+      doc.text(kpi.val, boxX + 3, currentY + 10)
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(6.5)
+      doc.setTextColor(kpi.sub === 'Loss' ? 225 : 100, kpi.sub === 'Loss' ? 29 : 116, kpi.sub === 'Loss' ? 72 : 139)
+      doc.text(kpi.sub, boxX + 3, currentY + 14)
+    })
+
+    currentY += boxHeight + 8
+
+    // 4. Sales History Table
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(10)
+    doc.setTextColor(15, 23, 42)
+    doc.text(`2. Sales & Revenue Log (${salesEntries.value.length} Records)`, 14, currentY)
+    currentY += 3
+
+    const salesRows = salesEntries.value.map(s => [
+      s.date || '—',
+      `${s.birds_sold} birds`,
+      `K ${s.unit_price_zmw.toFixed(2)}`,
+      `K ${s.total_zmw.toFixed(2)}`,
+      s.buyer || '—'
+    ])
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Date', 'Birds Sold', 'Unit Price (ZMW)', 'Total Revenue (ZMW)', 'Buyer / Notes']],
+      body: salesRows.length > 0 ? salesRows : [['—', 'No sales logged', '—', '—', '—']],
+      theme: 'grid',
+      headStyles: { fillColor: [22, 163, 74], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+      bodyStyles: { fontSize: 8, textColor: [30, 41, 59] },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
+      margin: { left: 14, right: 14 }
+    })
+
+    currentY = doc.lastAutoTable.finalY + 8
+
+    if (currentY > 230) {
+      doc.addPage()
+      currentY = 16
+    }
+
+    // 5. Expense Breakdown Table
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(10)
+    doc.setTextColor(15, 23, 42)
+    doc.text(`3. Expense Breakdown Log (${expenseEntries.value.length} Records)`, 14, currentY)
+    currentY += 3
+
+    const expenseRows = expenseEntries.value.map(e => [
+      e.date || '—',
+      (e.category || 'other').toUpperCase(),
+      e.description || '—',
+      `K ${e.amount_zmw.toFixed(2)}`
+    ])
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Date', 'Category', 'Description', 'Amount (ZMW)']],
+      body: expenseRows.length > 0 ? expenseRows : [['—', 'No expenses logged', '—', '—']],
+      theme: 'grid',
+      headStyles: { fillColor: [71, 85, 105], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+      bodyStyles: { fontSize: 8, textColor: [30, 41, 59] },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
+      margin: { left: 14, right: 14 }
+    })
+
+    currentY = doc.lastAutoTable.finalY + 8
+
+    if (currentY > 240) {
+      doc.addPage()
+      currentY = 16
+    }
+
+    // 6. Net Profit / Loss Banner
+    if (plSummary.value) {
+      const isProfitable = plSummary.value.is_profitable
+      doc.setFillColor(isProfitable ? 240 : 254, isProfitable ? 253 : 242, isProfitable ? 244 : 242)
+      doc.setDrawColor(isProfitable ? 187 : 254, isProfitable ? 247 : 202, isProfitable ? 208 : 202)
+      doc.roundedRect(14, currentY, pageWidth - 28, 16, 2, 2, 'FD')
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.setTextColor(isProfitable ? 21 : 153, isProfitable ? 128 : 27, isProfitable ? 61 : 27)
+      doc.text(`BATCH NET ${isProfitable ? 'PROFIT' : 'LOSS'}: K ${Math.abs(plSummary.value.net_profit_zmw).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 18, currentY + 7)
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8)
+      doc.text(`Profit Per Bird Sold: K ${plSummary.value.profit_per_bird_zmw.toFixed(2)} / bird | Total Birds Sold: ${plSummary.value.total_birds_sold}`, 18, currentY + 12)
+    }
+
+    // Page numbering and footer
+    const pageCount = doc.internal.getNumberOfPages()
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i)
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8)
+      doc.setTextColor(148, 163, 184)
+      doc.text(`AgriSense AI · Confidential Farm Financial Intelligence Report`, 14, 287)
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 14, 287, { align: 'right' })
+    }
+
+    const filename = `AgriSense_Financial_Report_Batch_${selectedBatchId.value}_${new Date().toISOString().split('T')[0]}.pdf`
+    doc.save(filename)
+  } catch (err) {
+    console.error('Failed to generate PDF:', err)
+  } finally {
+    pdfExporting.value = false
+  }
+}
 
 onUnmounted(() => {
   if (expenseChartInstance) expenseChartInstance.destroy()
