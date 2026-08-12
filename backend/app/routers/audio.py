@@ -18,6 +18,7 @@ router = APIRouter(prefix="/audio", tags=["Audio"])
 
 @router.get("/config/{farm_id}", response_model=AudioConfigResponse)
 def get_audio_config(farm_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+ def get_audio_config(farm_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Retrieve the current audio configuration for a specific farm.
     If no configuration exists, a default profile (80% cough threshold, 65% chirp threshold) is generated.
@@ -40,6 +41,7 @@ def get_audio_config(farm_id: int, db: Session = Depends(get_db), current_user: 
 
 @router.put("/config/{farm_id}", response_model=AudioConfigResponse)
 def update_audio_config(farm_id: int, config_update: AudioConfigUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+ def update_audio_config(farm_id: int, config_update: AudioConfigUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Update the audio telemetry thresholds (cough_threshold_pct and chirp_threshold_pct)
     for a specific farm. Adjusting these values calibrates the sensitivity of the anomaly detection.
