@@ -107,7 +107,7 @@
     <!-- ═══════════════════════════════════════════
          RIGHT PANE — Login form
     ════════════════════════════════════════════ -->
-    <div class="w-full md:w-[45%] flex items-center justify-center h-full p-8 sm:p-12 relative">
+    <div class="w-full md:w-[45%] flex items-center justify-center h-full overflow-y-auto p-4 sm:p-6 md:p-8 lg:p-12 relative">
 
       <!-- Soft background accents -->
       <div class="absolute inset-0 bg-[radial-gradient(#d1e8ce_1px,transparent_1px)] dark:bg-[radial-gradient(#1a2219_1px,transparent_1px)] [background-size:22px_22px] opacity-30 pointer-events-none"></div>
@@ -123,22 +123,20 @@
         enter-from-class="opacity-0 translate-y-8 scale-[0.97]"
         enter-to-class="opacity-100 translate-y-0 scale-100"
       >
-        <div class="max-w-sm w-full bg-white/95 dark:bg-darkbg-50/95 backdrop-blur-2xl border border-gray-100 dark:border-gray-800/60 rounded-3xl shadow-2xl shadow-gray-200/40 dark:shadow-black/30 relative overflow-hidden">
+        <div class="max-w-md w-full bg-white/95 dark:bg-darkbg-50/95 backdrop-blur-2xl border border-gray-100 dark:border-gray-800/60 rounded-3xl shadow-2xl shadow-gray-200/40 dark:shadow-black/30 relative overflow-hidden my-auto">
 
           <!-- Gradient accent bar -->
           <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-primary-500 via-primary-400 to-emerald-400 rounded-t-3xl"></div>
 
-          <div class="px-8 pt-10 pb-8">
+          <div class="px-6 sm:px-8 py-7 sm:py-8">
 
             <!-- Logo -->
-            <div class="flex items-center space-x-2.5 mb-8">
-              <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-600/25">
-                <span class="material-icons-outlined text-white text-[18px]">agriculture</span>
-              </div>
-              <div>
-                <div class="text-[17px] font-black tracking-wide text-gray-900 dark:text-white uppercase leading-none">AgriSense <span class="text-primary-600 dark:text-primary-400">AI</span></div>
-                <div class="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider uppercase leading-none mt-0.5">{{ $t('login.subtitle') }}</div>
-              </div>
+            <div class="flex items-center mb-6">
+              <img
+                src="../assets/logo_full.png"
+                alt="AgriSense AI Logo"
+                class="h-10 sm:h-11 w-auto object-contain"
+              />
             </div>
 
             <!-- Heading -->
@@ -443,6 +441,20 @@ const toggleMode = () => {
   loginSuccess.value = false
 }
 
+const navigateToDashboard = async () => {
+  try {
+    const res = await router.push({ name: 'Dashboard' })
+    if (res) {
+      // Navigation was aborted or redirected
+      loginSuccess.value = false
+    }
+  } catch (err) {
+    console.error('Navigation to Dashboard failed:', err)
+    loginSuccess.value = false
+    errorMessage.value = 'Navigation failed. Please try again.'
+  }
+}
+
 // Login handler
 const handleLogin = async () => {
   errorMessage.value = ''
@@ -452,8 +464,11 @@ const handleLogin = async () => {
     await api.auth.login(username.value, password.value)
     loginSuccess.value = true
     success('Login successful! Redirecting...', 2000)
-    setTimeout(() => router.push({ name: 'Dashboard' }), 800)
+    setTimeout(() => {
+      navigateToDashboard()
+    }, 400)
   } catch (err) {
+    loginSuccess.value = false
     if (err.message && err.message.toLowerCase().includes('fetch')) {
       errorMessage.value = 'Cannot reach the server. Please ensure the backend is running on port 8000.'
       error('Backend server unreachable.')
@@ -476,8 +491,11 @@ const handleRegister = async () => {
     loginSuccess.value = true
     successMessage.value = 'Account created successfully!'
     success('Account created successfully!', 3000)
-    setTimeout(() => router.push({ name: 'Dashboard' }), 800)
+    setTimeout(() => {
+      navigateToDashboard()
+    }, 400)
   } catch (err) {
+    loginSuccess.value = false
     if (err.message && err.message.toLowerCase().includes('fetch')) {
       errorMessage.value = 'Cannot reach the server. Please ensure the backend is running on port 8000.'
       error('Backend server unreachable.')
@@ -495,6 +513,9 @@ const handleGoogleLogin = () => {
 }
 
 onMounted(() => {
+  loginSuccess.value = false
+  isLoading.value = false
+  errorMessage.value = ''
   const saved = localStorage.getItem('theme')
   isDark.value = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
   applyTheme()
