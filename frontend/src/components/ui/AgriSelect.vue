@@ -40,13 +40,13 @@
         <!-- Search bar inside dropdown -->
         <div v-if="searchable" class="p-2 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <div class="relative flex items-center">
-            <span class="absolute left-2.5 material-icons-outlined text-[15px] text-gray-400">search</span>
+            <span class="absolute left-2.5 material-icons-outlined text-[15px] text-gray-400 pointer-events-none">search</span>
             <input
               ref="searchInput"
               v-model="searchQuery"
               type="text"
               placeholder="Search..."
-              class="w-full text-xs font-semibold pl-8 pr-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-850 dark:bg-darkbg-100 text-gray-800 dark:text-white outline-none focus:border-primary-500 dark:focus:border-primary-400"
+              class="w-full text-xs font-semibold pl-9 pr-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-850 dark:bg-darkbg-100 text-gray-800 dark:text-white outline-none focus:border-primary-500 dark:focus:border-primary-400"
               @click.stop
             />
           </div>
