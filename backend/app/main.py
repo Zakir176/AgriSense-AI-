@@ -11,7 +11,7 @@ from .models.user_farm import UserFarmAssociation
 
 # Import all models to register on Base
 from .models import Base
-from .routers import auth, farms, batches, readings, growth, medications, alerts, inference, spatial_trends, audio, scheduled_treatments
+from .routers import auth, farms, batches, readings, growth, medications, alerts, inference, spatial_trends, audio, scheduled_treatments, inventory, financial
 
 # Auto-create tables (practical for Phase 1 mockup)
 Base.metadata.create_all(bind=engine)
@@ -81,7 +81,9 @@ tags_metadata = [
     {"name": "Alerts", "description": "Heuristic anomaly alerts (mortality spikes, consumption drops)."},
     {"name": "Inference", "description": "YOLOv8 visual monitoring, flock counting, and activity scoring."},
     {"name": "Spatial Trends", "description": "Heatmaps and spatial distribution analysis."},
-    {"name": "Audio", "description": "Audio telemetry for heuristic distress call classification."}
+    {"name": "Audio", "description": "Audio telemetry for heuristic distress call classification."},
+    {"name": "Inventory", "description": "Flock inventory adjustments: sales, mortality, culls, additions."},
+    {"name": "Financial", "description": "Financial intelligence: expenses, revenue, P&L, and income forecasting."}
 ]
 
 app = FastAPI(
@@ -127,6 +129,8 @@ app.include_router(inference.router, prefix=settings.API_V1_STR)
 app.include_router(spatial_trends.router, prefix=settings.API_V1_STR)
 app.include_router(audio.router, prefix=settings.API_V1_STR)
 app.include_router(scheduled_treatments.router, prefix=settings.API_V1_STR)
+app.include_router(inventory.router, prefix=settings.API_V1_STR)
+app.include_router(financial.router, prefix=settings.API_V1_STR)
 
 from fastapi.staticfiles import StaticFiles
 import os

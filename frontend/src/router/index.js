@@ -77,6 +77,12 @@ const routes = [
     name: 'FarmSettings',
     component: FarmSettings,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/financial',
+    name: 'Financial',
+    component: () => import('../views/Financial.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

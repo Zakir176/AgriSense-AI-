@@ -1,0 +1,44 @@
+name: Sync Deployment Repositories
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Monorepo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Sync Frontend to AgriSense-AI-Frontend
+        env:
+          SYNC_TOKEN: ${{ secrets.DEPLOY_SYNC_TOKEN }}
+        run: |
+          if [ -z "$SYNC_TOKEN" ]; then
+            echo "::error::DEPLOY_SYNC_TOKEN secret is missing or empty in repository settings."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --unset-all http.https://github.com/.extraheader || true
+          git config --global --unset-all credential.helper || true
+          git subtree split --prefix=frontend -b temp-front-sync
+          git push https://${SYNC_TOKEN}@github.com/Zakir176/AgriSense-AI-Frontend.git temp-front-sync:main --force
+
+      - name: Sync Backend to AgriSense-AI-Backend
+        env:
+          SYNC_TOKEN: ${{ secrets.DEPLOY_SYNC_TOKEN }}
+        run: |
+          if [ -z "$SYNC_TOKEN" ]; then
+            echo "::error::DEPLOY_SYNC_TOKEN secret is missing or empty in repository settings."
+            exit 1
+          fi
+          git config --unset-all http.https://github.com/.extraheader || true
+          git subtree split --prefix=backend -b temp-back-sync
+          git push https://${SYNC_TOKEN}@github.com/Zakir176/AgriSense-AI-Backend.git temp-back-sync:main --force
