@@ -1,20 +1,31 @@
 version: '3.8'
 
+# ── Required environment variables ──────────────────────────────────────────
+# Create a .env file next to docker-compose.yml (NOT committed to git) with:
+#
+#   POSTGRES_PASSWORD=<strong-random-password>
+#   SECRET_KEY=<output-of: python -c "import secrets; print(secrets.token_hex(32))">
+#   FRONTEND_URL=https://your-app.vercel.app   # optional; leave blank for local dev
+#
+# The compose file will refuse to start if required variables are unset.
+# ────────────────────────────────────────────────────────────────────────────
+
 services:
   db:
     image: postgres:15-alpine
     container_name: agrisense_db
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
-      POSTGRES_DB: agrisense
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # required — no default
+      POSTGRES_DB: ${POSTGRES_DB:-agrisense}
+    # No host port binding (F-08): the database is only reachable on the
+    # internal Docker network. Remove this comment and add "ports:" only
+    # for local debugging, never in production.
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -28,8 +39,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgrespassword@db:5432/agrisense
-      SECRET_KEY: ${SECRET_KEY:-4f8a12b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-agrisense}
+      SECRET_KEY: ${SECRET_KEY}                 # required — no default
       ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 1440
       UPLOAD_DIR: /app/uploads
