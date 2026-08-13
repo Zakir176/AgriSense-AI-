@@ -72,7 +72,15 @@ cd AgriSense-AI-
 ```
 
 ### 2 — Database Container Setup
-Make sure you have Docker Desktop running, then start the PostgreSQL 15 database:
+Make sure you have Docker Desktop running. First create a root-level `.env` file with required secrets (this file is gitignored and must never be committed):
+```bash
+# Generate a strong SECRET_KEY:
+python -c "import secrets; print('SECRET_KEY=' + secrets.token_hex(32))"
+# Then create .env in the repo root:
+# POSTGRES_PASSWORD=<strong-random-password>
+# SECRET_KEY=<output from above>
+```
+Then start the PostgreSQL 15 database:
 ```bash
 docker-compose up -d
 ```
@@ -101,11 +109,37 @@ uvicorn app.main:app --reload --port 8000
 
 # For local dev with real AI inference (YOLOv8):
 pip install -r requirements-full.txt(At initialisation or if not installed already)
-
-python seed_data.py  # Seeds pilot farm and realistic daily metrics(At initialisation)
 ```
 *   API Docs: [http://localhost:8000/docs](http://localhost:8000/docs) (Swagger Interactive UI)
-*   Default Credentials: Username `operator`, Password `prime_nest_2026`
+
+> [!IMPORTANT]
+> **No default credentials are seeded automatically.** The application starts with an empty database. You must run the seeder (Step 3b below) before you can log in.
+
+### 3b — First-Time Database Initialisation
+
+The application **does not seed data automatically on startup**. Run the seeder once after the backend is up for the first time:
+
+```bash
+# Set credentials via env vars (never hardcode them):
+# macOS / Linux:
+export SEED_DEMO_PASSWORD=<choose-a-strong-password>
+export SEED_OPERATOR_PASSWORD=<choose-a-strong-password>
+
+# Windows PowerShell:
+$env:SEED_DEMO_PASSWORD = "<choose-a-strong-password>"
+$env:SEED_OPERATOR_PASSWORD = "<choose-a-strong-password>"
+
+# Run the seeder from the backend/ directory:
+python seed_data.py
+```
+
+This creates:
+- **`evans`** — demo farmer account linked to the pilot farm with full 42-day batch data
+- **`operator`** — admin account with full access
+- Realistic feed/growth/medication/alert records based on Evans' real farm data
+
+> [!NOTE]
+> The passwords you set here are what you use to log in. They are never stored in the codebase.
 
 ### 4 — Database Migrations (Alembic)
 
