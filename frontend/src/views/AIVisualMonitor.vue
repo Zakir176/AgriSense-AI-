@@ -210,7 +210,7 @@
                 <div class="relative bg-black rounded-xl overflow-hidden aspect-video max-h-[380px] w-full border border-gray-150 dark:border-gray-850 flex items-center justify-center shadow-inner">
                   <video
                     ref="videoPlayer"
-                    :src="getVideoUrl(selectedClip.file_url)"
+                    :src="selectedClipBlobUrl"
                     controls
                     @timeupdate="onVideoTimeUpdate"
                     class="w-full h-full object-contain"
@@ -632,6 +632,38 @@ let wsConnection = null
 let reconnectTimeout = null
 let liveFrameImage = null
 
+// ── Authenticated video blob URL (F-06) ──────
+// Uploaded files are served via an authenticated API route, not a public
+// static URL. When a clip is selected, we fetch it with the Bearer token
+// and create a temporary blob:// URL for the <video> element.
+const selectedClipBlobUrl = ref(null)
+const _API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1'
+
+const fetchVideoBlob = async (clip) => {
+  // Revoke any previously held blob URL to avoid memory leaks.
+  if (selectedClipBlobUrl.value) {
+    URL.revokeObjectURL(selectedClipBlobUrl.value)
+    selectedClipBlobUrl.value = null
+  }
+  if (!clip?.file_url) return
+  const filename = getFileName(clip.file_url)
+  if (!filename) return
+  const token = localStorage.getItem('agrisense_token')
+  try {
+    const response = await fetch(`${_API_BASE}/uploads/${encodeURIComponent(filename)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response.ok) {
+      console.warn('[VideoPlayer] Could not load clip:', response.status)
+      return
+    }
+    const blob = await response.blob()
+    selectedClipBlobUrl.value = URL.createObjectURL(blob)
+  } catch (err) {
+    console.error('[VideoPlayer] Failed to fetch video blob:', err)
+  }
+}
+
 // ── Computed ──────────────────────────────
 const activeBatchObj = computed(() => {
   return store.batchesList.find(b => b.id === selectedBatchId.value)
@@ -747,11 +779,18 @@ const getFileName = (pathStr) => {
   return pathStr.split(/[\\/]/).pop()
 }
 
+// getVideoUrl is kept for backward-compat but is no longer used directly.
+// Authenticated video loading is handled by fetchVideoBlob + selectedClipBlobUrl.
 const getVideoUrl = (pathStr) => {
   if (!pathStr) return ''
   const filename = getFileName(pathStr)
-  return `http://127.0.0.1:8000/uploads/${filename}`
+  return `${_API_BASE}/uploads/${encodeURIComponent(filename)}`
 }
+
+// Fetch a fresh blob URL whenever the selected clip changes.
+watch(selectedClip, (newClip) => {
+  fetchVideoBlob(newClip)
+})
 
 const formatDateTime = (dateStr) => {
   if (!dateStr) return ''
@@ -1013,7 +1052,10 @@ const connectLiveStream = () => {
   disconnectLiveStream()
 
   connectionStatus.value = 'connecting'
-  const wsUrl = `${getWsBaseUrl()}/ws/rtsp-stream/${selectedBatchId.value}`
+  // F-03: pass the JWT as a query param — WebSocket API does not support
+  // custom headers, so the token travels in the URL before the upgrade.
+  const token = localStorage.getItem('agrisense_token') || ''
+  const wsUrl = `${getWsBaseUrl()}/ws/rtsp-stream/${selectedBatchId.value}?token=${encodeURIComponent(token)}`
   
   try {
     wsConnection = new WebSocket(wsUrl)
@@ -1065,6 +1107,12 @@ const connectLiveStream = () => {
     console.log('[LiveFeed] WebSocket closed:', event.code, event.reason)
     connectionStatus.value = 'disconnected'
     wsConnection = null
+    // F-03: Auth rejection codes — do NOT reconnect; surface the error instead.
+    if (event.code === 4001 || event.code === 4003) {
+      console.warn('[LiveFeed] Connection rejected by server (auth/access denied). Not reconnecting.')
+      toast.error('Live feed unavailable: authentication or access error.')
+      return
+    }
     // Only reconnect if still in live mode
     if (liveMode.value && selectedBatchId.value) {
       scheduleReconnect()
@@ -1140,5 +1188,10 @@ watch(selectedBatchId, async (newId, oldId) => {
 
 onUnmounted(() => {
   disconnectLiveStream()
+  // Revoke any held blob URL to free browser memory.
+  if (selectedClipBlobUrl.value) {
+    URL.revokeObjectURL(selectedClipBlobUrl.value)
+    selectedClipBlobUrl.value = null
+  }
 })
 </script>
