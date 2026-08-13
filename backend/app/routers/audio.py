@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ..database import get_db
@@ -6,6 +7,8 @@ from ..models.farm import Farm
 from ..models.auth import User
 from ..schemas.audio import AudioConfigResponse, AudioConfigUpdate
 from .auth import get_current_user, get_user_farm
+
+logger = logging.getLogger(__name__)
 
 """
 Audio Telemetry Router
@@ -98,26 +101,48 @@ def classify_audio(
     if not config:
         config = AudioConfig(farm_id=farm_id, cough_threshold_pct=80.0, chirp_threshold_pct=65.0)
 
+    # ── Input validation (F-11) ────────────────────────────────────────────────
+    ALLOWED_AUDIO_EXTENSIONS = frozenset({".webm", ".wav", ".mp3", ".ogg", ".m4a"})
+    AUDIO_MAX_MB = 10
+
+    safe_filename = os.path.basename(file.filename or "audio")
+    file_extension = os.path.splitext(safe_filename)[1].lower()
+
+    if file_extension not in ALLOWED_AUDIO_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported audio format. Allowed: .webm, .wav, .mp3, .ogg, .m4a",
+        )
+
+    max_bytes = AUDIO_MAX_MB * 1024 * 1024
+    content = file.file.read(max_bytes + 1)
+    if len(content) > max_bytes:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Audio file too large. Maximum size is {AUDIO_MAX_MB} MB.",
+        )
+
+    # ── Persist to disk ────────────────────────────────────────────────────────
     # Verify directory exists
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    
-    # Save the temporary audio clip
-    file_extension = os.path.splitext(file.filename)[1]
+
     unique_filename = f"audio_{uuid.uuid4()}{file_extension}"
     file_path = os.path.join(settings.UPLOAD_DIR, unique_filename)
-    
+
     try:
         with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save uploaded audio file: {e}")
+            buffer.write(content)
+    except Exception:
+        logger.exception("Failed to save uploaded audio file")
+        raise HTTPException(status_code=500, detail="Failed to save uploaded audio file. Please try again.")
 
     try:
         result = classify_audio_snippet(file_path, config)
-    except Exception as e:
+    except Exception:
         if os.path.exists(file_path):
             os.remove(file_path)
-        raise HTTPException(status_code=500, detail=f"Audio classification failed: {e}")
+        logger.exception("Audio classification failed")
+        raise HTTPException(status_code=500, detail="Audio classification failed. Please try again.")
         
     # Cleanup temp file after processing
     if os.path.exists(file_path):
