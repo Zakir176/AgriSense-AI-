@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, s
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
+import logging
 import os
 import uuid
 from ..database import get_db
@@ -13,6 +14,8 @@ from ..models.user_farm import UserFarmAssociation
 from ..schemas.media import MediaClipResponse
 from ..services.inference_service import run_video_inference
 from .auth import get_current_user, get_user_farm
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/inference", tags=["Inference"])
 
@@ -61,8 +64,9 @@ async def upload_video_for_inference(
     try:
         with open(file_path, "wb") as buffer:
             buffer.write(content)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save uploaded file: {e}")
+    except Exception:
+        logger.exception("Failed to save uploaded file to disk")
+        raise HTTPException(status_code=500, detail="Failed to save uploaded file. Please try again.")
         
     # Create MediaClip record
     db_media_clip = MediaClip(
@@ -75,11 +79,12 @@ async def upload_video_for_inference(
     # Run video inference
     try:
         inf_data = run_video_inference(file_path)
-    except Exception as e:
+    except Exception:
         # Cleanup file if inference failed catastrophically and error out
         if os.path.exists(file_path):
             os.remove(file_path)
-        raise HTTPException(status_code=500, detail=f"Inference execution failed: {e}")
+        logger.exception("Video inference execution failed")
+        raise HTTPException(status_code=500, detail="Video inference failed. Please try again.")
         
     # Create InferenceResult record
     # Calculate Expected Count based on batch count and readings mortality
