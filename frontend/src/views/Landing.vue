@@ -18,14 +18,8 @@
 
     <!-- Header Navigation -->
     <header class="relative z-10 max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-      <div class="flex items-center space-x-2.5">
-        <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-600/25">
-          <span class="material-icons-outlined text-white text-[18px]">agriculture</span>
-        </div>
-        <div>
-          <div class="text-[17px] font-black tracking-wide text-gray-900 dark:text-white uppercase leading-none">AgriSense <span class="text-primary-600 dark:text-primary-400">AI</span></div>
-          <div class="text-[10px] text-gray-400 dark:text-gray-500 font-bold tracking-wider uppercase leading-none mt-0.5">Operator Platform</div>
-        </div>
+      <div class="flex items-center">
+        <img src="../assets/logo_full.png" alt="AgriSense AI" class="h-10 w-auto object-contain" />
       </div>
 
       <nav class="hidden md:flex items-center space-x-8 text-sm font-semibold text-gray-550 dark:text-gray-400">
@@ -76,12 +70,6 @@
 
         <!-- Actions -->
         <div class="flex flex-wrap gap-4 pt-2">
-          <AgriButton
-            variant="primary"
-            size="lg"
-            icon="arrow_forward"
-            @click="triggerPortalWarp"
-          >{{ $t('landing.launch_portal') }}</AgriButton>
           <AgriButton
             variant="outline"
             size="lg"
@@ -214,10 +202,7 @@
                 {{ $t('landing.local_desc') }}
               </p>
             </div>
-            <div class="pt-6 text-xs font-bold text-primary-600 dark:text-primary-400 flex items-center gap-1">
-              <span>{{ $t('landing.read_cache') }}</span>
-              <span class="material-icons-outlined text-sm">chevron_right</span>
-            </div>
+
           </div>
 
           <!-- Card 2 -->
@@ -231,10 +216,7 @@
                 {{ $t('landing.yolov8_desc') }}
               </p>
             </div>
-            <div class="pt-6 text-xs font-bold text-primary-600 dark:text-primary-400 flex items-center gap-1">
-              <span>{{ $t('landing.explore_object') }}</span>
-              <span class="material-icons-outlined text-sm">chevron_right</span>
-            </div>
+
           </div>
 
           <!-- Card 3 -->
@@ -248,10 +230,7 @@
                 Monitors acoustic feeds inside broiler pens. Machine learning models extract sound distress ratios to flag high frequencies of coughing/chirping which indicate early respiratory warnings or predator presence.
               </p>
             </div>
-            <div class="pt-6 text-xs font-bold text-primary-600 dark:text-primary-400 flex items-center gap-1">
-              <span>View audio spectral rules</span>
-              <span class="material-icons-outlined text-sm">chevron_right</span>
-            </div>
+
           </div>
         </div>
       </div>
@@ -379,16 +358,7 @@
             </li>
           </ul>
 
-          <div class="pt-4">
-            <AgriButton
-              variant="primary"
-              size="lg"
-              icon="login"
-              @click="triggerPortalWarp"
-            >
-              Enter Operator Portal
-            </AgriButton>
-          </div>
+
         </div>
 
         <!-- Right Side: Interactive Sync Portal Animation -->
