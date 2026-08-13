@@ -10,6 +10,7 @@ python-multipart>=0.0.6
 passlib[bcrypt]>=1.7.4
 python-jose[cryptography]>=3.3.0
 websockets>=11.0.3
+slowapi>=0.1.9
 
 # Testing
 pytest>=7.4.0
