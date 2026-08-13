@@ -63,8 +63,21 @@ from app.models.media import MediaClip, InferenceResult
 from app.models.user_farm import UserFarmAssociation
 from app.models.scheduled_treatment import ScheduledTreatment
 
-# Must match the scheme configured in app/routers/auth.py
-pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
+# Passwords are read from environment variables — never hardcoded.
+# Set these before running this script:
+#   export SEED_DEMO_PASSWORD=<choose a strong password>
+#   export SEED_OPERATOR_PASSWORD=<choose a strong password>
+_SEED_DEMO_PASSWORD = os.environ.get("SEED_DEMO_PASSWORD", "")
+_SEED_OPERATOR_PASSWORD = os.environ.get("SEED_OPERATOR_PASSWORD", "")
+
+if not _SEED_DEMO_PASSWORD or not _SEED_OPERATOR_PASSWORD:
+    print("ERROR: SEED_DEMO_PASSWORD and SEED_OPERATOR_PASSWORD environment variables must be set.")
+    print("  export SEED_DEMO_PASSWORD=<your-password>")
+    print("  export SEED_OPERATOR_PASSWORD=<your-password>")
+    sys.exit(1)
+
+# Use bcrypt to match the scheme in app/routers/auth.py
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 # ---------------------------------------------------------------------------
@@ -296,18 +309,18 @@ def seed():
     print("Seeding database with Evans' real farm data...")
 
     # ── 0. Demo User ──────────────────────────────────────────────────────────
-    # Hash is generated with sha256_crypt — matches app/routers/auth.py
     demo_user = User(
         username="evans",
-        hashed_password=pwd_context.hash("agrisense2025"),
+        hashed_password=pwd_context.hash(_SEED_DEMO_PASSWORD),
         full_name="Evans Mulenga",
     )
     db.add(demo_user)
     
     operator_user = User(
         username="operator",
-        hashed_password=pwd_context.hash("prime_nest_2026"),
-        full_name="Evans Kabwe"
+        hashed_password=pwd_context.hash(_SEED_OPERATOR_PASSWORD),
+        full_name="Evans Kabwe",
+        is_admin=True,
     )
     db.add(operator_user)
     
@@ -583,7 +596,8 @@ def seed():
     db.close()
 
     print("\nDatabase seeded successfully!")
-    print("  Login   : username=evans  |  password=agrisense2025")
+    print("  Users   : username=evans (password: set via SEED_DEMO_PASSWORD)")
+    print("            username=operator / admin (password: set via SEED_OPERATOR_PASSWORD)")
     print("  Farm    : Prime Nest Poultry Farm, Lusaka, Zambia")
     print("  Batches : 1 active (Day 22 of 42) + 1 archived (full 42-day cycle)")
     print("  Birds   : 200 per batch — Evans' real data")
