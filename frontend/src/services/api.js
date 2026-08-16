@@ -361,6 +361,9 @@ export const api = {
       return request(`/schedules/${id}/complete`, {
         method: 'POST'
       })
+    },
+    getDueReminders() {
+      return request('/schedules/due-reminders')
     }
   },
 
@@ -566,3 +569,5 @@ export const api = {
     }
   }
 }
+
+export default api
