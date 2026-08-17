@@ -372,6 +372,7 @@ const ackLoading = ref(false)
 const reportExporting = ref(false)
 const recentReadings = ref([])
 const unackAlerts = ref([])
+const inventorySummary = ref(null)
 
 // ── Computed KPIs ──────────────────────────────
 const activeBatchCount = computed(() =>
@@ -417,6 +418,17 @@ const populationTrendDirection = computed(() => {
 const populationTrendGood = computed(() => {
   if (!store.latestInferenceResult) return true
   return store.latestInferenceResult.bird_count_est >= expectedChickenCount.value
+})
+
+const inventoryLiveCountDisplay = computed(() => {
+  return inventorySummary.value?.current_live_count ?? store.activeBatch?.bird_count ?? 0
+})
+
+const inventoryLiveSubtext = computed(() => {
+  if (!inventorySummary.value) return ''
+  const mortality = inventorySummary.value.total_mortality ?? 0
+  const sold = inventorySummary.value.total_sales ?? 0
+  return `${mortality} Mortality · ${sold} Sold`
 })
 
 const populationSubtext = computed(() => {
@@ -902,9 +914,14 @@ const fetchDashboardData = async () => {
       } else {
         store.latestInferenceResult = null
       }
+
+      // Fetch inventory summary
+      const inv = await api.inventory.getSummary(store.activeBatch.id).catch(() => null)
+      inventorySummary.value = inv
     } else {
       recentReadings.value = []
       store.latestInferenceResult = null
+      inventorySummary.value = null
     }
   } catch (err) {
     console.error('Dashboard fetch error:', err)
