@@ -467,6 +467,7 @@ const {
   queueLength: syncQueueLength,
   toggleDrawer,
   syncAll,
+  removeAll: clearSyncQueue,
   initialize: initSyncManager,
   destroy: destroySyncManager
 } = useSyncManager()
@@ -561,7 +562,14 @@ const startTourGuide = () => {
   router.push('/dashboard')
 }
 
-const handleLogout = () => {
+const handleLogout = async () => {
+  // F-15: clear the offline sync queue before wiping the token so that
+  // stale mutations from this session cannot replay under a future session.
+  try {
+    await clearSyncQueue()
+  } catch (e) {
+    console.warn('[Logout] Failed to clear sync queue:', e)
+  }
   localStorage.removeItem('agrisense_token')
   store.currentUser = null
   store.currentFarm = null
