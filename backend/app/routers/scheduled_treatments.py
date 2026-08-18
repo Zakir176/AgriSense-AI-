@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 import hashlib
+import hmac
 
+from ..config import settings
 from ..database import get_db
 from ..models.scheduled_treatment import ScheduledTreatment
 from ..models.medication import MedicationEntry
@@ -147,9 +149,14 @@ def signoff_scheduled_treatment(entry_id: int, signoff: DigitalSignoffRequest, d
         raise HTTPException(status_code=400, detail="Treatment is already completed and signed off")
         
     admin_name = signoff.administered_by or current_user.full_name or current_user.username
-    now_iso = datetime.utcnow().isoformat()
+    now_iso = datetime.now(timezone.utc).isoformat()  # timezone-aware (replaces deprecated utcnow)
     raw_sig = f"SIG-AGRI-{entry_id}-{admin_name}-{now_iso}"
-    sig_hash = signoff.digital_signature or hashlib.sha256(raw_sig.encode()).hexdigest()[:16].upper()
+    # HMAC-SHA256 keyed on SECRET_KEY — forgery requires knowledge of the server secret (F-17)
+    sig_hash = signoff.digital_signature or hmac.new(
+        settings.SECRET_KEY.encode(),
+        raw_sig.encode(),
+        hashlib.sha256,
+    ).hexdigest()[:16].upper()
 
     db_entry.status = "completed"
     db_entry.completed_date = date.today()
