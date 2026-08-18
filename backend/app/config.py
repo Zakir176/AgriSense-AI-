@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # Auth (Simple operator account)
     SECRET_KEY: str = "4f8a12b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 120   # 2 hours (reduced from 24h — F-09/F-10)
     
     # AI/Inference Configuration
     UPLOAD_DIR: str = "uploads"
