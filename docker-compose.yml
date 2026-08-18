@@ -42,7 +42,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-agrisense}
       SECRET_KEY: ${SECRET_KEY}                 # required — no default
       ALGORITHM: HS256
-      ACCESS_TOKEN_EXPIRE_MINUTES: 1440
+      ACCESS_TOKEN_EXPIRE_MINUTES: 120
       UPLOAD_DIR: /app/uploads
       FRONTEND_URL: ${FRONTEND_URL:-}
     volumes:
