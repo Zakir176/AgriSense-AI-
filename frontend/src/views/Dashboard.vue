@@ -102,6 +102,29 @@
           class="h-full"
         />
       </div>
+
+      <div class="animate-fade-in-up delay-250">
+        <AgriStatCard
+          :label="$t('dashboard.live_bird_count')"
+          :value="inventoryLiveCountDisplay"
+          icon="egg"
+          icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
+          :loading="loading"
+          :subtext="inventoryLiveSubtext"
+          class="h-full"
+        />
+      </div>
+
+      <div class="animate-fade-in-up delay-300">
+        <AgriStatCard
+          :label="$t('dashboard.flock_status')"
+          :value="flockStatusDisplay"
+          icon="assessment"
+          icon-color-class="bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400"
+          :loading="loading"
+          class="h-full"
+        />
+      </div>
     </div>
 
     <!-- ─── Body grid: Alerts + Batch Info ─── -->
@@ -429,6 +452,12 @@ const inventoryLiveSubtext = computed(() => {
   const mortality = inventorySummary.value.total_mortality ?? 0
   const sold = inventorySummary.value.total_sales ?? 0
   return `${mortality} Mortality · ${sold} Sold`
+})
+
+const flockStatusDisplay = computed(() => {
+  const inv = inventorySummary.value
+  if (!inv) return ''
+  return `${inv.total_mortality ?? 0}/${inv.total_sales ?? 0}`
 })
 
 const populationSubtext = computed(() => {
