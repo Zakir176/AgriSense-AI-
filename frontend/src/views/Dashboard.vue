@@ -24,6 +24,18 @@
         <AgriButton
           variant="outline"
           size="sm"
+          icon="picture_as_pdf"
+          :disabled="!store.activeBatch || reportExporting"
+          @click="downloadFarmReport"
+          title="Download Full Farm Report"
+        >
+          <span v-if="reportExporting" class="material-icons-outlined text-sm mr-1 animate-spin">refresh</span>
+          <span v-else class="material-icons-outlined text-sm mr-1 text-red-500">picture_as_pdf</span>
+          {{ reportExporting ? 'Generating...' : 'Farm Report' }}
+        </AgriButton>
+        <AgriButton
+          variant="outline"
+          size="sm"
           icon="refresh"
           :loading="loading"
           @click="refreshAll"
@@ -210,7 +222,7 @@
             </div>
             <router-link
               to="/batches"
-              class="flex items-center justify-center gap-1.5 w-full mt-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-bold text-gray-600 dark:text-gray-450 hover:bg-gray-50 dark:hover:bg-darkbg-100 transition duration-150"
+              class="flex items-center justify-center gap-1.5 w-full mt-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-bold text-gray-600 dark:text-gray-455 hover:bg-gray-50 dark:hover:bg-darkbg-100 transition duration-150"
             >
               {{ $t('dashboard.manage_cohorts') }}
               <span class="material-icons-outlined text-[14px]">arrow_forward</span>
@@ -337,6 +349,8 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import { store } from '../services/store'
 import { api } from '../services/api'
 import { useAnimations } from '../composables/useAnimations'
@@ -355,6 +369,7 @@ const { t } = useI18n()
 
 const loading = ref(true)
 const ackLoading = ref(false)
+const reportExporting = ref(false)
 const recentReadings = ref([])
 const unackAlerts = ref([])
 
@@ -490,6 +505,384 @@ const quickLinks = computed(() => [
   { label: t('dashboard.ai_monitor'), path: '/inference', icon: 'videocam' },
   { label: t('dashboard.medications'), path: '/medications', icon: 'vaccines' },
 ])
+
+// ── Farm Report PDF Generation ───────────────
+const getBase64ImageFromUrl = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = 'Anonymous'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      resolve(canvas.toDataURL('image/png'))
+    }
+    img.onerror = (err) => reject(err)
+    img.src = url
+  })
+}
+
+const downloadFarmReport = async () => {
+  if (!store.activeBatch) return
+  reportExporting.value = true
+
+  try {
+    const batchId = store.activeBatch.id
+    const batch = store.activeBatch
+
+    // Fetch all data in parallel
+    const [
+      readings,
+      growthData,
+      medications,
+      alerts,
+      inventorySummary,
+      financialSummary,
+      expenses
+    ] = await Promise.all([
+      api.readings.list(batchId).catch(() => []),
+      api.growth.list(batchId).catch(() => []),
+      api.medications.list(batchId).catch(() => []),
+      api.alerts.list(batchId, false).catch(() => []),
+      api.inventory.getSummary(batchId).catch(() => null),
+      api.financial.getSummary(batchId).catch(() => null),
+      api.financial.listExpenses(batchId).catch(() => [])
+    ])
+
+    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' })
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
+    const margin = 14
+    let y = 12
+
+    // ── HELPER FUNCTIONS ──────────────────────────────────────
+    const addPageIfNeeded = (spaceNeeded = 30) => {
+      if (y + spaceNeeded > pageHeight - 20) {
+        doc.addPage()
+        y = 20
+      }
+    }
+
+    const sectionHeader = (title) => {
+      addPageIfNeeded(20)
+      y += 4
+      doc.setFillColor(22, 163, 74)
+      doc.roundedRect(margin, y, pageWidth - margin * 2, 8, 1, 1, 'F')
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.setTextColor(255, 255, 255)
+      doc.text(title.toUpperCase(), margin + 3, y + 5.5)
+      y += 12
+      doc.setTextColor(30, 41, 59)
+    }
+
+    const labelValue = (label, value, xOffset = 0) => {
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(8)
+      doc.setTextColor(100, 116, 139)
+      doc.text(label, margin + xOffset, y)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(15, 23, 42)
+      doc.text(String(value ?? '—'), margin + xOffset + 38, y)
+      y += 5
+    }
+
+    // ── LOGO & HEADER ──────────────────────────────────────────
+    let logoBase64 = null
+    try {
+      const logoUrl = new URL('../assets/logo_full.png', import.meta.url).href
+      logoBase64 = await getBase64ImageFromUrl(logoUrl)
+    } catch (e) {
+      console.warn('Logo load failed:', e)
+    }
+
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', margin, y, 44, 14)
+    } else {
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(16)
+      doc.setTextColor(22, 163, 74)
+      doc.text('AgriSense AI', margin, y + 10)
+    }
+
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(13)
+    doc.setTextColor(30, 41, 59)
+    doc.text('FARM BATCH REPORT', pageWidth - margin, y + 5, { align: 'right' })
+
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8.5)
+    doc.setTextColor(100, 116, 139)
+    const currentDate = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+    doc.text(`Batch #${batch.id} — ${batch.breed || 'Unknown breed'}`, pageWidth - margin, y + 10, { align: 'right' })
+    doc.text(`Generated: ${currentDate}`, pageWidth - margin, y + 15, { align: 'right' })
+    doc.text('Prime Nest Poultry Farm | Apex Youth Initiative', pageWidth - margin, y + 20, { align: 'right' })
+
+    y += 22
+    doc.setDrawColor(22, 163, 74)
+    doc.setLineWidth(0.8)
+    doc.line(margin, y, pageWidth - margin, y)
+    y += 6
+
+    // ── SECTION 1: BATCH OVERVIEW ─────────────────────────────
+    sectionHeader('1. Batch Overview')
+
+    const startDate = batch.start_date ? new Date(batch.start_date).toLocaleDateString() : '—'
+    const daysRunning = batch.start_date
+      ? Math.floor((Date.now() - new Date(batch.start_date)) / (1000 * 60 * 60 * 24))
+      : '—'
+
+    labelValue('Batch ID:', `#${batch.id}`)
+    labelValue('Breed / Type:', batch.breed || '—')
+    labelValue('Initial Bird Count:', batch.bird_count?.toLocaleString() || '—')
+    labelValue('Start Date:', startDate)
+    labelValue('Days Running:', typeof daysRunning === 'number' ? `${daysRunning} days` : '—')
+    labelValue('Status:', batch.status?.toUpperCase() || '—')
+
+    if (inventorySummary) {
+      labelValue('Current Live Count:', inventorySummary.current_live_count?.toLocaleString() || '—')
+      labelValue('Total Mortality:', inventorySummary.total_mortality?.toLocaleString() || '0')
+      labelValue('Total Sold:', inventorySummary.total_sales?.toLocaleString() || '0')
+    }
+
+    y += 2
+
+    // ── SECTION 2: FEED & WATER ───────────────────────────────
+    sectionHeader('2. Feed & Water Summary')
+
+    if (readings && readings.length > 0) {
+      const recentReadings = readings.slice(-10).reverse()
+      const avgFeed = (readings.reduce((s, r) => s + (r.feed_kg || 0), 0) / readings.length).toFixed(1)
+      const avgWater = (readings.reduce((s, r) => s + (r.water_litres || 0), 0) / readings.length).toFixed(1)
+      const abnormalCount = readings.filter(r => r.flagged_abnormal).length
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8)
+      doc.setTextColor(100, 116, 139)
+      doc.text(`Total readings: ${readings.length}  |  Avg daily feed: ${avgFeed} kg  |  Avg daily water: ${avgWater} L  |  Abnormal readings: ${abnormalCount}`, margin, y)
+      y += 6
+
+      addPageIfNeeded(40)
+      autoTable(doc, {
+        startY: y,
+        head: [['Date', 'Feed (kg)', 'Water (L)', 'Flagged']],
+        body: recentReadings.map(r => [
+          r.date ? new Date(r.date).toLocaleDateString() : '—',
+          r.feed_kg?.toFixed(1) ?? '—',
+          r.water_litres?.toFixed(1) ?? '—',
+          r.flagged_abnormal ? '⚠ Yes' : 'Normal'
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 7.5, textColor: [15, 23, 42] },
+        alternateRowStyles: { fillColor: [240, 253, 244] },
+        columnStyles: { 3: { textColor: [220, 38, 38] } },
+        margin: { left: margin, right: margin },
+        didDrawPage: (data) => { y = data.cursor.y + 4 }
+      })
+      y = doc.lastAutoTable.finalY + 6
+    } else {
+      doc.setFont('helvetica', 'italic')
+      doc.setFontSize(8)
+      doc.setTextColor(150, 150, 150)
+      doc.text('No feed/water readings recorded for this batch.', margin, y)
+      y += 8
+    }
+
+    // ── SECTION 3: GROWTH ─────────────────────────────────────
+    sectionHeader('3. Growth Monitoring')
+
+    if (growthData && growthData.length > 0) {
+      const latest = growthData[growthData.length - 1]
+      const first = growthData[0]
+      const weightGain = latest && first ? ((latest.avg_weight_g || 0) - (first.avg_weight_g || 0)).toFixed(0) : '—'
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8)
+      doc.setTextColor(100, 116, 139)
+      doc.text(`Samples recorded: ${growthData.length}  |  Latest avg weight: ${latest?.avg_weight_g?.toFixed(0) ?? '—'} g  |  Total weight gain: ${weightGain} g`, margin, y)
+      y += 6
+
+      addPageIfNeeded(40)
+      autoTable(doc, {
+        startY: y,
+        head: [['Date', 'Avg Weight (g)', 'Sample Size']],
+        body: growthData.slice(-10).reverse().map(g => [
+          g.date ? new Date(g.date).toLocaleDateString() : '—',
+          g.avg_weight_g?.toFixed(1) ?? '—',
+          g.sample_size ?? '—'
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 7.5, textColor: [15, 23, 42] },
+        alternateRowStyles: { fillColor: [240, 253, 244] },
+        margin: { left: margin, right: margin },
+      })
+      y = doc.lastAutoTable.finalY + 6
+    } else {
+      doc.setFont('helvetica', 'italic')
+      doc.setFontSize(8)
+      doc.setTextColor(150, 150, 150)
+      doc.text('No growth samples recorded for this batch.', margin, y)
+      y += 8
+    }
+
+    // ── SECTION 4: MEDICATION & TREATMENTS ───────────────────
+    sectionHeader('4. Medication & Treatment Records')
+
+    if (medications && medications.length > 0) {
+      addPageIfNeeded(40)
+      autoTable(doc, {
+        startY: y,
+        head: [['Date', 'Medicine', 'Dosage', 'Outcome']],
+        body: medications.map(m => [
+          m.date ? new Date(m.date).toLocaleDateString() : '—',
+          m.medicine_type || '—',
+          m.dosage || '—',
+          m.outcome_note || 'Pending'
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 7.5, textColor: [15, 23, 42] },
+        alternateRowStyles: { fillColor: [240, 253, 244] },
+        margin: { left: margin, right: margin },
+      })
+      y = doc.lastAutoTable.finalY + 6
+    } else {
+      doc.setFont('helvetica', 'italic')
+      doc.setFontSize(8)
+      doc.setTextColor(150, 150, 150)
+      doc.text('No medication records for this batch.', margin, y)
+      y += 8
+    }
+
+    // ── SECTION 5: ALERTS ─────────────────────────────────────
+    sectionHeader('5. Smart Alerts Summary')
+
+    if (alerts && alerts.length > 0) {
+      const critical = alerts.filter(a => a.severity === 'critical' || a.severity === 'high').length
+      const unacked = alerts.filter(a => !a.acknowledged).length
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8)
+      doc.setTextColor(100, 116, 139)
+      doc.text(`Total alerts: ${alerts.length}  |  Critical/High: ${critical}  |  Unacknowledged: ${unacked}`, margin, y)
+      y += 6
+
+      addPageIfNeeded(40)
+      autoTable(doc, {
+        startY: y,
+        head: [['Date', 'Type', 'Severity', 'Message', 'Status']],
+        body: alerts.slice(-10).reverse().map(a => [
+          a.created_at ? new Date(a.created_at).toLocaleDateString() : '—',
+          a.type || '—',
+          (a.severity || '—').toUpperCase(),
+          (a.message || '').slice(0, 60) + (a.message?.length > 60 ? '...' : ''),
+          a.acknowledged ? 'Acknowledged' : 'Pending'
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 7, textColor: [15, 23, 42] },
+        alternateRowStyles: { fillColor: [240, 253, 244] },
+        columnStyles: { 4: { textColor: [220, 38, 38] } },
+        margin: { left: margin, right: margin },
+      })
+      y = doc.lastAutoTable.finalY + 6
+    } else {
+      doc.setFont('helvetica', 'italic')
+      doc.setFontSize(8)
+      doc.setTextColor(150, 150, 150)
+      doc.text('No alerts recorded for this batch.', margin, y)
+      y += 8
+    }
+
+    // ── SECTION 6: FINANCIAL SUMMARY ──────────────────────────
+    sectionHeader('6. Financial Summary')
+
+    if (financialSummary) {
+      const isProfit = (financialSummary.gross_profit_zmw || 0) >= 0
+
+      addPageIfNeeded(60)
+      autoTable(doc, {
+        startY: y,
+        head: [['Metric', 'Value (ZMW)']],
+        body: [
+          ['Total Revenue', `ZMW ${financialSummary.total_revenue_zmw?.toLocaleString(undefined, { minimumFractionDigits: 2 }) ?? '0.00'}`],
+          ['Total Expenses', `ZMW ${financialSummary.total_expenses_zmw?.toLocaleString(undefined, { minimumFractionDigits: 2 }) ?? '0.00'}`],
+          [isProfit ? 'Gross Profit' : 'Net Loss', `ZMW ${Math.abs(financialSummary.gross_profit_zmw || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`],
+          ['Profit Margin', `${financialSummary.profit_margin_pct?.toFixed(1) ?? '0.0'}%`],
+          ['Total Birds Sold', financialSummary.total_birds_sold?.toLocaleString() ?? '0'],
+          ['Avg Price Per Bird', `ZMW ${financialSummary.avg_price_per_bird_zmw?.toFixed(2) ?? '0.00'}`],
+        ],
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 8, textColor: [15, 23, 42] },
+        alternateRowStyles: { fillColor: [240, 253, 244] },
+        margin: { left: margin, right: margin },
+      })
+      y = doc.lastAutoTable.finalY + 6
+
+      // Expense breakdown
+      if (expenses && expenses.length > 0) {
+        addPageIfNeeded(40)
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(8.5)
+        doc.setTextColor(30, 41, 59)
+        doc.text('Expense Breakdown:', margin, y)
+        y += 4
+
+        autoTable(doc, {
+          startY: y,
+          head: [['Date', 'Category', 'Description', 'Amount (ZMW)']],
+          body: expenses.map(e => [
+            e.date ? new Date(e.date).toLocaleDateString() : '—',
+            (e.category || '—').toUpperCase(),
+            e.description || '—',
+            `ZMW ${e.amount_zmw?.toFixed(2) ?? '0.00'}`
+          ]),
+          theme: 'striped',
+          headStyles: { fillColor: [22, 163, 74], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+          bodyStyles: { fontSize: 7.5, textColor: [15, 23, 42] },
+          alternateRowStyles: { fillColor: [240, 253, 244] },
+          margin: { left: margin, right: margin },
+        })
+        y = doc.lastAutoTable.finalY + 6
+      }
+    } else {
+      doc.setFont('helvetica', 'italic')
+      doc.setFontSize(8)
+      doc.setTextColor(150, 150, 150)
+      doc.text('No financial data recorded for this batch.', margin, y)
+      y += 8
+    }
+
+    // ── FOOTER ON EVERY PAGE ──────────────────────────────────
+    const totalPages = doc.internal.getNumberOfPages()
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i)
+      doc.setDrawColor(22, 163, 74)
+      doc.setLineWidth(0.4)
+      doc.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12)
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(150, 150, 150)
+      doc.text('AgriSense AI | Prime Nest Poultry Farm | Confidential', margin, pageHeight - 7)
+      doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 7, { align: 'right' })
+    }
+
+    // ── SAVE ──────────────────────────────────────────────────
+    const today = new Date().toISOString().split('T')[0]
+    const filename = `AgriSense_Farm_Report_Batch_${batchId}_${today}.pdf`
+    doc.save(filename)
+
+  } catch (err) {
+    console.error('Failed to generate farm report:', err)
+  } finally {
+    reportExporting.value = false
+  }
+}
 
 // ── Data fetching ──────────────────────────────
 const fetchDashboardData = async () => {
