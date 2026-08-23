@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useToast } from './useToast'
 import { addReminder, getReminders, removeReminder } from '../services/db'
+import api from '../services/api'
 
 export function useReminders() {
   const toast = useToast()
@@ -76,11 +77,46 @@ export function useReminders() {
     }
   }
 
+  const notifiedServerIds = new Set()
+
+  const checkDueFromServer = async () => {
+    try {
+      const data = await api.schedules.getDueReminders()
+      const reminders = Array.isArray(data) ? data : []
+
+      for (const treatment of reminders) {
+        if (notifiedServerIds.has(treatment.id)) continue
+
+        const isOverdue = new Date(treatment.scheduled_date) < new Date()
+        const title = isOverdue
+          ? `⚠️ Overdue Treatment: ${treatment.title}`
+          : `💊 Treatment Due Today: ${treatment.title}`
+
+        const body = [
+          `Type: ${treatment.treatment_type}`,
+          treatment.dosage ? `Dosage: ${treatment.dosage}` : null,
+          isOverdue
+            ? `Was due: ${new Date(treatment.scheduled_date).toLocaleDateString()}`
+            : 'Due: Today'
+        ].filter(Boolean).join('\n')
+
+        triggerNotification(title, body)
+        notifiedServerIds.add(treatment.id)
+      }
+
+      return reminders
+    } catch (err) {
+      console.warn('[Reminders] Could not fetch due reminders from server:', err)
+      return []
+    }
+  }
+
   return {
     permissionGranted,
     requestPermission,
     scheduleReminder,
     cancelReminder,
-    checkPendingReminders
+    checkPendingReminders,
+    checkDueFromServer
   }
 }
