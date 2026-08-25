@@ -22,6 +22,16 @@
           />
         </div>
         <AgriButton
+          variant="outline"
+          size="sm"
+          :disabled="samples.length === 0"
+          @click="exportCSV"
+          title="Download CSV"
+        >
+          <span class="material-icons-outlined text-sm">download</span>
+          <span>Export CSV</span>
+        </AgriButton>
+        <AgriButton
           variant="primary"
           icon="add"
           :disabled="!selectedBatchId"
@@ -633,6 +643,46 @@ const submitSample = async () => {
   } finally {
     submitting.value = false
   }
+}
+
+const exportCSV = () => {
+  if (samples.value.length === 0) return
+
+  const headers = [
+    'Date',
+    'Avg Weight (g)',
+    'Sample Size',
+    'Daily Gain (g)',
+    'Notes'
+  ]
+
+  const sorted = [...samples.value].sort((a, b) => new Date(a.date) - new Date(b.date))
+
+  const rows = sorted.map((s, i) => {
+    const prev = i > 0 ? sorted[i - 1] : null
+    const dailyGain = prev && s.avg_weight_g && prev.avg_weight_g
+      ? (s.avg_weight_g - prev.avg_weight_g).toFixed(1)
+      : '—'
+    return [
+      s.date,
+      s.avg_weight_g?.toFixed(1) ?? '—',
+      s.sample_size ?? '—',
+      dailyGain,
+      s.notes ?? ''
+    ]
+  })
+
+  const csvString = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n')
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute('download', `AgriSense_Batch_${selectedBatchId.value}_Growth_Report.csv`)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
 // ── Formatting ──────────────────────────
