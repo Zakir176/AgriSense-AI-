@@ -286,6 +286,30 @@
           </AgriCard>
         </div>
 
+        <!-- Revenue vs Expenses Trend Chart -->
+        <AgriCard class="animate-fade-in-up">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-icons-outlined text-primary-500 dark:text-primary-400">trending_up</span>
+                <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">
+                  Revenue vs Expenses Trend
+                </h3>
+              </div>
+            </div>
+          </template>
+
+          <div
+            v-if="salesEntries.length === 0 && expenseEntries.length === 0"
+            class="h-48 flex items-center justify-center text-sm text-gray-400 dark:text-gray-600 italic"
+          >
+            No sales or expense data recorded yet
+          </div>
+          <div v-else class="relative h-64">
+            <canvas ref="trendChartCanvas"></canvas>
+          </div>
+        </AgriCard>
+
         <!-- Add Expense Modal -->
         <AgriModal
           :show="showExpenseModal"
@@ -639,6 +663,8 @@ const expenseError = ref('')
 const expenseEntries = ref([])
 const expenseChartCanvas = ref(null)
 let expenseChartInstance = null
+const trendChartCanvas = ref(null)
+let trendChartInstance = null
 
 const expenseHeaders = [
   { text: 'Date', value: 'date', sortable: true },
@@ -748,6 +774,7 @@ const loadFinancialData = async () => {
     await loadForecastData()
     await nextTick()
     renderExpenseChart()
+    renderTrendChart()
   } catch (err) {
     console.error('Failed to load financial data:', err)
   } finally {
@@ -843,6 +870,130 @@ const renderExpenseChart = () => {
           bodyFont: { family: 'Inter', size: 11 },
           callbacks: {
             label: (ctx) => ` K ${ctx.parsed.toFixed(2)}`
+          }
+        }
+      }
+    }
+  })
+}
+
+// ── Revenue vs Expenses Trend Chart ────────────
+const renderTrendChart = () => {
+  if (trendChartInstance) trendChartInstance.destroy()
+  if (!trendChartCanvas.value) return
+  if (salesEntries.value.length === 0 && expenseEntries.value.length === 0) return
+
+  const isDark = document.documentElement.classList.contains('dark')
+
+  // Collect all unique dates from both sales and expenses, sorted ascending
+  const allDates = [...new Set([
+    ...salesEntries.value.map(s => s.date),
+    ...expenseEntries.value.map(e => e.date)
+  ])].sort()
+
+  if (allDates.length === 0) return
+
+  // Build revenue per date (sum all sales on same date)
+  const revenueByDate = {}
+  salesEntries.value.forEach(s => {
+    revenueByDate[s.date] = (revenueByDate[s.date] || 0) + (s.total_zmw || 0)
+  })
+
+  // Build expenses per date (sum all expenses on same date)
+  const expenseByDate = {}
+  expenseEntries.value.forEach(e => {
+    expenseByDate[e.date] = (expenseByDate[e.date] || 0) + (e.amount_zmw || 0)
+  })
+
+  // Build cumulative profit/loss line
+  let cumulative = 0
+  const cumulativeData = allDates.map(date => {
+    cumulative += (revenueByDate[date] || 0) - (expenseByDate[date] || 0)
+    return cumulative
+  })
+
+  const labels = allDates.map(d => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))
+
+  trendChartInstance = new Chart(trendChartCanvas.value, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Revenue (ZMW)',
+          data: allDates.map(d => revenueByDate[d] || 0),
+          borderColor: '#16a34a',
+          backgroundColor: 'rgba(22,163,74,0.08)',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: false,
+          tension: 0.3
+        },
+        {
+          label: 'Expenses (ZMW)',
+          data: allDates.map(d => expenseByDate[d] || 0),
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239,68,68,0.08)',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: false,
+          tension: 0.3
+        },
+        {
+          label: 'Cumulative P&L (ZMW)',
+          data: cumulativeData,
+          borderColor: '#6366f1',
+          backgroundColor: 'rgba(99,102,241,0.08)',
+          borderWidth: 2,
+          borderDash: [5, 4],
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          fill: true,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            color: isDark ? '#9ca3af' : '#6b7280',
+            font: { size: 11 },
+            boxWidth: 12,
+            padding: 16
+          }
+        },
+        tooltip: {
+          backgroundColor: isDark ? '#27272a' : '#ffffff',
+          titleColor: isDark ? '#e5e7eb' : '#111827',
+          bodyColor: isDark ? '#9ca3af' : '#6b7280',
+          borderColor: isDark ? '#3f3f46' : '#e5e7eb',
+          borderWidth: 1,
+          padding: 10,
+          cornerRadius: 10,
+          callbacks: {
+            label: (ctx) => ` ${ctx.dataset.label}: ZMW ${ctx.parsed.y.toFixed(2)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: isDark ? '#27272a' : '#f3f4f6' },
+          ticks: { color: isDark ? '#6b7280' : '#9ca3af', font: { size: 10 } }
+        },
+        y: {
+          grid: { color: isDark ? '#27272a' : '#f3f4f6' },
+          ticks: {
+            color: isDark ? '#6b7280' : '#9ca3af',
+            font: { size: 10 },
+            callback: (v) => `ZMW ${v}`
           }
         }
       }
@@ -1109,5 +1260,6 @@ const downloadFinancialPDF = async () => {
 
 onUnmounted(() => {
   if (expenseChartInstance) expenseChartInstance.destroy()
+  if (trendChartInstance) trendChartInstance.destroy()
 })
 </script>
