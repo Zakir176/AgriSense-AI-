@@ -22,6 +22,16 @@
           />
         </div>
         <AgriButton
+          variant="outline"
+          size="sm"
+          :disabled="entries.length === 0"
+          @click="exportCSV"
+          title="Download CSV"
+        >
+          <span class="material-icons-outlined text-sm">download</span>
+          <span>Export CSV</span>
+        </AgriButton>
+        <AgriButton
           variant="primary"
           icon="medical_services"
           :disabled="!selectedBatchId"
@@ -497,6 +507,42 @@ const submitMedication = async () => {
   } finally {
     submitting.value = false
   }
+}
+
+const exportCSV = () => {
+  if (entries.value.length === 0) return
+
+  const headers = [
+    'Date',
+    'Medicine / Vaccine',
+    'Treatment Type',
+    'Dosage',
+    'Administered By',
+    'Outcome Note'
+  ]
+
+  const sorted = [...entries.value].sort((a, b) => new Date(a.date) - new Date(b.date))
+
+  const rows = sorted.map(e => [
+    e.date,
+    e.medicine_type ?? '—',
+    e.treatment_type ?? '—',
+    e.dosage ?? '—',
+    e.administered_by ?? '—',
+    e.outcome_note ?? ''
+  ])
+
+  const csvString = [headers.join(','), ...rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))].join('\n')
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute('download', `AgriSense_Batch_${selectedBatchId.value}_Medication_Records.csv`)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
 // ── Formatting ──────────────────────────
