@@ -102,6 +102,29 @@
           class="h-full"
         />
       </div>
+
+      <div class="animate-fade-in-up delay-250">
+        <AgriStatCard
+          :label="$t('dashboard.live_bird_count')"
+          :value="inventoryLiveCountDisplay"
+          icon="egg"
+          icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
+          :loading="loading"
+          :subtext="inventoryLiveSubtext"
+          class="h-full"
+        />
+      </div>
+
+      <div class="animate-fade-in-up delay-300">
+        <AgriStatCard
+          :label="$t('dashboard.flock_status')"
+          :value="flockStatusDisplay"
+          icon="assessment"
+          icon-color-class="bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400"
+          :loading="loading"
+          class="h-full"
+        />
+      </div>
     </div>
 
     <!-- ─── Body grid: Alerts + Batch Info ─── -->
@@ -372,6 +395,7 @@ const ackLoading = ref(false)
 const reportExporting = ref(false)
 const recentReadings = ref([])
 const unackAlerts = ref([])
+const inventorySummary = ref(null)
 
 // ── Computed KPIs ──────────────────────────────
 const activeBatchCount = computed(() =>
@@ -417,6 +441,23 @@ const populationTrendDirection = computed(() => {
 const populationTrendGood = computed(() => {
   if (!store.latestInferenceResult) return true
   return store.latestInferenceResult.bird_count_est >= expectedChickenCount.value
+})
+
+const inventoryLiveCountDisplay = computed(() => {
+  return inventorySummary.value?.current_live_count ?? store.activeBatch?.bird_count ?? 0
+})
+
+const inventoryLiveSubtext = computed(() => {
+  if (!inventorySummary.value) return ''
+  const mortality = inventorySummary.value.total_mortality ?? 0
+  const sold = inventorySummary.value.total_sales ?? 0
+  return `${mortality} Mortality · ${sold} Sold`
+})
+
+const flockStatusDisplay = computed(() => {
+  const inv = inventorySummary.value
+  if (!inv) return ''
+  return `${inv.total_mortality ?? 0}/${inv.total_sales ?? 0}`
 })
 
 const populationSubtext = computed(() => {
@@ -902,9 +943,14 @@ const fetchDashboardData = async () => {
       } else {
         store.latestInferenceResult = null
       }
+
+      // Fetch inventory summary
+      const inv = await api.inventory.getSummary(store.activeBatch.id).catch(() => null)
+      inventorySummary.value = inv
     } else {
       recentReadings.value = []
       store.latestInferenceResult = null
+      inventorySummary.value = null
     }
   } catch (err) {
     console.error('Dashboard fetch error:', err)

@@ -3,6 +3,27 @@
     <Toast />
     <TourGuide />
     <SyncDrawer />
+
+    <!-- Due Treatment Banner -->
+    <div
+      v-if="dueReminders.length > 0 && !isBlankLayout && store.currentUser"
+      class="fixed top-0 left-0 right-0 z-50 bg-amber-500 dark:bg-amber-600 text-white text-sm px-4 py-2 flex items-center justify-between shadow-md"
+    >
+      <div class="flex items-center gap-2">
+        <span class="material-icons-outlined text-base">medication</span>
+        <span>
+          <strong>{{ dueReminders.length }} treatment{{ dueReminders.length > 1 ? 's' : '' }} due</strong>
+          — {{ dueReminders[0]?.title }}{{ dueReminders.length > 1 ? ` and ${dueReminders.length - 1} more` : '' }}
+        </span>
+      </div>
+      <router-link
+        to="/medications"
+        class="text-white underline text-xs font-medium hover:text-amber-100"
+      >
+        View →
+      </router-link>
+    </div>
+
     <!-- Render raw router-view for blank layout pages (like Login) -->
     <router-view v-if="isBlankLayout" class="flex-1 h-full" />
 
@@ -275,11 +296,13 @@ import TourGuide from './components/TourGuide.vue'
 import SyncDrawer from './components/SyncDrawer.vue'
 import { useSyncManager } from './composables/useSyncManager'
 import { useReminders } from './composables/useReminders'
+import { useTreatmentReminders } from './composables/useTreatmentReminders'
 import { useI18n } from 'vue-i18n'
 
 const { locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const { dueReminders, notificationPermission } = useTreatmentReminders()
 
 const showLanguageDropdown = ref(false)
 
