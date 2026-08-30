@@ -1,18 +1,18 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 
 VALID_ROLES = {"owner", "veterinarian", "farmhand", "data_analyst"}
 
 class FarmBase(BaseModel):
-    name: str
-    location: Optional[str] = None
+    name: str = Field(..., max_length=200)
+    location: Optional[str] = Field(None, max_length=300)
 
 class FarmCreate(FarmBase):
     pass
 
 class FarmUpdate(BaseModel):
-    name: Optional[str] = None
-    location: Optional[str] = None
+    name: Optional[str] = Field(None, max_length=200)
+    location: Optional[str] = Field(None, max_length=300)
 
 class FarmResponse(FarmBase):
     id: int
@@ -22,8 +22,8 @@ class FarmResponse(FarmBase):
         from_attributes = True
 
 class FarmMemberAdd(BaseModel):
-    username: str
-    role: str
+    username: str = Field(..., max_length=150)
+    role: str = Field(..., max_length=50)
 
     @field_validator("role")
     @classmethod
@@ -33,7 +33,7 @@ class FarmMemberAdd(BaseModel):
         return v
 
 class FarmMemberUpdate(BaseModel):
-    role: str
+    role: str = Field(..., max_length=50)
 
     @field_validator("role")
     @classmethod
