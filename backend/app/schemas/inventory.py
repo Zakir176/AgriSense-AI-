@@ -1,14 +1,14 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import date, datetime
 from typing import Optional, List
 
 class InventoryAdjustmentBase(BaseModel):
     date: date
-    adjustment_type: str  # mortality | sale | cull | addition | correction
+    adjustment_type: str = Field(..., max_length=50)  # mortality | sale | cull | addition | correction
     quantity_delta: int
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=1000)
     unit_price_zmw: Optional[float] = None
-    buyer_name: Optional[str] = None
+    buyer_name: Optional[str] = Field(None, max_length=200)
     total_amount_zmw: Optional[float] = None
 
 class InventoryAdjustmentCreate(InventoryAdjustmentBase):
