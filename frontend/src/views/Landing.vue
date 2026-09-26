@@ -1,17 +1,32 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-darkbg-100 text-gray-850 dark:text-gray-150 font-sans transition-colors duration-200 relative overflow-x-hidden">
-    <!-- Fullscreen Portal Warp Transition Overlay -->
-    <div 
-      v-if="isWarping" 
-      class="fixed inset-0 flex items-center justify-center bg-black transition-opacity duration-300"
-      style="z-index: 9999;"
-    >
-      <canvas ref="warpCanvas" class="absolute inset-0 w-full h-full"></canvas>
-      <div class="relative z-10 text-center space-y-4">
-        <div class="text-emerald-450 font-mono text-[10px] uppercase tracking-widest animate-pulse">Establishing Quantum Tunnel</div>
-        <div class="text-white text-lg font-black tracking-wider uppercase">Entering AgriSense AI Network...</div>
+    <!-- Logo Loading Screen Transition -->
+    <Transition name="logo-screen" appear>
+      <div
+        v-if="isTransitioning"
+        class="fixed inset-0 flex flex-col items-center justify-center bg-white dark:bg-darkbg-100"
+        style="z-index: 9999;"
+      >
+        <!-- Logo -->
+        <div class="flex flex-col items-center space-y-6">
+          <img
+            src="../assets/logo_full.png"
+            alt="AgriSense AI"
+            class="h-16 w-auto object-contain logo-pulse"
+          />
+
+          <!-- Subtle loading bar -->
+          <div class="w-48 h-0.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div class="h-full bg-primary-500 dark:bg-primary-400 rounded-full loading-bar"></div>
+          </div>
+
+          <!-- Subtle tagline -->
+          <p class="text-xs text-gray-400 dark:text-gray-500 tracking-widest uppercase font-medium">
+            Loading your farm...
+          </p>
+        </div>
       </div>
-    </div>
+    </Transition>
 
     <!-- Header Spacing -->
     <div class="absolute inset-0 bg-[radial-gradient(#d1e8ce_1.2px,transparent_1.2px)] dark:bg-[radial-gradient(#1a2219_1.2px,transparent_1.2px)] [background-size:28px_28px] opacity-35 pointer-events-none z-0"></div>
@@ -339,7 +354,7 @@
             Publish Globally
           </h2>
           
-          <p class="text-sm text-gray-550 dark:text-gray-400 leading-relaxed">
+          <p class="text-sm text-gray-555 dark:text-gray-400 leading-relaxed">
             AgriSense AI utilizes high-performance browser caching (IndexedDB) to operate 100% offline. Once connectivity is established, our sync portal acts as a high-speed secure bridge.
           </p>
 
@@ -435,7 +450,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AgriButton from '../components/ui/AgriButton.vue'
 import AgriBadge from '../components/ui/AgriBadge.vue'
@@ -447,10 +462,8 @@ const router = useRouter()
 const isDark = ref(false)
 const activeHeroTab = ref('3d') // '3d' or 'feed'
 
-// Warp Portal transition variables
-const isWarping = ref(false)
-const warpCanvas = ref(null)
-let warpAnimationFrameId = null
+// Logo transition variables
+const isTransitioning = ref(false)
 
 const applyTheme = () => {
   if (isDark.value) {
@@ -467,121 +480,18 @@ const toggleTheme = () => {
   applyTheme()
 }
 
-// Fullscreen portal warp speed transition animation
 const triggerPortalWarp = () => {
-  if (isWarping.value) return
-  isWarping.value = true
+  if (isTransitioning.value) return
+  isTransitioning.value = true
   document.body.style.overflow = 'hidden'
 
+  // Hold the logo screen briefly, then navigate
   setTimeout(() => {
-    runWarpAnimation()
-  }, 50)
+    document.body.style.overflow = ''
+    isTransitioning.value = false
+    router.push({ name: 'Login' })
+  }, 1200)
 }
-
-const runWarpAnimation = () => {
-  const canvasEl = warpCanvas.value
-  if (!canvasEl) return
-  
-  const ctx = canvasEl.getContext('2d')
-  if (!ctx) return
-
-  // Size canvas to fullscreen
-  const resizeWarp = () => {
-    canvasEl.width = window.innerWidth * window.devicePixelRatio
-    canvasEl.height = window.innerHeight * window.devicePixelRatio
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
-  }
-  resizeWarp()
-
-  const width = window.innerWidth
-  const height = window.innerHeight
-  const cx = width / 2
-  const cy = height / 2
-
-  // Create stars
-  const numStars = 220
-  const stars = []
-  for (let i = 0; i < numStars; i++) {
-    stars.push({
-      x: (Math.random() - 0.5) * width * 2,
-      y: (Math.random() - 0.5) * height * 2,
-      z: Math.random() * width,
-      size: Math.random() * 1.5 + 0.5,
-      color: Math.random() > 0.3 ? '#10b981' : '#3b82f6' // Emerald vs Tech Blue stars
-    })
-  }
-
-  let warpSpeed = 1
-  const maxWarpSpeed = 50
-  const duration = 1300 // Total milliseconds before routing
-  const startTime = Date.now()
-
-  const drawWarp = () => {
-    const elapsed = Date.now() - startTime
-    
-    // Accelerate warp speed exponentially
-    warpSpeed = 1 + Math.pow(elapsed / duration, 3.5) * maxWarpSpeed
-
-    // Clear with semi-transparent black to create trails
-    ctx.fillStyle = `rgba(0, 0, 0, ${0.12 + (elapsed / duration) * 0.48})`
-    ctx.fillRect(0, 0, width, height)
-
-    for (let i = 0; i < numStars; i++) {
-      const star = stars[i]
-      
-      const oldZ = star.z
-      star.z -= warpSpeed
-      
-      if (star.z <= 0) {
-        star.z = width
-        star.x = (Math.random() - 0.5) * width * 2
-        star.y = (Math.random() - 0.5) * height * 2
-        star.size = Math.random() * 1.5 + 0.5
-      }
-
-      const k = 180 / star.z
-      const x = star.x * k + cx
-      const y = star.y * k + cy
-
-      const oldK = 180 / oldZ
-      const oldX = star.x * oldK + cx
-      const oldY = star.y * oldK + cy
-
-      if (x >= 0 && x <= width && y >= 0 && y <= height && oldZ < width) {
-        const alpha = Math.min(1.0, (1.0 - star.z / width) * 0.8)
-        ctx.beginPath()
-        ctx.moveTo(oldX, oldY)
-        ctx.lineTo(x, y)
-        ctx.strokeStyle = star.color === '#10b981' 
-          ? `rgba(52, 211, 153, ${alpha})` 
-          : `rgba(96, 165, 250, ${alpha})`
-        ctx.lineWidth = star.size * (1 + (elapsed / duration) * 1.8) * (180 / star.z) * 0.15
-        ctx.lineCap = 'round'
-        ctx.stroke()
-      }
-    }
-
-    if (elapsed < duration) {
-      warpAnimationFrameId = requestAnimationFrame(drawWarp)
-    } else {
-      ctx.fillStyle = '#000000'
-      ctx.fillRect(0, 0, width, height)
-      
-      document.body.style.overflow = ''
-      isWarping.value = false
-      router.push({ name: 'Login' })
-    }
-  }
-
-  drawWarp()
-}
-
-onBeforeUnmount(() => {
-  if (warpAnimationFrameId) {
-    cancelAnimationFrame(warpAnimationFrameId)
-  }
-  document.body.style.overflow = ''
-})
 
 const scrollToDemo = () => {
   const el = document.getElementById('demo')
@@ -654,5 +564,35 @@ onMounted(() => {
   50% {
     transform: translateY(-8px);
   }
+}
+
+/* Logo loading screen transition */
+.logo-screen-enter-active {
+  transition: opacity 0.25s ease;
+}
+.logo-screen-leave-active {
+  transition: opacity 0.3s ease;
+}
+.logo-screen-enter-from,
+.logo-screen-leave-to {
+  opacity: 0;
+}
+
+/* Logo gentle pulse while loading */
+.logo-pulse {
+  animation: logoPulse 1.2s ease-in-out infinite;
+}
+@keyframes logoPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(0.97); }
+}
+
+/* Loading bar fill animation */
+.loading-bar {
+  animation: loadingFill 1.1s ease-in-out forwards;
+}
+@keyframes loadingFill {
+  from { width: 0%; }
+  to { width: 100%; }
 }
 </style>
