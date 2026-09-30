@@ -85,6 +85,13 @@ export function useSyncManager() {
       const batch = queue.slice(i, i + BATCH_SIZE)
       
       const results = await Promise.allSettled(batch.map(async (item) => {
+        // Discard any auth endpoints that might have been queued by offline fallbacks
+        if (item.url && item.url.startsWith('/auth/')) {
+          await removeFromSyncQueue(item.id)
+          syncProgress.value.current++
+          return item.id
+        }
+
         const response = await fetch(`${apiBase}${item.url}`, {
           method: item.method,
           headers: {

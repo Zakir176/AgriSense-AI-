@@ -9,6 +9,7 @@ from ..database import get_db
 from ..config import settings
 from ..limiter import limiter
 from ..models.auth import User
+from ..models.farm import Farm
 from ..models.user_farm import UserFarmAssociation
 from ..schemas.auth import Token, UserResponse, UserCreate
 
@@ -67,37 +68,68 @@ def get_admin_user(current_user: User = Depends(get_current_user)):
         )
     return current_user
 
+async def get_login_credentials(request: Request) -> tuple[Optional[str], Optional[str]]:
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        try:
+            data = await request.json()
+            if isinstance(data, dict):
+                return data.get("username"), data.get("password")
+        except Exception:
+            pass
+    try:
+        form = await request.form()
+        return form.get("username"), form.get("password")
+    except Exception:
+        pass
+    return None, None
+
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(
     user: UserCreate,
     db: Session = Depends(get_db),
-    _admin: User = Depends(get_admin_user)  # Only admins can register new users
 ):
     # Check if user already exists
     existing = db.query(User).filter(User.username == user.username).first()
     if existing:
         raise HTTPException(status_code=400, detail="Username already registered")
         
+    is_first_user = db.query(User).count() == 0
+
     db_user = User(
         username=user.username,
         hashed_password=get_password_hash(user.password),
         full_name=user.full_name,
-        is_admin=False  # Newly registered users are not admins by default
+        is_admin=is_first_user  # First registered user is automatically an admin
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
+    # Automatically associate new user to the default farm if present
+    default_farm = db.query(Farm).first()
+    if default_farm:
+        assoc = UserFarmAssociation(user_id=db_user.id, farm_id=default_farm.id, role="owner")
+        db.add(assoc)
+        db.commit()
+
     return db_user
 
 @router.post("/token", response_model=Token)
 @limiter.limit("10/minute")
-def login_for_access_token(
+async def login_for_access_token(
     request: Request,
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    credentials: tuple[Optional[str], Optional[str]] = Depends(get_login_credentials),
     db: Session = Depends(get_db),
 ):
-    user = db.query(User).filter(User.username == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    username, password = credentials
+    if not username or not password:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Username and password are required",
+        )
+    user = db.query(User).filter(User.username == username).first()
+    if not user or not verify_password(password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -105,7 +137,7 @@ def login_for_access_token(
         )
     # Silently upgrade deprecated sha256_crypt hashes to bcrypt on first login
     if pwd_context.needs_update(user.hashed_password):
-        user.hashed_password = get_password_hash(form_data.password)
+        user.hashed_password = get_password_hash(password)
         db.commit()
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}

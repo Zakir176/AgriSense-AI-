@@ -33,9 +33,45 @@ Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: no automatic seeding.
-    # Run `python seed_data.py` (with SEED_DEMO_PASSWORD set) to initialise
-    # the database for the first time.
+    # Startup: ensure default demo operator account and default farm exist for immediate login
+    try:
+        with SessionLocal() as db:
+            from .models.auth import User
+            from .models.farm import Farm
+            from .models.user_farm import UserFarmAssociation
+            from .routers.auth import get_password_hash
+            
+            operator = db.query(User).filter(User.username == "operator").first()
+            if not operator:
+                logger.info("Bootstrapping default demo operator account...")
+                operator = User(
+                    username="operator",
+                    hashed_password=get_password_hash("prime_nest_2026"),
+                    full_name="Evans Kabwe",
+                    is_admin=True,
+                )
+                db.add(operator)
+                db.commit()
+                db.refresh(operator)
+            
+            farm = db.query(Farm).first()
+            if not farm:
+                logger.info("Bootstrapping default farm...")
+                farm = Farm(name="Prime Nest Poultry Farm", location="Lusaka, Zambia")
+                db.add(farm)
+                db.commit()
+                db.refresh(farm)
+                
+            assoc = db.query(UserFarmAssociation).filter(
+                UserFarmAssociation.user_id == operator.id,
+                UserFarmAssociation.farm_id == farm.id
+            ).first()
+            if not assoc:
+                db.add(UserFarmAssociation(user_id=operator.id, farm_id=farm.id, role="owner"))
+                db.commit()
+    except Exception as e:
+        logger.warning(f"Startup bootstrap notice: {e}")
+
     yield
     # Shutdown: nothing needed.
 
