@@ -89,31 +89,43 @@ def register_user(
     user: UserCreate,
     db: Session = Depends(get_db),
 ):
-    # Check if user already exists
-    existing = db.query(User).filter(User.username == user.username).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Username already registered")
-        
-    is_first_user = db.query(User).count() == 0
+    try:
+        # Check if user already exists
+        existing = db.query(User).filter(User.username == user.username).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already registered")
+            
+        is_first_user = db.query(User).count() == 0
 
-    db_user = User(
-        username=user.username,
-        hashed_password=get_password_hash(user.password),
-        full_name=user.full_name,
-        is_admin=is_first_user  # First registered user is automatically an admin
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-
-    # Automatically associate new user to the default farm if present
-    default_farm = db.query(Farm).first()
-    if default_farm:
-        assoc = UserFarmAssociation(user_id=db_user.id, farm_id=default_farm.id, role="owner")
-        db.add(assoc)
+        db_user = User(
+            username=user.username,
+            hashed_password=get_password_hash(user.password),
+            full_name=user.full_name,
+            is_admin=is_first_user  # First registered user is automatically an admin
+        )
+        db.add(db_user)
         db.commit()
+        db.refresh(db_user)
 
-    return db_user
+        # Automatically associate new user to the default farm if present
+        try:
+            default_farm = db.query(Farm).first()
+            if default_farm:
+                assoc = UserFarmAssociation(user_id=db_user.id, farm_id=default_farm.id, role="owner")
+                db.add(assoc)
+                db.commit()
+        except Exception:
+            db.rollback()
+
+        return db_user
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Registration failed: {str(e)}"
+        )
 
 @router.post("/token", response_model=Token)
 @limiter.limit("10/minute")

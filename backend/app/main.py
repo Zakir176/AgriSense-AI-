@@ -166,6 +166,29 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(SecurityHeadersMiddleware)
 
+# ── Health check endpoint ───────────────────────────────────────────────────
+@app.get("/health")
+@app.get(f"{settings.API_V1_STR}/health")
+def health_check(db: Session = Depends(get_db)):
+    try:
+        from .models.auth import User
+        from .models.farm import Farm
+        users_count = db.query(User).count()
+        farms_count = db.query(Farm).count()
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "users": users_count,
+            "farms": farms_count,
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "traceback": traceback.format_exc(),
+        }
+
 # ── API routers ─────────────────────────────────────────────────────────────
 app.include_router(auth.router,                  prefix=settings.API_V1_STR)
 app.include_router(farms.router,                 prefix=settings.API_V1_STR)
