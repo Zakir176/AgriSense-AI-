@@ -29,10 +29,9 @@ class Settings(BaseSettings):
         # to the SQLAlchemy-recognised scheme first.
         if v and v.startswith("postgres://"):
             v = v.replace("postgres://", "postgresql://", 1)
-        # SQLAlchemy 2.x routes the bare "postgresql://" scheme to psycopg v3.
-        # We pin the dialect explicitly so the mapping is unambiguous regardless
-        # of SQLAlchemy version and independent of any auto-detection fallbacks.
-        # This project installs psycopg[binary] (v3); do NOT use +psycopg2 here.
+        # Explicitly pin the psycopg v3 dialect so SQLAlchemy's driver
+        # resolution is unambiguous. This project installs psycopg[binary] (v3).
+        # Do NOT use +psycopg2 — psycopg2-binary is not installed.
         if v and v.startswith("postgresql://"):
             v = v.replace("postgresql://", "postgresql+psycopg://", 1)
         return v
