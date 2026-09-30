@@ -30,6 +30,7 @@ jobs:
           git config --global --unset-all credential.helper || true
           git subtree split --prefix=frontend -b temp-front-sync
           git push https://${SYNC_TOKEN}@github.com/Zakir176/AgriSense-AI-Frontend.git temp-front-sync:main --force
+          git push https://${SYNC_TOKEN}@github.com/Zakir176/AgriSense-AI-Frontend.git temp-front-sync:Zakir --force
 
       - name: Sync Backend to AgriSense-AI-Backend
         env:
@@ -42,3 +43,4 @@ jobs:
           git config --unset-all http.https://github.com/.extraheader || true
           git subtree split --prefix=backend -b temp-back-sync
           git push https://${SYNC_TOKEN}@github.com/Zakir176/AgriSense-AI-Backend.git temp-back-sync:main --force
+          git push https://${SYNC_TOKEN}@github.com/Zakir176/AgriSense-AI-Backend.git temp-back-sync:Zakir --force

@@ -56,7 +56,7 @@ async function request(path, options = {}) {
     })
 
     if (!response.ok) {
-      if (response.status === 401 && path !== '/auth/token') {
+      if (response.status === 401 && !path.startsWith('/auth/')) {
         localStorage.removeItem('agrisense_token')
         localStorage.removeItem('agrisense_username')
         if (window.location.pathname !== '/login') {

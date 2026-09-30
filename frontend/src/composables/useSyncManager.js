@@ -36,7 +36,16 @@ export function useSyncManager() {
   const refreshQueue = async () => {
     try {
       const items = await getSyncQueue()
-      queueItems.value = items
+      // Discard and delete any auth endpoints that might have been queued by offline fallbacks
+      const validItems = []
+      for (const item of items) {
+        if (item.url && item.url.startsWith('/auth/')) {
+          await removeFromSyncQueue(item.id)
+        } else {
+          validItems.push(item)
+        }
+      }
+      queueItems.value = validItems
     } catch (e) {
       console.error('[SyncManager] Failed to refresh queue:', e)
     }
