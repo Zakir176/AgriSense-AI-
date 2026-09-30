@@ -75,25 +75,31 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ── CORS ────────────────────────────────────────────────────────────────────
-# NOTE: allow_credentials=True requires explicit origins; "*" is NOT
-# allowed by browsers when credentials are present in the request.
+# Allow local development and production frontends by default.
 origins = [
     "http://localhost:5173",   # Vue dev server (Vite)
     "http://localhost:3000",   # Alternative local dev
     "http://127.0.0.1:5173",
     "http://127.0.0.1:3000",
+    "https://agri-sense-ai-frontend.vercel.app",
+    "https://agrisenseai.co",
+    "https://www.agrisenseai.co",
 ]
 
-frontend_url = settings.FRONTEND_URL.strip()
-if frontend_url:
-    origins.append(frontend_url)
+# Support comma-separated FRONTEND_URL values and strip whitespace/trailing slashes
+if settings.FRONTEND_URL:
+    for url in settings.FRONTEND_URL.split(","):
+        cleaned = url.strip().rstrip("/")
+        if cleaned and cleaned not in origins:
+            origins.append(cleaned)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"^https://.*\.vercel\.app$",
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # ── Security response headers (F-12) ────────────────────────────────────────

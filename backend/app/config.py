@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "AgriSense AI API"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
-    FRONTEND_URL: str = ""
+    FRONTEND_URL: str = "https://agri-sense-ai-frontend.vercel.app"
     
     # Database
     DATABASE_URL: str = "postgresql+psycopg://postgres:postgrespassword@localhost:5432/agrisense"
