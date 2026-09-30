@@ -49,9 +49,8 @@ from sqlalchemy.orm import Session
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from passlib.context import CryptContext
-
 from app.database import engine, SessionLocal, Base
+from app.routers.auth import get_password_hash
 from app.models.auth import User
 from app.models.farm import Farm
 from app.models.batch import Batch
@@ -76,8 +75,7 @@ if not _SEED_DEMO_PASSWORD or not _SEED_OPERATOR_PASSWORD:
     print("  export SEED_OPERATOR_PASSWORD=<your-password>")
     sys.exit(1)
 
-# Use bcrypt to match the scheme in app/routers/auth.py
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 
 # ---------------------------------------------------------------------------
@@ -311,14 +309,14 @@ def seed():
     # ── 0. Demo User ──────────────────────────────────────────────────────────
     demo_user = User(
         username="evans",
-        hashed_password=pwd_context.hash(_SEED_DEMO_PASSWORD),
+        hashed_password=get_password_hash(_SEED_DEMO_PASSWORD),
         full_name="Evans Mulenga",
     )
     db.add(demo_user)
     
     operator_user = User(
         username="operator",
-        hashed_password=pwd_context.hash(_SEED_OPERATOR_PASSWORD),
+        hashed_password=get_password_hash(_SEED_OPERATOR_PASSWORD),
         full_name="Evans Kabwe",
         is_admin=True,
     )

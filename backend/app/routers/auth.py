@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+import bcrypt
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from ..database import get_db
@@ -23,11 +24,23 @@ pwd_context = CryptContext(schemes=["bcrypt", "sha256_crypt"], deprecated=["sha2
 # The path must align with the prefix added by the main router mount
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    try:
+        pwd_bytes = plain_password.encode("utf-8")[:72]
+        hash_bytes = hashed_password.encode("utf-8")
+        if hashed_password.startswith(("$2a$", "$2b$", "$2y$")):
+            return bcrypt.checkpw(pwd_bytes, hash_bytes)
+        try:
+            return pwd_context.verify(plain_password, hashed_password)
+        except Exception:
+            return False
+    except Exception:
+        return False
 
-def get_password_hash(password):
-    return pwd_context.hash(password)
+def get_password_hash(password: str) -> str:
+    pwd_bytes = password.encode("utf-8")[:72]
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -147,8 +160,8 @@ async def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    # Silently upgrade deprecated sha256_crypt hashes to bcrypt on first login
-    if pwd_context.needs_update(user.hashed_password):
+    # Silently upgrade legacy non-bcrypt hashes on login
+    if not user.hashed_password.startswith("$2b$"):
         user.hashed_password = get_password_hash(password)
         db.commit()
     access_token = create_access_token(data={"sub": user.username})
