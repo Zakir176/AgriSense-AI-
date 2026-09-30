@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = ""
     
     # Database
-    DATABASE_URL: str = "postgresql://postgres:postgrespassword@localhost:5432/agrisense"
+    DATABASE_URL: str = "postgresql+psycopg://postgres:postgrespassword@localhost:5432/agrisense"
     
     # Auth (Simple operator account)
     SECRET_KEY: str = "4f8a12b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1"
@@ -25,15 +25,15 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL")
     @classmethod
     def validate_database_url(cls, v: str) -> str:
-        # Render (and older Heroku-style) connection strings use the legacy
-        # "postgres://" scheme — normalise to "postgresql://" first.
+        # Render (and legacy Heroku/Supabase) supply "postgres://" — normalise
+        # to the SQLAlchemy-recognised scheme first.
         if v and v.startswith("postgres://"):
             v = v.replace("postgres://", "postgresql://", 1)
-        # SQLAlchemy 2.x maps the bare "postgresql://" scheme to the psycopg v3
-        # driver ("import psycopg").  This project installs psycopg2-binary, so
-        # we must use the explicit "postgresql+psycopg2://" dialect prefix.
+        # Explicitly pin the psycopg v3 dialect so SQLAlchemy's driver
+        # resolution is unambiguous. This project installs psycopg[binary] (v3).
+        # Do NOT use +psycopg2 — psycopg2-binary is not installed.
         if v and v.startswith("postgresql://"):
-            v = v.replace("postgresql://", "postgresql+psycopg2://", 1)
+            v = v.replace("postgresql://", "postgresql+psycopg://", 1)
         return v
 
     @field_validator("SECRET_KEY")
