@@ -1,0 +1,24 @@
+# Render Blueprint specification for AgriSense AI Backend
+services:
+  - type: web
+    name: agrisense-ai-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agrisense-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://agri-sense-ai-frontend.vercel.app
+      - key: PYTHON_VERSION
+        value: 3.11.8
+
+databases:
+  - name: agrisense-db
+    databaseName: agrisense
+    user: agrisense_user
+    plan: free
