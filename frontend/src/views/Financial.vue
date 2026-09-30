@@ -443,6 +443,109 @@
         </AgriCard>
 
         <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- Section 4.5 — Break-Even & Target Profitability Simulator            -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <AgriCard class="animate-fade-in-up delay-450">
+          <template #header>
+            <div class="flex items-center gap-2">
+              <span class="material-icons-outlined text-amber-500 text-lg">calculate</span>
+              <h2 class="text-sm font-bold text-gray-800 dark:text-white">Break-Even & Target Profitability Simulator</h2>
+              <span class="text-xs text-gray-400 dark:text-gray-500">(Cost Coverage & Target Margin Engine)</span>
+            </div>
+          </template>
+
+          <div class="p-6 space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              <!-- 1. Break-Even Price Card -->
+              <div class="bg-gray-50 dark:bg-darkbg-100/40 p-5 rounded-xl border border-gray-150 dark:border-gray-800 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Break-Even Price / Bird</span>
+                    <span class="material-icons-outlined text-amber-500 text-sm">shield</span>
+                  </div>
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-3xl font-black text-gray-900 dark:text-white tabular-nums">K {{ breakEvenPrice.toFixed(2) }}</span>
+                    <span class="text-xs text-gray-400 font-medium">/ bird</span>
+                  </div>
+                  <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                    Minimum price required per bird to recover total expenses of <strong class="text-gray-700 dark:text-gray-300">K {{ (summary.total_expenses_zmw || 0).toFixed(2) }}</strong>.
+                  </p>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-gray-200/60 dark:border-gray-800">
+                  <div v-if="forecastPrice >= breakEvenPrice" class="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <span class="material-icons-outlined text-sm">check_circle</span>
+                    <span>Target Price (+K {{ (forecastPrice - breakEvenPrice).toFixed(2) }}/bird margin)</span>
+                  </div>
+                  <div v-else class="flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400">
+                    <span class="material-icons-outlined text-sm">warning</span>
+                    <span>Below Break-Even (-K {{ (breakEvenPrice - forecastPrice).toFixed(2) }}/bird loss)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Target Profit Goal Simulator -->
+              <div class="bg-primary-50/40 dark:bg-primary-950/20 p-5 rounded-xl border border-primary-200/60 dark:border-primary-900/40 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-primary-700 dark:text-primary-400 uppercase tracking-wider">Target Profit Goal</span>
+                    <span class="material-icons-outlined text-primary-500 text-sm">flag</span>
+                  </div>
+                  <div class="max-w-[200px]">
+                    <AgriInput
+                      v-model.number="targetProfitGoal"
+                      type="number"
+                      min="0"
+                      step="100"
+                      placeholder="Goal (ZMW)"
+                      icon="payments"
+                    />
+                  </div>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Desired net profit target across the remaining sellable flock.
+                  </p>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-primary-200/50 dark:border-primary-900/50 flex justify-between items-center">
+                  <div>
+                    <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase block">Required Sale Price</span>
+                    <span class="text-lg font-black text-primary-700 dark:text-primary-300 tabular-nums">K {{ requiredPriceForGoal.toFixed(2) }} <span class="text-xs text-gray-400 font-normal">/ bird</span></span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase block">Target ROI</span>
+                    <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">+{{ projectedROI.toFixed(1) }}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Feed Efficiency Metrics -->
+              <div class="bg-gray-50 dark:bg-darkbg-100/40 p-5 rounded-xl border border-gray-150 dark:border-gray-800 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Feed Cost Share</span>
+                    <span class="material-icons-outlined text-amber-500 text-sm">grass</span>
+                  </div>
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-3xl font-black text-amber-600 dark:text-amber-400 tabular-nums">{{ feedExpenseSharePct.toFixed(1) }}%</span>
+                    <span class="text-xs text-gray-400 font-medium">of total costs</span>
+                  </div>
+                  <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                    Total Feed Expense: <strong class="text-gray-700 dark:text-gray-300">K {{ feedExpenseAmount.toFixed(2) }}</strong>
+                  </p>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-gray-200/60 dark:border-gray-800 flex justify-between items-center">
+                  <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Feed Cost / Live Bird</span>
+                  <span class="text-sm font-bold text-gray-900 dark:text-white tabular-nums">K {{ feedCostPerBird.toFixed(2) }}</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </AgriCard>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
         <!-- Section 5 — Profit & Loss Statement                                -->
         <!-- ═══════════════════════════════════════════════════════════════════ -->
         <AgriCard class="animate-fade-in-up delay-500">
@@ -688,11 +791,45 @@ const expenseForm = ref({
   amount_zmw: null
 })
 
-// Section 4 — Income Forecast
+// Section 4 — Income Forecast & Break-Even Simulator
 const forecastPrice = ref(85)
+const targetProfitGoal = ref(2000)
 const forecastData = ref(null)
 const forecastLoading = ref(false)
 let forecastTimeout = null
+
+const breakEvenPrice = computed(() => {
+  const totalExpenses = summary.value.total_expenses_zmw || 0
+  const birds = forecastData.value?.projected_sellable_birds || summary.value.current_live_count || 0
+  return birds > 0 ? totalExpenses / birds : 0
+})
+
+const requiredPriceForGoal = computed(() => {
+  const totalExpenses = summary.value.total_expenses_zmw || 0
+  const targetProfit = targetProfitGoal.value || 0
+  const birds = forecastData.value?.projected_sellable_birds || summary.value.current_live_count || 0
+  return birds > 0 ? (totalExpenses + targetProfit) / birds : 0
+})
+
+const projectedROI = computed(() => {
+  const totalExpenses = summary.value.total_expenses_zmw || 0
+  const targetProfit = targetProfitGoal.value || 0
+  return totalExpenses > 0 ? (targetProfit / totalExpenses) * 100 : 0
+})
+
+const feedExpenseAmount = computed(() => {
+  return summary.value.expenses_by_category?.feed || 0
+})
+
+const feedExpenseSharePct = computed(() => {
+  const totalExpenses = summary.value.total_expenses_zmw || 0
+  return totalExpenses > 0 ? (feedExpenseAmount.value / totalExpenses) * 100 : 0
+})
+
+const feedCostPerBird = computed(() => {
+  const birds = summary.value.current_live_count || store.activeBatch?.bird_count || 0
+  return birds > 0 ? feedExpenseAmount.value / birds : 0
+})
 
 // Section 5 — Profit & Loss Summary
 const plSummary = ref(null)

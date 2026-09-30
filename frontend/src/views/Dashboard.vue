@@ -52,14 +52,14 @@
           icon="layers"
           icon-color-class="bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400"
           :loading="loading"
-          :subtext="`${store.batchesList.length} total batch${store.batchesList.length !== 1 ? 'es' : ''} on farm`"
+          :subtext="`${store.batchesList.length} total cohort${store.batchesList.length !== 1 ? 's' : ''} on farm`"
           class="h-full"
         />
       </div>
 
       <div class="animate-fade-in-up delay-100">
         <AgriStatCard
-          :label="$t('dashboard.total_birds')"
+          :label="$t('dashboard.live_bird_count')"
           :value="liveCountValue"
           icon="egg"
           icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
@@ -67,13 +67,13 @@
           :trend="populationTrendText"
           :trend-direction="populationTrendDirection"
           :trend-good="populationTrendGood"
-          :subtext="populationSubtext"
+          :subtext="store.activeBatch ? `Flock Capacity: ${store.activeBatch.bird_count?.toLocaleString()} birds` : 'No active batch'"
           class="h-full"
           :class="{ 'border-red-250 dark:border-red-900/40 animate-pulse-glow': hasPopulationAlert }"
         />
       </div>
 
-      <!-- Active Alerts Card (Pulsing critical warning if counts exist) -->
+      <!-- Active Alerts Card -->
       <div class="animate-fade-in-up delay-150">
         <AgriStatCard
           :label="$t('dashboard.active_alerts')"
@@ -99,29 +99,6 @@
           icon-color-class="bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400"
           :loading="loading"
           :subtext="store.activeBatch ? `Started ${formatDate(store.activeBatch.start_date)}` : $t('dashboard.no_active_batch')"
-          class="h-full"
-        />
-      </div>
-
-      <div class="animate-fade-in-up delay-250">
-        <AgriStatCard
-          :label="$t('dashboard.live_bird_count')"
-          :value="inventoryLiveCountDisplay"
-          icon="egg"
-          icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
-          :loading="loading"
-          :subtext="inventoryLiveSubtext"
-          class="h-full"
-        />
-      </div>
-
-      <div class="animate-fade-in-up delay-300">
-        <AgriStatCard
-          :label="$t('dashboard.flock_status')"
-          :value="flockStatusDisplay"
-          icon="assessment"
-          icon-color-class="bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400"
-          :loading="loading"
           class="h-full"
         />
       </div>
@@ -286,10 +263,10 @@
           <router-link to="/readings" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition">{{ $t('dashboard.view_all') }}</router-link>
         </template>
 
-        <!-- Using AgriTable component -->
+        <!-- Using AgriTable component (Limited preview of 4 items) -->
         <AgriTable
           :headers="readingsHeaders"
-          :items="recentReadings"
+          :items="recentReadings.slice(0, 4)"
           :loading="loading"
           striped
           class="border-none shadow-none rounded-none"
@@ -318,6 +295,13 @@
             </span>
           </template>
         </AgriTable>
+
+        <div v-if="recentReadings.length > 4" class="p-3 bg-gray-50/50 dark:bg-darkbg-100/50 border-t border-gray-100 dark:border-gray-800 text-center">
+          <router-link to="/readings" class="inline-flex items-center gap-1.5 text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition">
+            <span>{{ $t('dashboard.view_all') }} Feed & Water Logs ({{ recentReadings.length }} records)</span>
+            <span class="material-icons-outlined text-sm">arrow_forward</span>
+          </router-link>
+        </div>
       </AgriCard>
 
       <!-- All Batches Status Table -->
@@ -330,10 +314,10 @@
           <router-link to="/batches" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition">{{ $t('dashboard.manage') }}</router-link>
         </template>
 
-        <!-- Using AgriTable component -->
+        <!-- Using AgriTable component (Limited preview of 4 items) -->
         <AgriTable
           :headers="batchesHeaders"
-          :items="store.batchesList.slice(0, 7)"
+          :items="store.batchesList.slice(0, 4)"
           :loading="loading"
           striped
           class="border-none shadow-none rounded-none"
@@ -364,6 +348,13 @@
             </span>
           </template>
         </AgriTable>
+
+        <div v-if="store.batchesList.length > 4" class="p-3 bg-gray-50/50 dark:bg-darkbg-100/50 border-t border-gray-100 dark:border-gray-800 text-center">
+          <router-link to="/batches" class="inline-flex items-center gap-1.5 text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition">
+            <span>{{ $t('dashboard.manage') }} All Cohorts & Capacity ({{ store.batchesList.length }} cohorts)</span>
+            <span class="material-icons-outlined text-sm">arrow_forward</span>
+          </router-link>
+        </div>
       </AgriCard>
     </div>
 

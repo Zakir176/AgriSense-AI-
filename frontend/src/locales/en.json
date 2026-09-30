@@ -582,5 +582,17 @@
     "confirm_delete": "Are you sure you want to delete this scheduled treatment?",
     "schedule_deleted": "Scheduled treatment deleted.",
     "marked_complete": "Treatment marked as completed."
+  },
+  "reminders": {
+    "overdue_title": "⚠️ Overdue Treatment: {title}",
+    "due_today_title": "💊 Treatment Due Today: {title}",
+    "type": "Type: {type}",
+    "dosage": "Dosage: {dosage}",
+    "was_due": "Was due: {date}",
+    "due_today": "Due: Today",
+    "voice_announce": "Listen to Reminder",
+    "voice_enabled": "Audio Voice Guidance Active",
+    "speech_overdue": "Attention farmer. Overdue treatment required for {title}. Treatment type: {type}.",
+    "speech_due_today": "Reminder. Treatment scheduled for today: {title}. Dosage instructions: {dosage}."
   }
 }

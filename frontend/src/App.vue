@@ -232,9 +232,26 @@
               </button>
               <div v-if="showLanguageDropdown" class="absolute right-0 mt-2 w-32 bg-white dark:bg-darkbg-50 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden z-50">
                 <button @click="changeLanguage('en')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'en' }">English</button>
-                <button @click="changeLanguage('ny')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'ny' }">Nyanja</button>
+                <button @click="changeLanguage('ny')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'ny' }">Chichewa (Nyanja)</button>
               </div>
             </div>
+
+            <!-- Audio Voice Guidance Toggle -->
+            <button 
+              @click="toggleVoice"
+              class="flex items-center justify-center p-2 rounded-xl transition focus:outline-none cursor-pointer"
+              :class="[
+                voiceEnabled 
+                  ? 'bg-primary-50 text-primary-600 dark:bg-primary-950/40 dark:text-primary-400 border border-primary-200/50 dark:border-primary-900/50' 
+                  : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800/60 border border-transparent'
+              ]"
+              :title="voiceEnabled ? $t('reminders.voice_enabled') : 'Enable Audio Voice Guidance'"
+              aria-label="Toggle Audio Voice Guidance"
+            >
+              <span class="material-icons-outlined text-lg block" :class="{ 'animate-pulse text-emerald-500': isSpeaking }">
+                {{ voiceEnabled ? (isSpeaking ? 'volume_up' : 'volume_down') : 'volume_off' }}
+              </span>
+            </button>
 
             <!-- User Panel -->
             <div id="site-header-role" class="flex items-center space-x-3 border-l border-gray-200 dark:border-gray-800 pl-3 md:pl-4">
@@ -297,12 +314,14 @@ import TourGuide from './components/TourGuide.vue'
 import SyncDrawer from './components/SyncDrawer.vue'
 import { useSyncManager } from './composables/useSyncManager'
 import { useReminders } from './composables/useReminders'
+import { useVoicePrompts } from './composables/useVoicePrompts'
 import { useI18n } from 'vue-i18n'
 
 const { locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { checkPendingReminders, checkDueFromServer } = useReminders()
+const { voiceEnabled, toggleVoice, isSpeaking } = useVoicePrompts()
 const dueReminders = ref([])
 
 const showLanguageDropdown = ref(false)
@@ -533,9 +552,11 @@ onMounted(async () => {
     }
   }, 1000)
   
-  // Periodically check for alerts
+  // Periodically check for alerts (only when logged in)
   alertsInterval = setInterval(() => {
-    fetchAlerts()
+    if (localStorage.getItem('agrisense_token')) {
+      fetchAlerts()
+    }
   }, 30000)
 
   // Initialize sync manager (handles queue polling, online/offline listeners)
@@ -543,16 +564,20 @@ onMounted(async () => {
   
   // Initialize reminders
   await checkPendingReminders()
-  dueReminders.value = await checkDueFromServer()
-  setInterval(async () => {
+  if (localStorage.getItem('agrisense_token')) {
     dueReminders.value = await checkDueFromServer()
+  }
+  setInterval(async () => {
+    if (localStorage.getItem('agrisense_token')) {
+      dueReminders.value = await checkDueFromServer()
+    }
   }, 5 * 60 * 1000)
   
   // Close dropdowns when clicking outside
   document.addEventListener('click', handleClickOutside)
   
   // Auto-sync if we came online while the page was closed/reloading
-  if (navigator.onLine) {
+  if (navigator.onLine && localStorage.getItem('agrisense_token')) {
     syncAll()
   }
 })

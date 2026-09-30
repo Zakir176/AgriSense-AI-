@@ -28,6 +28,8 @@ async function request(path, options = {}) {
         return cached
       }
       throw new Error('You are offline and no cached data is available for this request.')
+    } else if (path.startsWith('/auth/')) {
+      throw new Error('Cannot authenticate while offline. Please check your internet connection.')
     } else {
       // Mutation: Queue it for background sync
       let payloadToQueue = options.body
@@ -57,7 +59,9 @@ async function request(path, options = {}) {
       if (response.status === 401 && path !== '/auth/token') {
         localStorage.removeItem('agrisense_token')
         localStorage.removeItem('agrisense_username')
-        window.location.href = '/login'
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
       }
       let errorDetail = 'Request failed'
       try {
@@ -95,6 +99,8 @@ async function request(path, options = {}) {
           return cached
         }
         throw new Error('Network unreachable and no cached data is available for this request.')
+      } else if (path.startsWith('/auth/')) {
+        throw error
       } else {
         let payloadToQueue = options.body
         if (options.body instanceof URLSearchParams) {
