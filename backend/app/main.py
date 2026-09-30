@@ -33,7 +33,19 @@ Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: ensure default demo operator account and default farm exist for immediate login
+    # Startup: ensure tables, columns, and default demo data exist
+    try:
+        import sqlalchemy as sa
+        with engine.connect() as conn:
+            if not str(engine.url).startswith("sqlite"):
+                conn.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;"))
+                conn.execute(sa.text("ALTER TABLE inventory_adjustments ADD COLUMN IF NOT EXISTS unit_price_zmw FLOAT;"))
+                conn.execute(sa.text("ALTER TABLE inventory_adjustments ADD COLUMN IF NOT EXISTS buyer_name VARCHAR;"))
+                conn.execute(sa.text("ALTER TABLE inventory_adjustments ADD COLUMN IF NOT EXISTS total_amount_zmw FLOAT;"))
+                conn.commit()
+    except Exception as e:
+        logger.warning(f"Database column alignment notice: {e}")
+
     try:
         with SessionLocal() as db:
             from .models.auth import User
