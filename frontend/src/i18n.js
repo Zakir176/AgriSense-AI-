@@ -1,6 +1,7 @@
 import { createI18n } from 'vue-i18n'
 import en from './locales/en.json'
 import ny from './locales/ny.json'
+import bem from './locales/bem.json'
 
 // Load language from localStorage, or fallback to 'en'
 const savedLanguage = localStorage.getItem('language') || 'en'
@@ -11,7 +12,8 @@ const i18n = createI18n({
   fallbackLocale: 'en',
   messages: {
     en,
-    ny
+    ny,
+    bem
   }
 })
 
