@@ -154,7 +154,7 @@
             <template #header>
               <div class="flex items-center gap-2">
                 <span class="material-icons-outlined text-gray-500 dark:text-gray-400">bar_chart</span>
-                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Cohort Performance Comparison (FCR)</h3>
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('analytics.cohort_fcr') }}</h3>
               </div>
             </template>
             <div class="p-5">
@@ -169,12 +169,12 @@
             <template #header>
               <div class="flex items-center gap-2">
                 <span class="material-icons-outlined text-gray-500 dark:text-gray-400">show_chart</span>
-                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Daily Growth Velocity (g/day)</h3>
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('analytics.growth_velocity') }}</h3>
               </div>
             </template>
             <div class="p-5">
               <div v-if="growthData.length === 0" class="h-64 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500 text-center px-6">
-                Log growth records to inspect daily weight velocity.
+                {{ $t('spatial.weight_velocity_hint') }}
               </div>
               <div v-else class="h-64 flex items-center justify-center">
                 <canvas ref="growthCanvas"></canvas>
@@ -187,14 +187,14 @@
         <div class="space-y-4 animate-fade-in-up delay-450">
           <div class="flex items-center gap-2">
             <span class="material-icons-outlined text-primary-600 dark:text-primary-400">hub</span>
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Spatial Health Trends</h2>
-            <span v-if="spatialTrendsLoading" class="text-[10px] text-gray-400 dark:text-gray-500 italic">Loading...</span>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('spatial.title') }}</h2>
+            <span v-if="spatialTrendsLoading" class="text-[10px] text-gray-400 dark:text-gray-500 italic">{{ $t('common.loading') }}</span>
           </div>
 
           <!-- Spatial KPI Cards -->
           <div v-if="spatialTrendsData.length > 0" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <AgriStatCard
-              label="Avg Clustering Density"
+              :label="$t('spatial.avg_clustering_density')"
               :value="avgClusteringDensity"
               :decimals="1"
               suffix="%"
@@ -203,31 +203,31 @@
               :trend="clusteringTrendLabel"
               trend-direction="neutral"
               :trend-good="avgClusteringDensity < 50"
-              subtext="Lower = more evenly spread flock"
+              :subtext="$t('spatial.clustering_subtext')"
               class="animate-fade-in-up delay-100"
             />
             <AgriStatCard
-              label="Peak Temperature"
+              :label="$t('spatial.peak_temperature')"
               :value="peakTemperature"
               :decimals="1"
               suffix="°C"
               icon="thermostat"
               icon-color-class="bg-orange-50 dark:bg-orange-950/40 text-orange-500 dark:text-orange-400"
-              :trend="peakTemperature > 31 ? 'Heat Warning' : 'Normal Range'"
+              :trend="peakTemperature > 31 ? $t('spatial.heat_warning') : $t('spatial.normal_range')"
               trend-direction="neutral"
               :trend-good="peakTemperature <= 31"
-              subtext="Optimal: 24–30 °C (varies by age)"
+              :subtext="$t('spatial.peak_temp_subtext')"
               class="animate-fade-in-up delay-150"
             />
             <AgriStatCard
-              label="High-Risk Days"
+              :label="$t('spatial.high_risk_days')"
               :value="highRiskDays"
               icon="warning_amber"
               icon-color-class="bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400"
-              :trend="highRiskDays === 0 ? 'All Clear' : `${highRiskDays} day(s) > 65%`"
+              :trend="highRiskDays === 0 ? $t('spatial.all_clear') : $t('spatial.days_high_risk', { count: highRiskDays })"
               trend-direction="neutral"
               :trend-good="highRiskDays === 0"
-              subtext="Days with clustering density > 65%"
+              :subtext="$t('spatial.high_risk_subtext')"
               class="animate-fade-in-up delay-200"
             />
           </div>
@@ -237,14 +237,14 @@
             <template #header>
               <div class="flex items-center gap-2">
                 <span class="material-icons-outlined text-gray-500 dark:text-gray-400">insights</span>
-                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Clustering Density vs. Barn Temperature (30-Day Window)</h3>
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ $t('spatial.chart_title') }}</h3>
               </div>
             </template>
             <div class="p-5">
               <div v-if="spatialTrendsData.length === 0" class="h-72 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500 text-center px-6">
                 <div>
                   <span class="material-icons-outlined text-3xl block mb-2">hub</span>
-                  Upload coop footage on the AI Visual Monitor page to generate spatial health trend data.
+                  {{ $t('spatial.empty_hint') }}
                 </div>
               </div>
               <div v-else class="h-72 flex items-center justify-center">
@@ -261,6 +261,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { store } from '../services/store'
 import { api } from '../services/api'
 import { Chart, registerables } from 'chart.js'
@@ -280,6 +281,7 @@ Chart.register(...registerables, zoomPlugin)
 
 const { getStaggerDelayClass } = useAnimations()
 const toast = useToast()
+const { t } = useI18n()
 
 // ── State ──────────────────────────────────
 const selectedBatchId = ref(null)
@@ -377,16 +379,16 @@ const highRiskDays = computed(() => {
 
 const clusteringTrendLabel = computed(() => {
   const withData = spatialTrendsData.value.filter(d => d.clustering_density_pct !== null)
-  if (withData.length < 4) return 'Insufficient data'
+  if (withData.length < 4) return t('analytics.insufficient_data')
   const mid = Math.floor(withData.length / 2)
   const firstHalf = withData.slice(0, mid)
   const secondHalf = withData.slice(mid)
   const avg1 = firstHalf.reduce((s, d) => s + d.clustering_density_pct, 0) / firstHalf.length
   const avg2 = secondHalf.reduce((s, d) => s + d.clustering_density_pct, 0) / secondHalf.length
   const delta = avg2 - avg1
-  if (delta > 5) return `Rising +${delta.toFixed(1)}%`
-  if (delta < -5) return `Falling ${delta.toFixed(1)}%`
-  return 'Stable'
+  if (delta > 5) return `${t('analytics.rising')} +${delta.toFixed(1)}%`
+  if (delta < -5) return `${t('analytics.falling')} ${delta.toFixed(1)}%`
+  return t('analytics.stable')
 })
 
 // ── Data Loading ───────────────────────────
