@@ -66,7 +66,7 @@
         </div>
 
         <!-- Navigation Links -->
-        <nav class="flex-1 py-6 space-y-1.5 overflow-y-auto" :class="isSidebarCollapsed ? 'px-2' : 'px-4'">
+        <nav id="app-sidebar-nav" class="flex-1 py-6 space-y-1.5 overflow-y-auto" :class="isSidebarCollapsed ? 'px-2' : 'px-4'">
           <router-link 
             v-for="item in navItems" 
             :key="item.path" 
@@ -308,7 +308,7 @@
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from './services/api'
-import { store } from './services/store'
+import { store, TOUR_STORAGE_KEY } from './services/store'
 import Toast from './components/Toast.vue'
 import TourGuide from './components/TourGuide.vue'
 import SyncDrawer from './components/SyncDrawer.vue'
@@ -350,6 +350,14 @@ watch(() => route.path, () => {
   // Only auto-close on mobile navigation
   if (window.innerWidth < 768) {
     isSidebarOpen.value = false
+  }
+})
+
+// The onboarding tour opens/closes the off-canvas drawer on mobile so it can
+// spotlight the navigation menu.
+watch(() => store.tour.sidebarOpen, (open) => {
+  if (window.innerWidth < 768) {
+    isSidebarOpen.value = open
   }
 })
 
@@ -546,7 +554,7 @@ onMounted(async () => {
   
   setTimeout(() => {
     const token = localStorage.getItem('agrisense_token')
-    const onboarded = localStorage.getItem('agrisense_onboarded')
+    const onboarded = localStorage.getItem(TOUR_STORAGE_KEY)
     if (token && !onboarded && !isBlankLayout.value) {
       startTourGuide()
     }
