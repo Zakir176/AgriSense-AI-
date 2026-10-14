@@ -39,7 +39,7 @@
         <tr v-else-if="items.length === 0">
           <td :colspan="headers.length" class="px-6 py-12 text-center text-gray-400 dark:text-gray-500">
             <span class="material-icons-outlined text-4xl block mb-2 opacity-50">inbox</span>
-            <p class="font-medium text-xs">No records available</p>
+            <p class="font-medium text-xs">{{ $t('common.no_records') || 'No records available' }}</p>
           </td>
         </tr>
 
