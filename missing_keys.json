@@ -1,0 +1,694 @@
+{
+  "ai.active": {
+    "en": "Active",
+    "ny": "Zikugwira"
+  },
+  "ai.activity_index": {
+    "en": "Activity Index",
+    "ny": "Mlingo Wa Zochita"
+  },
+  "ai.analyze_new": {
+    "en": "Analyze New Footage",
+    "ny": "Unikani Vidiyo Yatsopano"
+  },
+  "ai.anomalous_activity": {
+    "en": "Anomalous Activity",
+    "ny": "Zochita Zachilendo"
+  },
+  "ai.archived_desc": {
+    "en": "Footage logs and neural network inferences are archived per batch.",
+    "ny": "Zolemba zamavidiyo ndi ziwerengero zimasungidwa pagulu lililonse."
+  },
+  "ai.awaiting_desc": {
+    "en": "Upload a new poultry video clip or select a historic record from the sidebar to inspect AI predictions.",
+    "ny": "Kwezani vidiyo yatsopano kapena sankhani mbiri yakale kuchokera pambali kuti muwone zolosera za AI."
+  },
+  "ai.awaiting_selection": {
+    "en": "Awaiting footage selection",
+    "ny": "Kudikirira kusankha vidiyo"
+  },
+  "ai.birds": {
+    "en": "birds",
+    "ny": "nkhuku"
+  },
+  "ai.catalog": {
+    "en": "Tracked Nodes Catalog",
+    "ny": "Ndondomeko Yotsata Madontho"
+  },
+  "ai.clustering_index": {
+    "en": "Clustering Index",
+    "ny": "Mlingo Wa Gulu"
+  },
+  "ai.clustering_warning": {
+    "en": "Clustering Warning",
+    "ny": "Chenjezo Logwirizana Gulu"
+  },
+  "ai.connected": {
+    "en": "Connected",
+    "ny": "Zalumikizidwa"
+  },
+  "ai.connecting": {
+    "en": "Connecting…",
+    "ny": "Kulumikizana…"
+  },
+  "ai.connection_lost": {
+    "en": "Connection lost. Attempting to reconnect…",
+    "ny": "Kulumikizana kwatha. Kuyesa kulumikizanso…"
+  },
+  "ai.coords": {
+    "en": "Coordinates:",
+    "ny": "Malo Osonyeza:"
+  },
+  "ai.crit_mortality": {
+    "en": "Critical Anomaly: Suspected Mortality",
+    "ny": "Zodabwitsa: Akuganiza Pali Imfa"
+  },
+  "ai.critical_huddling": {
+    "en": "Critical (Huddling)",
+    "ny": "Zowopsa (Kugundana)"
+  },
+  "ai.detected_slow": {
+    "en": "Detected slow movement segments.",
+    "ny": "Mwawona mbali yosuntha pang'onopang'ono."
+  },
+  "ai.disconnected": {
+    "en": "Disconnected",
+    "ny": "Zadulidwa"
+  },
+  "ai.drag_drop": {
+    "en": "Drag & drop video file",
+    "ny": "Kokani & ikani vidiyo"
+  },
+  "ai.estimated_count": {
+    "en": "Estimated Bird Count",
+    "ny": "Chiwerengero cha Nkhuku Choyembekezeka"
+  },
+  "ai.executing_ai": {
+    "en": "Executing AI CV Inference",
+    "ny": "Kugwiritsa ntchito AI CV Inference"
+  },
+  "ai.flagged_details": {
+    "en": "Flagged Anomaly Details",
+    "ny": "Zotsatira Zazochita Zachilendo"
+  },
+  "ai.healthy_active": {
+    "en": "Healthy & Active",
+    "ny": "Zathanzi & Zogwira Ntchito"
+  },
+  "ai.healthy_dispersion": {
+    "en": "Healthy Dispersion",
+    "ny": "Kugawa Kwathanzi"
+  },
+  "ai.history": {
+    "en": "Footage History",
+    "ny": "Mbiri Ya Vidiyo"
+  },
+  "ai.in_frame_density": {
+    "en": "in-frame density",
+    "ny": "Kachuluke Mavidiyo"
+  },
+  "ai.inactive": {
+    "en": "Inactive",
+    "ny": "Zosagwira"
+  },
+  "ai.lethargic": {
+    "en": "Lethargic",
+    "ny": "Zosatakataka"
+  },
+  "ai.lethargic_cluster": {
+    "en": "Lethargic Cluster Velocity",
+    "ny": "Liwiro La Gulu Losatakataka"
+  },
+  "ai.lethargy_flagged": {
+    "en": "Lethargy Flagged",
+    "ny": "Chizindikiro Chakusatakataka"
+  },
+  "ai.live_bird_count": {
+    "en": "Live Bird Count",
+    "ny": "Chiwerengero cha Nkhuku Zamoyo"
+  },
+  "ai.live_camera": {
+    "en": "Live Camera",
+    "ny": "Kamera Yamoyo"
+  },
+  "ai.live_frame": {
+    "en": "Frame",
+    "ny": "Chithunzi"
+  },
+  "ai.live_lethargic": {
+    "en": "Lethargic Detected",
+    "ny": "Zosatakataka Zopezeka"
+  },
+  "ai.live_movement": {
+    "en": "Movement Score",
+    "ny": "Mlingo Wasuntha"
+  },
+  "ai.no_anomaly": {
+    "en": "No Anomaly",
+    "ny": "Palibe Chodabwitsa"
+  },
+  "ai.no_clips": {
+    "en": "No clips uploaded yet.",
+    "ny": "Palibe mavidiyo okhwezedwa pano."
+  },
+  "ai.node_id": {
+    "en": "Bird Node #",
+    "ny": "Mawonekedwe a Nkhuku #"
+  },
+  "ai.nodes": {
+    "en": "nodes",
+    "ny": "madontho"
+  },
+  "ai.normal_cluster": {
+    "en": "Normal cluster profile detected",
+    "ny": "Mawonekedwe a gulu ali bwino"
+  },
+  "ai.note": {
+    "en": "Note: The system automatically compared this visual scan against batch parameters (flock size minus daily mortality logs). A notification has been raised in the system alerts queue.",
+    "ny": "Zindikirani: Dongosolo loyerekeza mavidiyo likufanizira kuwona kwavidiyo motsutsana ndi magawo a gulu (kukula kwa gulu kuchotsa zolemba zaimfa zatsiku ndi tsiku). Chidziwitso chayikidwa pamzere wachidziwitso chadongosolo."
+  },
+  "ai.or_click": {
+    "en": "or click to browse local files (MP4, WebM)",
+    "ny": "kapena dinani kuti mufufuze mafayilo a pa chipangizo (MP4, WebM)"
+  },
+  "ai.pop_verified": {
+    "en": "Population Status: Verified",
+    "ny": "Mkhalidwe Wa Chiwerengero: Wotsimikizika"
+  },
+  "ai.processing": {
+    "en": "Processing frames with YOLOv8 neural net…",
+    "ny": "Kukonza zithunzi ndi YOLOv8 neural net…"
+  },
+  "ai.prototype_desc": {
+    "en": "This computer vision module processes pre-recorded footage uploads. Real-time RTSP streams are scheduled for farm integration in Phase 2.",
+    "ny": "Gawo ili lakuwona mavidiyo limasanthula mavidiyo okhwezedwa. Mavidiyo amasanjidwa munjira yanthawi yeniyeni pagawo lachiwiri."
+  },
+  "ai.prototype_telemetry": {
+    "en": "Prototype Telemetry:",
+    "ny": "Zoyesera Pakanthawi:"
+  },
+  "ai.px": {
+    "en": "px",
+    "ny": "px"
+  },
+  "ai.reason": {
+    "en": "Reason:",
+    "ny": "Chifukwa:"
+  },
+  "ai.reconnecting": {
+    "en": "Reconnecting…",
+    "ny": "Kulumikizanso…"
+  },
+  "ai.score": {
+    "en": "Score:",
+    "ny": "Mlingo:"
+  },
+  "ai.select_view": {
+    "en": "Select a batch above to start AI footage profiling.",
+    "ny": "Sankhani gulu pamwambapa kuti muyambe kuwunika mavidiyo a AI."
+  },
+  "ai.spatial_dispersion": {
+    "en": "Spatial Dispersion",
+    "ny": "Kugawa kwa Malo"
+  },
+  "ai.spatial_map": {
+    "en": "Spatial Telemetry & Density Map",
+    "ny": "Mapu Awunika Maonekedwe Osonyeza Malo"
+  },
+  "ai.start_live": {
+    "en": "Start Live Feed",
+    "ny": "Yambani Kuwona Moyo"
+  },
+  "ai.status": {
+    "en": "Status:",
+    "ny": "Mkhalidwe:"
+  },
+  "ai.stop_live": {
+    "en": "Stop Live Feed",
+    "ny": "Imitsani Kuwona Moyo"
+  },
+  "ai.thermal_density": {
+    "en": "Thermal Density",
+    "ny": "Mulingo Wa Kutentha"
+  },
+  "ai.tracked_nodes": {
+    "en": "Tracked Nodes",
+    "ny": "Nkhuku Zololedwa"
+  },
+  "ai.uniform_cohort": {
+    "en": "Uniform cohort movement observed.",
+    "ny": "Mawonedwe osuntha a gulu lofanana."
+  },
+  "ai.vector_dots": {
+    "en": "Vector Dots",
+    "ny": "Timadontho"
+  },
+  "ai.warn_missing": {
+    "en": "Warning: Population Discrepancy (Undocumented Loss)",
+    "ny": "Chenjezo: Kusiyana Kwa Chiwerengero (Zosowa)"
+  },
+  "ai.yolov8_active": {
+    "en": "YOLOv8 Active",
+    "ny": "YOLOv8 Ikuwona"
+  },
+  "analytics.based_on_latest": {
+    "en": "Based on latest weight sample",
+    "ny": "Potengera kulemera kwaposachedwa"
+  },
+  "analytics.biomass_desc": {
+    "en": "Comparing feed & water inputs against flock weight accumulation.",
+    "ny": "Kufanizira chakudya & madzi otsanulidwa ndikulemera kwanthu nthawi imodzi."
+  },
+  "analytics.biomass_efficiency": {
+    "en": "Biomass & Resource Efficiency",
+    "ny": "Kugwiritsa Ntchito Zakudya Moyenera Ndi Kulemera"
+  },
+  "analytics.biomass_gain": {
+    "en": "Total Biomass Gain",
+    "ny": "Kulemera Konse Kopezedwa"
+  },
+  "analytics.computes_desc": {
+    "en": "Computes biomass efficiency ratios and feed wastage metrics.",
+    "ny": "Imawerengera mulingo wa kulemera ndi kutayika kwa chakudya."
+  },
+  "analytics.cum_fcr": {
+    "en": "Cumulative FCR",
+    "ny": "Chakudya Chonse Cholowedwa (FCR)"
+  },
+  "analytics.fcr_trend": {
+    "en": "Cumulative Feed Conversion Ratio (FCR) Trend",
+    "ny": "Mlingo Wakukula Kwa Chakudya Ndi Kulemera (FCR)"
+  },
+  "analytics.fcr_trend_desc": {
+    "en": "Measures total feed consumed vs. total biomass gained over time.",
+    "ny": "Amayesa chakudya chonse chodyedwa ndi kulemera kwa gulu pa nthawi."
+  },
+  "analytics.no_batch_desc": {
+    "en": "Select a batch above to inspect cross-cohort analytics.",
+    "ny": "Sankhani gulu pamwambapa kuti mufufuze zowerengera zamagulu."
+  },
+  "analytics.target_fcr": {
+    "en": "Target standard FCR: 1.5 - 1.7",
+    "ny": "Mlingo woyenera (FCR): 1.5 - 1.7"
+  },
+  "audio.acoustic_library": {
+    "en": "Acoustic Samples Library",
+    "ny": "Laibulale Yosungira Mawu Oyeserera"
+  },
+  "audio.adjust": {
+    "en": "Adjust",
+    "ny": "Konzani"
+  },
+  "audio.calc_weight": {
+    "en": "Calculated via frequency weight",
+    "ny": "Powerengedwa kudzera kukula kwamawu"
+  },
+  "audio.capturing": {
+    "en": "Capturing telemetry vocalizations for real-time analysis.",
+    "ny": "Kujambula mawu amawonedwe owonera msanga."
+  },
+  "audio.chirp_desc": {
+    "en": "Adjust the distress probability limit for high-pitch thermal chirping.",
+    "ny": "Sinthani mulingo wa zotheka zamavuto pamawu atali otentha."
+  },
+  "audio.chirp_sensitivity": {
+    "en": "Thermal Chirp Sensitivity",
+    "ny": "Kukhudzidwa Kwamawu Atali (Kutentha)"
+  },
+  "audio.clinical_diag": {
+    "en": "Clinical Diagnostics & Action Plan",
+    "ny": "Zowunikira Zaukhondo & Ndondomeko Yochitapo Kanthu"
+  },
+  "audio.cough_desc": {
+    "en": "Lower values make the ML model more aggressive at flagging raspy gasps.",
+    "ny": "Manambala otsika amachititsa kuti ML model ipereke chidziwitso chakutsokomola pafupipafupi."
+  },
+  "audio.cough_sensitivity": {
+    "en": "Respiratory Cough Sensitivity",
+    "ny": "Kukhudzidwa kwa Chifuwa"
+  },
+  "audio.distress_prob": {
+    "en": "Distress Probability",
+    "ny": "Kutheka Kwa Mavuto"
+  },
+  "audio.distress_status": {
+    "en": "Distress Analysis Status:",
+    "ny": "Mkhalidwe Wakusanthula Zovuta:"
+  },
+  "audio.dominant_peak": {
+    "en": "Dominant Peak",
+    "ny": "Kutalika Kwamawu"
+  },
+  "audio.exc_threshold": {
+    "en": "Excitation threshold limit",
+    "ny": "Malire opanikiza"
+  },
+  "audio.flock_cohesion": {
+    "en": "Flock Cohesion",
+    "ny": "Kugwirizana Kwa Gulu"
+  },
+  "audio.listen_synthesized": {
+    "en": "Listen Synthesized",
+    "ny": "Mverani Opangidwa"
+  },
+  "audio.live_recording": {
+    "en": "Live Recording",
+    "ny": "Kujambula Mwachindunji"
+  },
+  "audio.management": {
+    "en": "Management Instructions",
+    "ny": "Malangizo Oyang'anira"
+  },
+  "audio.ml_settings": {
+    "en": "ML Classifier Settings",
+    "ny": "Zoikamo za Gulu La ML"
+  },
+  "audio.mute_sample": {
+    "en": "Mute Sample",
+    "ny": "Tsekani Mawu Oyeserera"
+  },
+  "audio.normal": {
+    "en": "Normal (No Pathogen Risk)",
+    "ny": "Zabwino (Palibe Chiwopsezo)"
+  },
+  "audio.offline_sync": {
+    "en": "Offline: Changes queued for sync",
+    "ny": "Opanda netiweki: Zosinthidwa zadikirira kugwirizana"
+  },
+  "audio.research_desc": {
+    "en": "This module plays synthesized acoustic distress indicators. Real-time microphone arrays and live FFT decibel readings are scheduled for Phase 2.",
+    "ny": "Dongosolo ili limasewera zizindikiro zosonyeza kuzunzika. Mayikolofoni apanthawi yeniyeni adzakonzedwa Mu Gawo Lachiwiri."
+  },
+  "audio.research_preview": {
+    "en": "Research Preview",
+    "ny": "Ndemanga Ya Kafukufuku"
+  },
+  "audio.research_stage": {
+    "en": "Research Stage Telemetry:",
+    "ny": "Gawo Loyeserera Kafukufuku:"
+  },
+  "audio.select_desc": {
+    "en": "Choose a profile from the library to play synthesized soundscapes, inspect the frequency spectrum, and view clinical recommendations.",
+    "ny": "Sankhani mbiri kuchokera kulaibulale kuti musewere mawu opangidwa, fufuzani pafupipafupi ndikuwona malangizo azaumoyo."
+  },
+  "audio.select_sample": {
+    "en": "Select an acoustic sample",
+    "ny": "Sankhani mawu oyeserera"
+  },
+  "audio.spatial_metrics": {
+    "en": "Spatial correlation metrics",
+    "ny": "Ziyeso za kulumikizana kwa malo"
+  },
+  "audio.spectral_sig": {
+    "en": "Spectral signature:",
+    "ny": "Chizindikiro chamawonedwe:"
+  },
+  "audio.voc_details": {
+    "en": "Vocalization Details",
+    "ny": "Tsatanetsatane ya Kumveka kwamawu"
+  },
+  "farm.access_role": {
+    "en": "Access Role",
+    "ny": "Udindo Wofikira"
+  },
+  "farm.add_desc": {
+    "en": "Enter the exact username of the registered user account you wish to authorize.",
+    "ny": "Lowetsani dzina logwiritsa ntchito lenileni la membala yemwe walembetsedwa kuti mumupatse chilolezo."
+  },
+  "farm.add_member": {
+    "en": "Add Farm Member",
+    "ny": "Onjezani Wogwira Ntchito Pamunda"
+  },
+  "farm.add_user": {
+    "en": "Add User",
+    "ny": "Onjezani Wogwiritsa"
+  },
+  "farm.auth_members": {
+    "en": "Authorized Members",
+    "ny": "Mamembala Ololedwa"
+  },
+  "farm.btn_create_farm": {
+    "en": "Create Farm",
+    "ny": "Pangani Famu"
+  },
+  "farm.cancel": {
+    "en": "Cancel",
+    "ny": "Letsani"
+  },
+  "farm.col_actions": {
+    "en": "Actions",
+    "ny": "Zochita"
+  },
+  "farm.col_full_name": {
+    "en": "Full Name",
+    "ny": "Dzina Lonse"
+  },
+  "farm.col_role": {
+    "en": "Role Permissions",
+    "ny": "Zilolezo Zaudindo"
+  },
+  "farm.col_user": {
+    "en": "User",
+    "ny": "Dzina Logwiritsa"
+  },
+  "farm.create_new": {
+    "en": "Create New Farm",
+    "ny": "Pangani Famu Yatsopano"
+  },
+  "farm.location_label": {
+    "en": "Location",
+    "ny": "Malo"
+  },
+  "farm.location_ph": {
+    "en": "e.g. Lusaka, Zambia",
+    "ny": "Mwachitsanzo. Lusaka, Zambia"
+  },
+  "farm.my_farms": {
+    "en": "My Farms",
+    "ny": "Mafamu Anga"
+  },
+  "farm.name_label": {
+    "en": "Farm Name",
+    "ny": "Dzina Lafamu"
+  },
+  "farm.name_ph": {
+    "en": "e.g. Prime Nest Poultry",
+    "ny": "Mwachitsanzo. Prime Nest Poultry"
+  },
+  "farm.new_farm_name": {
+    "en": "New farm name",
+    "ny": "Dzina latsopano lafamu"
+  },
+  "farm.no_actions": {
+    "en": "No actions",
+    "ny": "Palibe zochita"
+  },
+  "farm.no_active": {
+    "en": "no active farm",
+    "ny": "palibe famu yogwira ntchito"
+  },
+  "farm.no_location": {
+    "en": "No location set",
+    "ny": "Palibe malo okhazikitsidwa"
+  },
+  "farm.only_owners": {
+    "en": "Only owners can edit farm settings. (Your role:",
+    "ny": "Eni okha omwe angasinthe makanidwe afamu. (Udindo wanu:"
+  },
+  "farm.profile": {
+    "en": "Farm Profile",
+    "ny": "Mbiri Yafamu"
+  },
+  "farm.role_operator": {
+    "en": "Operator",
+    "ny": "Wogwiritsa Ntchito"
+  },
+  "farm.role_operator_desc": {
+    "en": "Operator (Log data, execute runs)",
+    "ny": "Wogwiritsa Ntchito (Lembani deta, gulu loyendetsa)"
+  },
+  "farm.role_owner_desc": {
+    "en": "Owner (Full admin privileges)",
+    "ny": "Mwini (Zilolezo zonse zoyang'anira)"
+  },
+  "farm.role_viewer_desc": {
+    "en": "Viewer (Read-only data access)",
+    "ny": "Wowonera (Kungowerenga deta)"
+  },
+  "farm.save_details": {
+    "en": "Save Details",
+    "ny": "Sungani Zambiri"
+  },
+  "farm.username": {
+    "en": "Username",
+    "ny": "Dzina Logwiritsa"
+  },
+  "farm.username_ph": {
+    "en": "e.g. operator_john",
+    "ny": "Mwachitsanzo. operator_john"
+  },
+  "farm.you": {
+    "en": "You",
+    "ny": "Inu"
+  },
+  "login.alerts": {
+    "en": "Smart Alerts",
+    "ny": "Zidziwitso Zanzeru"
+  },
+  "login.alerts_desc": {
+    "en": "Rule-based & AI-driven health & environment alerts",
+    "ny": "Zidziwitso zaumoyo ndi chilengedwe zoyendetsedwa ndi AI"
+  },
+  "login.already_have": {
+    "en": "Already have an account?",
+    "ny": "Muli ndi akaunti kale?"
+  },
+  "login.authenticating": {
+    "en": "Authenticating…",
+    "ny": "Kutsimikizira…"
+  },
+  "login.badge": {
+    "en": "Next-Gen AgriTech Platform",
+    "ny": "Pulatifomu Yaulimi Yamakono"
+  },
+  "login.bioacoustic": {
+    "en": "Bioacoustic Insights",
+    "ny": "Zidziwitso Zamawu"
+  },
+  "login.bioacoustic_desc": {
+    "en": "Early respiratory stress & audio anomaly detection",
+    "ny": "Kuzindikira msanga kupsinjika kwa kupuma ndi mavuto amamvekedwe"
+  },
+  "login.btn_create": {
+    "en": "Create Account",
+    "ny": "Pangani Akaunti"
+  },
+  "login.btn_signin": {
+    "en": "Sign In",
+    "ny": "Lowani"
+  },
+  "login.create_account": {
+    "en": "Create account",
+    "ny": "Pangani akaunti"
+  },
+  "login.creating": {
+    "en": "Creating account…",
+    "ny": "Kupanga akaunti…"
+  },
+  "login.demo_account": {
+    "en": "Demo Account",
+    "ny": "Akaunti Yoyeserera"
+  },
+  "login.demo_desc": {
+    "en": "Use",
+    "ny": "Gwiritsani ntchito"
+  },
+  "login.dont_have": {
+    "en": "Don't have an account?",
+    "ny": "Mulibe akaunti?"
+  },
+  "login.fcr": {
+    "en": "FCR",
+    "ny": "FCR"
+  },
+  "login.flock": {
+    "en": "Flock",
+    "ny": "Nkhuku"
+  },
+  "login.forgot_pwd": {
+    "en": "Forgot password?",
+    "ny": "Mwayiwala mawu achinsinsi?"
+  },
+  "login.full_name": {
+    "en": "Full Name",
+    "ny": "Dzina Lonse"
+  },
+  "login.full_name_ph": {
+    "en": "Enter your full name",
+    "ny": "Lowetsani dzina lanu lonse"
+  },
+  "login.growth": {
+    "en": "Growth Analytics",
+    "ny": "Kusanthula Kukula"
+  },
+  "login.growth_desc": {
+    "en": "FCR tracking, weight benchmarks & batch comparisons",
+    "ny": "Kutsata FCR, miyezo ya kulemera & kuyerekeza magulu"
+  },
+  "login.hero_desc": {
+    "en": "Real-time telemetry, YOLOv8 flock counting, bioacoustic health scoring, and predictive alerts — all in one platform.",
+    "ny": "Kuwunika kwanthawi yomweyo, kuwerenga nkhuku pogwiritsa ntchito YOLOv8, mayeso azaumoyo a mawu, ndi zidziwitso zodziwikiratu - zonse pamalo amodzi."
+  },
+  "login.live": {
+    "en": "Live",
+    "ny": "Panopa"
+  },
+  "login.or_continue": {
+    "en": "Or continue with",
+    "ny": "Kapena pitilizani ndi"
+  },
+  "login.password_ph": {
+    "en": "Enter your password",
+    "ny": "Lowetsani mawu anu achinsinsi"
+  },
+  "login.redirecting": {
+    "en": "Redirecting…",
+    "ny": "Kutsegula…"
+  },
+  "login.register_desc": {
+    "en": "Register a new operator account",
+    "ny": "Lembetsani akaunti yatsopano yogwiritsa ntchito"
+  },
+  "login.remember_device": {
+    "en": "Remember device",
+    "ny": "Kumbukirani chipangizochi"
+  },
+  "login.rh": {
+    "en": "RH",
+    "ny": "RH"
+  },
+  "login.shed": {
+    "en": "Shed",
+    "ny": "Kola"
+  },
+  "login.sign_in_link": {
+    "en": "Sign in",
+    "ny": "Lowani"
+  },
+  "login.sign_up_link": {
+    "en": "Sign up",
+    "ny": "Lembetsani"
+  },
+  "login.signin_desc": {
+    "en": "Sign in to your operator dashboard",
+    "ny": "Lowani m'gulu lanu lowonera zafamu"
+  },
+  "login.title_1": {
+    "en": "Precision Poultry",
+    "ny": "Ulimi Wa Nkhuku Waluso"
+  },
+  "login.title_2": {
+    "en": "Driven by AI",
+    "ny": "Woyendetsedwa Ndi AI"
+  },
+  "login.username": {
+    "en": "Username",
+    "ny": "Dzina Logwiritsa"
+  },
+  "login.username_ph": {
+    "en": "Choose a username",
+    "ny": "Sankhani dzina logwiritsa"
+  },
+  "login.welcome_back": {
+    "en": "Welcome back",
+    "ny": "Takulandirani"
+  },
+  "login.yolo": {
+    "en": "YOLOv8 Telemetry",
+    "ny": "Kuwunika kwa YOLOv8"
+  },
+  "login.yolo_desc": {
+    "en": "Real-time flock visual counts & movement analysis",
+    "ny": "Kuwerenga nkhuku pakuwona ndi kusanthula mayendedwe nthawi yomweyo"
+  }
+}
