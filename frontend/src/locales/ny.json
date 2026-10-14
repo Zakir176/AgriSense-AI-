@@ -365,6 +365,8 @@
     "pending_note": "Ikuyembekezera cholemba chotsatira…",
     "edit_log": "Sinthani Cholemba Chamankhwala",
     "log_vaccine": "Lembani Katemera & Mankhwala",
+    "edit": "Sinthani",
+    "delete": "Fufutani",
     "admin_date": "Tsiku Lopereka Mankhwala",
     "med_name": "Dzina Lamankhwala / Chithandizo",
     "dosage_inst": "Malangizo Amulingo",
@@ -490,30 +492,76 @@
     "prev": "Chambuyo",
     "finish": "Malizitsani",
     "restart": "Yambitsanso Ulendo Ofotokoza",
-    "step1_title": "Takulandirani ku AgriSense AI!",
-    "step1_content": "Gawoli likuwonetsa malo anu a famu yomwe ikugwira ntchito komanso mulingo wanu wovomerezeka wopeza chidziwitso. Kusintha mafamu kumatsitsimutsa deta yonse ya bodi yowonera ndi zowerengera za AI.",
-    "step2_title": "Njira Yogwirizanitsira Popanda Intaneti",
-    "step2_content": "Yopangidwa kwa mafamu akutali, pulogalamuyi imasunga deta mu IndexedDB mukaduka pa intaneti. Mzere wonyezimira udzatseguka apa kuti mugwirizanitse deta yonse mukalolera intaneti.",
-    "step3_title": "Mzere wa Zidziwitso Zadzidzidzi",
-    "step3_content": "Zolakwika zofunika monga kusiyana kwa chiwerengero cha nkhuku zoyerekezedwa ndi YOLO, zidziwitso za phokoso za nkhuku, kapena imfa zambiri zimawonekera pano kuti mlimi achitepo kanthu mwachangu.",
-    "step4_title": "Zolumikizira Mwamsanga za Ntchito",
-    "step4_content": "Gwiritsani ntchito njira zazifupizi kuti mulembe chakudya chomwe chadyedwa, kulemera kwa nkhuku, kutsegula mavidiyo a live a makamera, kapena kuona mankhwala a nkhuku.",
-    "step5_title": "Chakudya ndi Madzi",
-    "step5_content": "Dinani apa kuti mupite ku bukhu lolemba zolembedwa tsiku ndi tsiku ndikuwona ma chati ogwiritsa ntchito chakudya ndi madzi.",
-    "step6_title": "Zochitika za Tsiku ndi Tsiku ndi Kutumiza",
-    "step6_content": "Patebuloli, mutha kutumiza mafayilo a Excel a CSV kapena kutsegula mabukhu a PDF osindikizidwa kuti musindikize ndikupachika pamakoma a nkhuku.",
-    "step7_title": "Umoyo wa Nkhuku ndi Mankhwala",
-    "step7_content": "Tiyeni tiwone gawo la Umoyo wa Nkhuku, lomwe lili ndi mbiri ya mankhwala ndi zida zokonzera ndondomeko ya mlingo.",
-    "step8_title": "Kalendala Yamankhwala Yolumikizana",
-    "step8_content": "Pano mutha kukonzeratu katemera komanso mavitamini a nkhuku m'tsogolo. Pulogalamu idzakutumizirani zikumbutso za msakatuli mankhwala akafika tsiku lake.",
-    "step9_title": "Kuwunika kwa YOLOv8 AI",
-    "step9_content": "Tsopano tiyeni tisinthe kupita ku gawo la makamera a AI kuti tiwone momwe timatsatira gulu la nkhuku.",
-    "step10_title": "Kuwonera Live kwa Makamera",
-    "step10_content": "Pano mutha kuwona mavidiyo a live. Bounding boxes amatsata ma ID a nkhuku, kupereka zidziwitso za kubundikira, ndikuwerengera chiwerengero cha nkhuku m'nthawi yeniyeni.",
-    "step11_title": "Kusanthula Mawu a Nkhuku",
-    "step11_content": "Pomaliza, tiyeni tisinthe kupita ku kusanthula mawu apamwamba a phokoso kuti tuzindikire matenda msanga.",
-    "step12_title": "Kuzindikira Mawu a Nkhuku",
-    "step12_content": "Lumikizani maikolofoni yanu ya kompyuta kapena foni kuti mujambule phokoso la nkhuku. Dongosolo lathu litsanthula phokoso kuti lizindikire mavuto a kupuma (kuyatsimula/kutsokomola) kapena kupsinjika kwa nkhuku."
+    "aria_label": "Ulendo wofotokoza wa AgriSense AI",
+    "step_of": "Gawo {current} mwa {total}",
+    "start": "Tiyambe",
+    "completed": "Ulendo wa famu watha! Mutha kuubwereza nthawi iliyonse kuchokera pa sidebar.",
+    "steps": {
+      "welcome": {
+        "title": "Takulandirani ku AgriSense AI",
+        "content": "Onani mwachidule zonse zomwe zili pa bodi ya famu yanu: kuwunika, umoyo wa nkhuku, makamera a AI, mawu, ndalama ndi zosintha. Gwiritsani ntchito mivi kapena mabatani, ndipo Esc kuti mutuluke."
+      },
+      "role": {
+        "title": "Famu Yanu ndi Udindo Wanu",
+        "content": "Apa pakuwonetsa famu yomwe mukugwiritsa ntchito ndi mulingo wanu wopeza chidziwitso. Ngati muli ndi mafamu opitilira umodzi, sinthani pogwiritsa ntchito chosankhira famu, ndipo masamba onse adzatsitsimutsidwa."
+      },
+      "toolbar": {
+        "title": "Zida za Pamwamba",
+        "content": "Zidziwitso zadzidzidzi, mtundu wa kuwala/mdima, chilankhulo cha Chingerezi kapena Chichewa, mawu okuthandizani pa zikumbutso za mankhwala, ndi chizindikiro cha kugwirizanitsa popanda intaneti zili pano."
+      },
+      "sidebar": {
+        "title": "Menyu Yoyendera",
+        "content": "Gawo lililonse lili pafupi: Dashboard, Magulu, Chakudya ndi Madzi, Kukula, Mankhwala, AI, Mawu, Zowerengera, Ndalama ndi Zosintha. Pa kompyuta mutha kuchepetsa; pa foni imatsegulidwa ndi batani la menyu."
+      },
+      "alerts": {
+        "title": "Zidziwitso Zogwira Ntchito",
+        "content": "Zochitika zofunika monga kuchepa kwa chiwerengero cha nkhuku, phokoso la mavuto, imfa zambiri kapena mankhwala achedwa zimawonekera apa poyamba kuti muchitepo kanthu mwachangu."
+      },
+      "quicklinks": {
+        "title": "Njira Zazifupi",
+        "content": "Njira zazifupi za ntchito za tsiku ndi tsiku: lembani chakudya ndi madzi, kulemera kwa nkhuku, tsegulani makamera a live ndi kuona mankhwala."
+      },
+      "batches": {
+        "title": "Magulu a Nkhuku",
+        "content": "Lembani gulu lililonse la nkhuku ndi mtundu, tsiku loyika ndi chiwerengero. Zolembedwa zonse, kulemera, mankhwala ndi ndalama zimatsatiridwa ndi gulu lomwe mwasankha."
+      },
+      "feed": {
+        "title": "Zolemba za Chakudya ndi Madzi",
+        "content": "Lembani zomwe zadyedwa tsiku ndi tsiku ndikuwona momwe zikuyendera. Tumizani mafayilo a CSV kapena PDF yosindikiza. Zolembedwa popanda intaneti zimagwirizanitsidwa zokha mukalumikizanso."
+      },
+      "growth": {
+        "title": "Kukula kwa Nkhuku",
+        "content": "Lembani kulemera kwa nkhuku ndikuyerekeza kukula kwa gulu lanu ndi cholinga cha mtundu wake, kuti muzindikire mavuto msanga ndikukonza chakudya."
+      },
+      "meds": {
+        "title": "Kalendala ya Mankhwala",
+        "content": "Konzani katemera, mankhwala ndi zowonjezera pogwiritsa ntchito zitsanzo zofulumira. Mudzalandira zikumbutso, mawu a chikumbutso, ndi chikwangwani mankhwala akafika."
+      },
+      "ai": {
+        "title": "Kuwunika kwa AI Pavidiyo",
+        "content": "Lumikizani kamera (kuphatikiza Dahua IP) kapena kwezani mavidiyo. YOLOv8 imawerenga nkhuku, kuzitsata, ndikuzindikira kubundikira kapena khalidwe lachilendo nthawi yomweyo."
+      },
+      "audio": {
+        "title": "Kusanthula Mawu a Nkhuku",
+        "content": "Jambulani mawu a khola ndi maikolofoni. Dongosolo limamvetsera kutsokomola, kuyatsimula ndi mawu a mavuto kuti matenda a kupuma adziwike asanafalikire."
+      },
+      "analytics": {
+        "title": "Zowerengera ndi Malipoti",
+        "content": "Onani momwe chakudya chikusinthira kukhala kulemera, imfa, kukula ndi momwe magulu akugwirira ntchito ndi ma chati osavuta kuyerekeza."
+      },
+      "financial": {
+        "title": "Nzeru za Ndalama",
+        "content": "Tsatirani ndalama zolowa ndi zotuluka, onani phindu pa gulu lililonse, ndipo gwiritsani ntchito kuyerekeza ndalama kukonza malonda. Lipoti la PDF lili pafupi."
+      },
+      "settings": {
+        "title": "Zosintha za Famu",
+        "content": "Sinthani zambiri za famu, malo ndi mwayi wa gulu lanu pano."
+      },
+      "done": {
+        "title": "Mwakonzeka!",
+        "content": "Famu yonse ili pamalo amodzi. Mutha kubwereza ulendo uwu nthawi iliyonse ndi batani la \"Yambitsanso Ulendo Ofotokoza\" pansi pa sidebar."
+      }
+    }
   },
   "sync": {
     "title": "Woyang'anira Kugwirizanitsa",
