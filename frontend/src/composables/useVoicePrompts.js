@@ -40,6 +40,17 @@ export function useVoicePrompts() {
         utterance.lang = selectedVoice ? selectedVoice.lang : 'ny-MW'
         utterance.rate = 0.88 // Slightly slower for clear regional pronunciation
         utterance.pitch = 1.0
+      } else if (currentLang === 'bem') {
+        // Try finding Bemba voice, fallback to Zambian English / Swahili / Bantu voice
+        selectedVoice = voices.find(v =>
+          v.lang.startsWith('bem') ||
+          v.lang.startsWith('en-ZM') ||
+          v.lang.startsWith('sw') ||
+          (v.name && v.name.toLowerCase().includes('bemba'))
+        )
+        utterance.lang = selectedVoice ? selectedVoice.lang : 'en-ZM'
+        utterance.rate = 0.88
+        utterance.pitch = 1.0
       } else {
         selectedVoice = voices.find(v => v.lang.startsWith('en'))
         utterance.lang = selectedVoice ? selectedVoice.lang : 'en-US'
