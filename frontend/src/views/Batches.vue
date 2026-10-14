@@ -112,45 +112,45 @@
               class="border-t border-gray-150 dark:border-gray-800/80 bg-gray-50/50 dark:bg-darkbg-100/30 px-6 py-4 overflow-hidden transition-all duration-200"
             >
               <div class="flex items-center justify-between mb-3">
-                <p class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Flock Inventory & Audit Ledger</p>
+                <p class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">{{ $t('inventory.title') }}</p>
                 <AgriButton
                   variant="outline"
                   size="sm"
                   icon="edit_note"
                   @click="openInventoryModal(batch)"
-                >Adjust Inventory</AgriButton>
+                >{{ $t('inventory.adjust_inventory') }}</AgriButton>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold text-gray-600 dark:text-gray-450">
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Live Flock Count</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('inventory.live_flock_count') }}</p>
                   <p class="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                    {{ inventorySummaries[batch.id]?.current_live_count ?? batch.bird_count }} head
+                    {{ inventorySummaries[batch.id]?.current_live_count ?? batch.bird_count }} {{ $t('common.head') }}
                   </p>
                 </div>
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Total Mortality</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('inventory.total_mortality') }}</p>
                   <p class="text-sm font-bold text-red-500">
-                    {{ inventorySummaries[batch.id]?.total_mortality ?? 0 }} birds
+                    {{ inventorySummaries[batch.id]?.total_mortality ?? 0 }} {{ $t('common.birds') }}
                   </p>
                 </div>
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Total Sales / Harvested</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('inventory.total_sales') }}</p>
                   <p class="text-sm font-bold text-blue-500">
-                    {{ inventorySummaries[batch.id]?.total_sales ?? 0 }} birds
+                    {{ inventorySummaries[batch.id]?.total_sales ?? 0 }} {{ $t('common.birds') }}
                   </p>
                 </div>
                 <div class="bg-white dark:bg-darkbg-50 p-3 rounded-xl border border-gray-200/60 dark:border-gray-800">
-                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">Culls / Corrections</p>
+                  <p class="text-gray-400 dark:text-gray-500 uppercase text-[10px] tracking-wide mb-1">{{ $t('inventory.culls_corrections') }}</p>
                   <p class="text-sm font-bold text-gray-800 dark:text-gray-200">
-                    {{ (inventorySummaries[batch.id]?.total_culls || 0) + (inventorySummaries[batch.id]?.total_corrections || 0) }} birds
+                    {{ (inventorySummaries[batch.id]?.total_culls || 0) + (inventorySummaries[batch.id]?.total_corrections || 0) }} {{ $t('common.birds') }}
                   </p>
                 </div>
               </div>
 
               <!-- Inventory Ledger History Stream -->
               <div v-if="inventorySummaries[batch.id]?.history?.length" class="mt-3 pt-3 border-t border-gray-200/60 dark:border-gray-800">
-                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">Recent Inventory Adjustments</p>
+                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">{{ $t('inventory.recent_adjustments') }}</p>
                 <div class="space-y-1.5 max-h-40 overflow-y-auto">
                   <div
                     v-for="adj in inventorySummaries[batch.id].history.slice(0, 5)"
@@ -162,7 +162,7 @@
                         :class="adj.quantity_delta < 0 ? 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'">
                         {{ adj.adjustment_type }}
                       </span>
-                      <span class="text-gray-700 dark:text-gray-300 font-medium">{{ adj.notes || 'No description' }}</span>
+                      <span class="text-gray-700 dark:text-gray-300 font-medium">{{ adj.notes || $t('inventory.no_description') }}</span>
                     </div>
                     <div class="flex items-center gap-3">
                       <span class="font-mono font-bold" :class="adj.quantity_delta < 0 ? 'text-red-500' : 'text-emerald-500'">
