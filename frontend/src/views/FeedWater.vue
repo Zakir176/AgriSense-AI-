@@ -130,7 +130,7 @@
             <button
               @click="exportCSV"
               class="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-darkbg-100 rounded-lg border border-gray-250 dark:border-gray-800 transition-all shadow-sm shrink-0 whitespace-nowrap"
-              title="Download CSV"
+              :title="$t('common.download_csv')"
             >
               <span class="material-icons-outlined text-sm">download</span>
               <span>{{ $t('feed.export_csv') }}</span>
@@ -138,7 +138,7 @@
             <button
               @click="printLedger"
               class="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-darkbg-100 rounded-lg border border-gray-250 dark:border-gray-800 transition-all shadow-sm shrink-0 whitespace-nowrap"
-              title="Print PDF Report"
+              :title="$t('common.download_pdf')"
             >
               <span class="material-icons-outlined text-sm">print</span>
               <span>{{ $t('feed.print_ledger') }}</span>
@@ -182,17 +182,17 @@
                 :icon="item.flagged_abnormal ? 'warning' : 'check'"
                 :pulse="item.flagged_abnormal"
               >
-                {{ item.flagged_abnormal ? 'Flagged' : 'Normal' }}
+                {{ item.flagged_abnormal ? $t('dashboard.flagged') : $t('dashboard.normal') }}
               </AgriBadge>
             </div>
           </template>
 
           <template #actions="{ item }">
             <div class="flex justify-end gap-3">
-              <button @click="editReading(item)" class="text-gray-400 hover:text-primary-500 transition-colors" title="Edit">
+              <button @click="editReading(item)" class="text-gray-400 hover:text-primary-500 transition-colors" :title="$t('common.edit')">
                 <span class="material-icons-outlined text-[16px] block">edit</span>
               </button>
-              <button @click="deleteReading(item.id)" class="text-gray-400 hover:text-red-500 transition-colors" title="Delete">
+              <button @click="deleteReading(item.id)" class="text-gray-400 hover:text-red-500 transition-colors" :title="$t('common.delete')">
                 <span class="material-icons-outlined text-[16px] block">delete_outline</span>
               </button>
             </div>
@@ -224,7 +224,7 @@
             type="number"
             step="0.1"
             min="0"
-            label="Feed (kg)"
+            :label="$t('feed.feed_kg')"
             required
             placeholder="e.g. 125"
             icon="restaurant"
@@ -235,7 +235,7 @@
             type="number"
             step="0.1"
             min="0"
-            label="Water (L)"
+            :label="$t('feed.water_l')"
             required
             placeholder="e.g. 210"
             icon="water_drop"

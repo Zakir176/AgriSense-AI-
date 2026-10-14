@@ -26,10 +26,10 @@
           size="sm"
           :disabled="samples.length === 0"
           @click="exportCSV"
-          title="Download CSV"
+          :title="$t('common.download_csv')"
         >
           <span class="material-icons-outlined text-sm">download</span>
-          <span>Export CSV</span>
+          <span>{{ $t('common.export_csv') }}</span>
         </AgriButton>
         <AgriButton
           variant="primary"
@@ -173,10 +173,10 @@
 
           <template #actions="{ item }">
             <div class="flex justify-end gap-3">
-              <button @click="editSample(item)" class="text-gray-400 hover:text-primary-500 transition-colors" title="Edit">
+              <button @click="editSample(item)" class="text-gray-400 hover:text-primary-500 transition-colors" :title="$t('common.edit')">
                 <span class="material-icons-outlined text-[16px] block">edit</span>
               </button>
-              <button @click="deleteSample(item.id)" class="text-gray-400 hover:text-red-500 transition-colors" title="Delete">
+              <button @click="deleteSample(item.id)" class="text-gray-400 hover:text-red-500 transition-colors" :title="$t('common.delete')">
                 <span class="material-icons-outlined text-[16px] block">delete_outline</span>
               </button>
             </div>

@@ -27,11 +27,11 @@
           icon="picture_as_pdf"
           :disabled="!store.activeBatch || reportExporting"
           @click="downloadFarmReport"
-          title="Download Full Farm Report"
+          :title="$t('dashboard.download_report')"
         >
           <span v-if="reportExporting" class="material-icons-outlined text-sm mr-1 animate-spin">refresh</span>
           <span v-else class="material-icons-outlined text-sm mr-1 text-red-500">picture_as_pdf</span>
-          {{ reportExporting ? 'Generating...' : 'Farm Report' }}
+          {{ reportExporting ? ($t('common.generating') || 'Generating...') : ($t('dashboard.download_report') || 'Farm Report') }}
         </AgriButton>
         <AgriButton
           variant="outline"

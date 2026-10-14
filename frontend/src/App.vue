@@ -230,9 +230,10 @@
                 <span class="material-icons-outlined text-lg">language</span>
                 <span class="text-xs font-bold ml-1 uppercase">{{ $i18n.locale }}</span>
               </button>
-              <div v-if="showLanguageDropdown" class="absolute right-0 mt-2 w-32 bg-white dark:bg-darkbg-50 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden z-50">
-                <button @click="changeLanguage('en')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'en' }">English</button>
-                <button @click="changeLanguage('ny')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'ny' }">Chichewa (Nyanja)</button>
+              <div v-if="showLanguageDropdown" class="absolute right-0 mt-2 w-44 bg-white dark:bg-darkbg-50 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden z-50">
+                <button @click="changeLanguage('en')" class="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'en' }">English</button>
+                <button @click="changeLanguage('ny')" class="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'ny' }">Chichewa (Nyanja)</button>
+                <button @click="changeLanguage('bem')" class="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-darkbg-100 transition text-gray-800 dark:text-gray-200" :class="{ 'font-bold text-primary-600': $i18n.locale === 'bem' }">Ichibemba (Bemba)</button>
               </div>
             </div>
 
@@ -245,7 +246,7 @@
                   ? 'bg-primary-50 text-primary-600 dark:bg-primary-950/40 dark:text-primary-400 border border-primary-200/50 dark:border-primary-900/50' 
                   : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800/60 border border-transparent'
               ]"
-              :title="voiceEnabled ? $t('reminders.voice_enabled') : 'Enable Audio Voice Guidance'"
+              :title="voiceEnabled ? $t('reminders.voice_enabled') : $t('common.enable_voice')"
               aria-label="Toggle Audio Voice Guidance"
             >
               <span class="material-icons-outlined text-lg block" :class="{ 'animate-pulse text-emerald-500': isSpeaking }">

@@ -26,10 +26,10 @@
           size="sm"
           :disabled="entries.length === 0"
           @click="exportCSV"
-          title="Download CSV"
+          :title="$t('common.download_csv')"
         >
           <span class="material-icons-outlined text-sm">download</span>
-          <span>Export CSV</span>
+          <span>{{ $t('common.export_csv') }}</span>
         </AgriButton>
         <AgriButton
           variant="primary"

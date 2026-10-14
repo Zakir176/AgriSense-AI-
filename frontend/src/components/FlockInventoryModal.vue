@@ -1,16 +1,16 @@
 <template>
   <AgriModal
     :show="show"
-    title="Log Flock Inventory Adjustment"
+    :title="$t('inventory.modal_title')"
     @close="$emit('close')"
   >
     <form @submit.prevent="handleSubmit" class="space-y-4">
       <div>
-        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Adjustment Type</label>
+        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('inventory.adjustment_type') }}</label>
         <AgriSelect
           v-model="form.adjustment_type"
           :options="typeOptions"
-          placeholder="Select reason..."
+          :placeholder="$t('inventory.select_reason')"
         />
       </div>
 
@@ -18,7 +18,7 @@
         <AgriInput
           v-model.number="form.quantity"
           type="number"
-          label="Quantity (Head Count)"
+          :label="$t('inventory.quantity')"
           required
           min="1"
           placeholder="e.g. 15"
@@ -27,7 +27,7 @@
         <AgriInput
           v-model="form.date"
           type="date"
-          label="Event Date"
+          :label="$t('inventory.event_date')"
           required
           icon="calendar_today"
         />
@@ -38,7 +38,7 @@
         <AgriInput
           v-model.number="form.unit_price_zmw"
           type="number"
-          label="Price per Bird (ZMW)"
+          :label="$t('inventory.price_per_bird')"
           min="0"
           step="0.01"
           placeholder="e.g. 85.00"
@@ -47,7 +47,7 @@
         <AgriInput
           v-model="form.buyer_name"
           type="text"
-          label="Buyer Name (Optional)"
+          :label="$t('inventory.buyer_name')"
           placeholder="e.g. Shoprite Lusaka"
           icon="person"
         />
@@ -58,16 +58,16 @@
         v-if="form.adjustment_type === 'sale' && form.unit_price_zmw && form.quantity"
         class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 px-3.5 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/30"
       >
-        💰 Sale Total: ZMW {{ (form.quantity * form.unit_price_zmw).toFixed(2) }}
+        💰 {{ $t('inventory.sale_total') }}: ZMW {{ (form.quantity * form.unit_price_zmw).toFixed(2) }}
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Notes / Reason Details</label>
+        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('inventory.notes_label') }}</label>
         <textarea
           v-model="form.notes"
           rows="3"
           class="w-full text-xs rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-darkbg-100 p-3 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-primary-500 focus:outline-none transition"
-          placeholder="e.g. Sold 20 birds to local restaurant, or Culled due to leg abnormality"
+          :placeholder="$t('inventory.notes_placeholder')"
         ></textarea>
       </div>
 
@@ -81,24 +81,27 @@
           variant="outline"
           class="flex-1"
           @click="$emit('close')"
-        >Cancel</AgriButton>
+        >{{ $t('common.cancel') }}</AgriButton>
         <AgriButton
           type="submit"
           variant="primary"
           class="flex-1"
           :loading="isSubmitting"
-        >Submit Adjustment</AgriButton>
+        >{{ $t('inventory.submit_adjustment') }}</AgriButton>
       </div>
     </form>
   </AgriModal>
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AgriModal from './ui/AgriModal.vue'
 import AgriInput from './ui/AgriInput.vue'
 import AgriButton from './ui/AgriButton.vue'
 import AgriSelect from './ui/AgriSelect.vue'
+
+const { t } = useI18n()
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -110,13 +113,13 @@ const emit = defineEmits(['close', 'success'])
 const isSubmitting = ref(false)
 const errorMsg = ref('')
 
-const typeOptions = [
-  { value: 'sale', label: 'Sale (Market Harvest / Sold)' },
-  { value: 'cull', label: 'Cull (Selective Removal)' },
-  { value: 'mortality', label: 'Mortality (Unrecorded Death)' },
-  { value: 'addition', label: 'Addition (Flock Restock)' },
-  { value: 'correction', label: 'Correction (Inventory Count Adjustment)' }
-]
+const typeOptions = computed(() => [
+  { value: 'sale', label: t('inventory.type_sale') },
+  { value: 'cull', label: t('inventory.type_cull') },
+  { value: 'mortality', label: t('inventory.type_mortality') },
+  { value: 'addition', label: t('inventory.type_addition') },
+  { value: 'correction', label: t('inventory.type_correction') }
+])
 
 const form = reactive({
   adjustment_type: 'sale',

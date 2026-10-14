@@ -22,7 +22,7 @@
 
           <!-- Subtle tagline -->
           <p class="text-xs text-gray-400 dark:text-gray-500 tracking-widest uppercase font-medium">
-            Loading your farm...
+            {{ $t('landing.loading_farm') }}
           </p>
         </div>
       </div>
@@ -38,9 +38,9 @@
       </div>
 
       <nav class="hidden md:flex items-center space-x-8 text-sm font-semibold text-gray-550 dark:text-gray-400">
-        <a href="#features" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Key Features</a>
-        <a href="#demo" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Live Simulation</a>
-        <a href="#about" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Our Impact</a>
+        <a href="#features" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ $t('landing.key_features') }}</a>
+        <a href="#demo" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ $t('landing.live_sim') }}</a>
+        <a href="#about" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ $t('landing.our_impact') }}</a>
       </nav>
 
       <div class="flex items-center space-x-4">
