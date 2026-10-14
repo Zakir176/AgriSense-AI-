@@ -365,6 +365,8 @@
     "pending_note": "Pending outcome note…",
     "edit_log": "Edit Medical Log",
     "log_vaccine": "Log Vaccine & Medication",
+    "edit": "Edit",
+    "delete": "Delete",
     "admin_date": "Administration Date",
     "med_name": "Medicine / Treatment Name",
     "dosage_inst": "Dosage Instruction",
@@ -490,30 +492,76 @@
     "prev": "Previous",
     "finish": "Finish",
     "restart": "Restart Tour Guide",
-    "step1_title": "Welcome to AgriSense AI!",
-    "step1_content": "This panel shows your current active farm site and your authorized user access role level. Changing farms instantly reloads all dashboard analytics and AI feeds.",
-    "step2_title": "Offline Sync Engine",
-    "step2_content": "Built for remote farms, the app caches data in IndexedDB when you lose connection. A glowing Sync Drawer will appear here allowing you to force-sync queued telemetry once back online.",
-    "step3_title": "Active Alerts Queue",
-    "step3_content": "Critical anomalies like missing bird count disparities from YOLO scans, acoustic distress alerts, or high mortality triggers show up here for immediate operator response.",
-    "step4_title": "Operations Quick Links",
-    "step4_content": "Use these shortcuts to log feed consumption, record weight samples, open live camera streams, or view clinical medication tables.",
-    "step5_title": "Feed & Water Telemetry",
-    "step5_content": "Click here to navigate to the daily logs ledger and view aggregated consumption charts.",
-    "step6_title": "Daily Reports & Exporting",
-    "step6_content": "In this table, you can export Excel-friendly CSV spreadsheets or open paper-optimized PDF ledgers to print and post on coop walls.",
-    "step7_title": "Flock Health & Medication",
-    "step7_content": "Let's explore the Flock Health module, which contains clinical logs and treatment planning tools.",
-    "step8_title": "Interactive Treatment Calendar",
-    "step8_content": "Here you can proactively schedule future vaccinations and vitamin cycles. The system will send browser push notifications when a treatment is due.",
-    "step9_title": "YOLOv8 Vision Feed",
-    "step9_content": "Now let's switch to the AI Visual Monitor to see how we track the flock.",
-    "step10_title": "Live Camera Feed",
-    "step10_content": "Here you can monitor live streams. Bounding box overlays track node IDs, huddling alerts, and estimate chicken populations in real-time.",
-    "step11_title": "Bioacoustic Insights",
-    "step11_content": "Finally, let's explore our advanced sound analytics for early disease detection.",
-    "step12_title": "Audio Telemetry Classifier",
-    "step12_content": "Connect your local microphone to capture ambient noise. Our heuristic classifier analyzes spectral centroids to detect respiratory distress (sneezing/coughing) or environmental stress (loud chirping)."
+    "aria_label": "AgriSense AI guided tour",
+    "step_of": "Step {current} of {total}",
+    "start": "Let's go",
+    "completed": "Farm tour complete! You can replay it anytime from the sidebar.",
+    "steps": {
+      "welcome": {
+        "title": "Welcome to AgriSense AI",
+        "content": "Take a 2-minute tour of everything on your farm dashboard: monitoring, health, AI vision, audio, finance and settings. Use the arrow keys or the buttons to move around, and Esc to exit."
+      },
+      "role": {
+        "title": "Your Farm & Role",
+        "content": "This shows the active farm and your access level. If you manage more than one farm, switch between them from the farm selector in the header, and every page reloads for that site."
+      },
+      "toolbar": {
+        "title": "Header Toolbar",
+        "content": "Notifications for critical alerts, dark/light theme, English or Chichewa language, audio voice guidance for treatment reminders, and the offline sync indicator all live here."
+      },
+      "sidebar": {
+        "title": "Navigation Menu",
+        "content": "Every module is one tap away: Dashboard, Batches, Feed & Water, Growth, Medications, AI Monitor, Audio, Analytics, Financial and Settings. Collapse it on desktop for more room; on phones it opens from the menu button."
+      },
+      "alerts": {
+        "title": "Active Alerts",
+        "content": "Critical events such as bird count drops, acoustic distress, high mortality or overdue treatments appear here first, so you can act right away."
+      },
+      "quicklinks": {
+        "title": "Quick Actions",
+        "content": "Shortcuts for the jobs you do every day: log feed and water, record weight samples, open live cameras and review treatments."
+      },
+      "batches": {
+        "title": "Flock Batches",
+        "content": "Register each flock as a batch with its breed, placement date and bird count. Every reading, weight, treatment and cost across the app is tracked against the batch you select."
+      },
+      "feed": {
+        "title": "Feed & Water Logs",
+        "content": "Record daily consumption and review trends. Export Excel-friendly CSV files or print-ready PDF ledgers. Entries made offline sync automatically when you reconnect."
+      },
+      "growth": {
+        "title": "Flock Growth",
+        "content": "Log weight samples and compare your flock's growth curve against the breed target, so you can spot underperformance early and fine-tune feeding."
+      },
+      "meds": {
+        "title": "Treatment Calendar",
+        "content": "Schedule vaccinations, medications and supplements with quick templates. You get reminders, optional spoken voice alerts, and a banner when a treatment is due."
+      },
+      "ai": {
+        "title": "AI Visual Monitor",
+        "content": "Connect a camera (including Dahua IP cameras) or upload clips. YOLOv8 counts birds, tracks individuals, and flags huddling or unusual behavior in real time."
+      },
+      "audio": {
+        "title": "Bioacoustic Insights",
+        "content": "Capture barn sound with a microphone. The classifier listens for coughing, sneezing and distress calls so respiratory problems are caught before they spread."
+      },
+      "analytics": {
+        "title": "Analytics & Reports",
+        "content": "See feed conversion, mortality, growth and performance trends across batches, with charts that make comparisons easy and exportable reports."
+      },
+      "financial": {
+        "title": "Financial Intelligence",
+        "content": "Track revenue and expenses, see profit per batch, and use the income forecast to plan sales. A PDF financial report is one click away."
+      },
+      "settings": {
+        "title": "Farm Settings",
+        "content": "Manage farm details, locations and team access, and tune your farm preferences here."
+      },
+      "done": {
+        "title": "You're all set!",
+        "content": "That's the whole farm in one place. Replay this tour anytime with the \"Restart Tour Guide\" button at the bottom of the sidebar."
+      }
+    }
   },
   "sync": {
     "title": "Sync Manager",
