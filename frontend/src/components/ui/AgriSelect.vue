@@ -45,7 +45,7 @@
               ref="searchInput"
               v-model="searchQuery"
               type="text"
-              placeholder="Search..."
+              :placeholder="$t('common.search') || 'Search...'"
               class="w-full text-xs font-semibold pl-9 pr-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-850 dark:bg-darkbg-100 text-gray-800 dark:text-white outline-none focus:border-primary-500 dark:focus:border-primary-400"
               @click.stop
             />
@@ -58,7 +58,7 @@
             v-if="filteredOptions.length === 0"
             class="px-4 py-3 text-xs text-center text-gray-400 dark:text-gray-500"
           >
-            No matches found
+            {{ $t('common.no_matches') || 'No matches found' }}
           </li>
           <li
             v-for="opt in filteredOptions"
