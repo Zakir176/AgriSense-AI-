@@ -1,5 +1,8 @@
 import { reactive } from 'vue'
 
+// Bump the suffix whenever the tour changes enough to re-show it to everyone.
+export const TOUR_STORAGE_KEY = 'agrisense_onboarded_v2'
+
 export const store = reactive({
   currentUser: null,
   currentFarm: null,
@@ -10,94 +13,35 @@ export const store = reactive({
   latestInferenceResult: null,
   
   // Tour Guide Onboarding State
+  //
+  // Step fields:
+  //   id              - used for i18n keys: tour.steps.<id>.title / .content
+  //   route           - page the step lives on (tour navigates automatically)
+  //   targetSelector  - element to spotlight; omit for a centered card
+  //   closest         - optional: spotlight the nearest ancestor matching this selector
+  //   placement       - preferred tooltip side on wide screens (auto-flips if no room)
+  //   needsSidebar    - open the off-canvas sidebar on mobile for this step
   tour: {
     active: false,
     currentStep: 0,
+    sidebarOpen: false,
     steps: [
-      {
-        targetSelector: '#site-header-role',
-        route: '/dashboard',
-        titleKey: 'tour.step1_title',
-        contentKey: 'tour.step1_content',
-        placement: 'bottom'
-      },
-      {
-        targetSelector: '#header-actions',
-        route: '/dashboard',
-        titleKey: 'tour.step2_title',
-        contentKey: 'tour.step2_content',
-        placement: 'bottom'
-      },
-      {
-        targetSelector: '#dashboard-alerts-card',
-        route: '/dashboard',
-        titleKey: 'tour.step3_title',
-        contentKey: 'tour.step3_content',
-        placement: 'top'
-      },
-      {
-        targetSelector: '#dashboard-quick-links',
-        route: '/dashboard',
-        titleKey: 'tour.step4_title',
-        contentKey: 'tour.step4_content',
-        placement: 'top'
-      },
-      {
-        targetSelector: '#nav-feed-water',
-        route: '/dashboard',
-        titleKey: 'tour.step5_title',
-        contentKey: 'tour.step5_content',
-        placement: 'right'
-      },
-      {
-        targetSelector: '#readings-table-card',
-        route: '/readings',
-        titleKey: 'tour.step6_title',
-        contentKey: 'tour.step6_content',
-        placement: 'top'
-      },
-      {
-        targetSelector: '#nav-flock_health',
-        route: '/readings',
-        titleKey: 'tour.step7_title',
-        contentKey: 'tour.step7_content',
-        placement: 'right'
-      },
-      {
-        targetSelector: '#treatment-calendar-panel',
-        route: '/medications',
-        titleKey: 'tour.step8_title',
-        contentKey: 'tour.step8_content',
-        placement: 'top'
-      },
-      {
-        targetSelector: '#nav-ai-monitor',
-        route: '/medications',
-        titleKey: 'tour.step9_title',
-        contentKey: 'tour.step9_content',
-        placement: 'right'
-      },
-      {
-        targetSelector: '#ai-live-feed-card',
-        route: '/inference',
-        titleKey: 'tour.step10_title',
-        contentKey: 'tour.step10_content',
-        placement: 'top'
-      },
-      {
-        targetSelector: '#nav-audio',
-        route: '/inference',
-        titleKey: 'tour.step11_title',
-        contentKey: 'tour.step11_content',
-        placement: 'right'
-      },
-      {
-        targetSelector: '#audio-library-card',
-        route: '/audio',
-        titleKey: 'tour.step12_title',
-        contentKey: 'tour.step12_content',
-        placement: 'top'
-      }
+      { id: 'welcome',   route: '/dashboard' },
+      { id: 'role',      route: '/dashboard',     targetSelector: '#site-header-role', placement: 'bottom' },
+      { id: 'toolbar',   route: '/dashboard',     targetSelector: '#header-actions',   placement: 'bottom' },
+      { id: 'sidebar',   route: '/dashboard',     targetSelector: '#app-sidebar-nav',  placement: 'right', needsSidebar: true },
+      { id: 'alerts',    route: '/dashboard',     targetSelector: '#dashboard-alerts-card', placement: 'top' },
+      { id: 'quicklinks',route: '/dashboard',     targetSelector: '#dashboard-quick-links', placement: 'top' },
+      { id: 'batches',   route: '/batches',       targetSelector: 'main h1', closest: '.animate-fade-in-up', placement: 'bottom' },
+      { id: 'feed',      route: '/readings',      targetSelector: '#readings-table-card', placement: 'top' },
+      { id: 'growth',    route: '/growth',        targetSelector: 'main h1', closest: '.animate-fade-in-up', placement: 'bottom' },
+      { id: 'meds',      route: '/medications',   targetSelector: '#treatment-calendar-panel', placement: 'top' },
+      { id: 'ai',        route: '/inference',     targetSelector: '#ai-live-feed-card', placement: 'top' },
+      { id: 'audio',     route: '/audio',         targetSelector: '#audio-library-card', placement: 'top' },
+      { id: 'analytics', route: '/analytics',     targetSelector: 'main h1', closest: '.animate-fade-in-up', placement: 'bottom' },
+      { id: 'financial', route: '/financial',     targetSelector: 'main h1', closest: '.animate-fade-in-up', placement: 'bottom' },
+      { id: 'settings',  route: '/farm-settings', targetSelector: 'main h1', closest: '.animate-fade-in-up', placement: 'bottom' },
+      { id: 'done',      route: '/dashboard' }
     ]
   }
 })
