@@ -4,11 +4,11 @@
     <!-- ─── Header ─── -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Financial Intelligence</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $t('financial.title') }}</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-          Revenue tracking, expense management, profit analysis, and income forecasting for
+          {{ $t('financial.subtitle') }}
           <span v-if="activeBatchObj" class="font-bold text-gray-700 dark:text-gray-300">Batch #{{ activeBatchObj.id }} · {{ activeBatchObj.breed }}</span>
-          <span v-else class="italic text-gray-450">no batch selected</span>
+          <span v-else class="italic text-gray-450">{{ $t('financial.no_batch') }}</span>
         </p>
       </div>
       <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -16,7 +16,7 @@
           <AgriSelect
             v-model="selectedBatchId"
             :options="batchOptions"
-            placeholder="Select batch..."
+            :placeholder="$t('financial.select_batch')"
             @change="onBatchChange"
           />
         </div>
@@ -25,11 +25,11 @@
           size="sm"
           :disabled="!selectedBatchId || loading || pdfExporting"
           @click="downloadFinancialPDF"
-          title="Download PDF Financial Report"
+          :title="$t('financial.download_pdf_title')"
         >
           <span v-if="pdfExporting" class="material-icons-outlined text-sm mr-1.5 animate-spin">refresh</span>
           <span v-else class="material-icons-outlined text-sm mr-1.5 text-red-500">picture_as_pdf</span>
-          <span>{{ pdfExporting ? 'Generating...' : 'Export PDF' }}</span>
+          <span>{{ pdfExporting ? $t('financial.generating_pdf') : $t('financial.export_pdf') }}</span>
         </AgriButton>
       </div>
     </div>
@@ -37,8 +37,8 @@
     <!-- ─── No batch selected state ─── -->
     <div v-if="!selectedBatchId" class="bg-white dark:bg-darkbg-50 border border-gray-200 dark:border-gray-800 rounded-2xl p-16 text-center animate-fade-in-up delay-100">
       <span class="material-icons-outlined text-4xl text-gray-300 dark:text-gray-700 block mb-3">account_balance</span>
-      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">Select a batch to view financial intelligence</p>
-      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Revenue, expenses, profit/loss, and income projections are computed per-batch.</p>
+      <p class="text-sm font-bold text-gray-600 dark:text-gray-400">{{ $t('financial.select_batch_prompt') }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $t('financial.select_batch_desc') }}</p>
     </div>
 
     <template v-else>
@@ -61,19 +61,19 @@
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
           <!-- Total Revenue -->
           <AgriStatCard
-            label="Total Revenue"
+            :label="$t('financial.total_revenue')"
             :value="summary.total_revenue_zmw"
             :decimals="2"
             prefix="K "
             icon="trending_up"
             icon-color-class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
-            :subtext="`${summary.total_birds_sold} birds sold`"
+            :subtext="$t('financial.birds_sold', { count: summary.total_birds_sold })"
             class="animate-fade-in-up delay-100"
           />
 
           <!-- Total Expenses -->
           <AgriStatCard
-            label="Total Expenses"
+            :label="$t('financial.total_expenses')"
             :value="summary.total_expenses_zmw"
             :decimals="2"
             prefix="K "
@@ -85,7 +85,7 @@
 
           <!-- Gross Profit / Loss -->
           <AgriStatCard
-            label="Gross Profit"
+            :label="$t('financial.gross_profit')"
             :value="summary.gross_profit_zmw"
             :decimals="2"
             prefix="K "
@@ -93,28 +93,28 @@
             :icon-color-class="summary.gross_profit_zmw >= 0
               ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
               : 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400'"
-            :trend="summary.gross_profit_zmw >= 0 ? 'Profitable' : 'Loss'"
+            :trend="summary.gross_profit_zmw >= 0 ? $t('financial.profitable') : $t('financial.loss')"
             :trend-direction="summary.gross_profit_zmw >= 0 ? 'up' : 'down'"
             :trend-good="summary.gross_profit_zmw >= 0"
-            :subtext="summary.gross_profit_zmw >= 0 ? 'Revenue exceeds costs' : 'Costs exceed revenue'"
+            :subtext="summary.gross_profit_zmw >= 0 ? $t('financial.revenue_exceeds_costs') : $t('financial.costs_exceed_revenue')"
             class="animate-fade-in-up delay-200"
           />
 
           <!-- Avg Price per Bird -->
           <AgriStatCard
-            label="Avg Price / Bird"
+            :label="$t('financial.avg_price_per_bird')"
             :value="summary.avg_price_per_bird_zmw"
             :decimals="2"
             prefix="K "
             icon="sell"
             icon-color-class="bg-blue-50 dark:bg-blue-950/40 text-blue-500 dark:text-blue-400"
-            :subtext="`Based on ${summary.total_birds_sold} sales`"
+            :subtext="$t('financial.based_on_sales', { count: summary.total_birds_sold })"
             class="animate-fade-in-up delay-250"
           />
 
           <!-- Profit Margin -->
           <AgriStatCard
-            label="Profit Margin"
+            :label="$t('financial.profit_margin')"
             :value="summary.profit_margin_pct"
             :decimals="1"
             suffix="%"
@@ -127,7 +127,7 @@
             :trend="getMarginLabel(summary.profit_margin_pct)"
             trend-direction="neutral"
             :trend-good="summary.profit_margin_pct >= 20"
-            :subtext="`${summary.current_live_count} birds remaining`"
+            :subtext="$t('financial.birds_remaining', { count: summary.current_live_count })"
             class="animate-fade-in-up delay-300"
           />
         </div>
@@ -139,12 +139,12 @@
           <template #header>
             <div class="flex items-center gap-2">
               <span class="material-icons-outlined text-emerald-500 text-lg">point_of_sale</span>
-              <h2 class="text-sm font-bold text-gray-800 dark:text-white">Sales History</h2>
-              <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">({{ salesEntries.length }} records)</span>
+              <h2 class="text-sm font-bold text-gray-800 dark:text-white">{{ $t('financial.sales_history') }}</h2>
+              <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">{{ $t('financial.records_count', { count: salesEntries.length }) }}</span>
             </div>
             <AgriButton variant="primary" size="sm" @click="showSaleModal = true">
               <span class="material-icons-outlined text-sm mr-1">add</span>
-              Log Sale
+              {{ $t('financial.log_sale') }}
             </AgriButton>
           </template>
 
@@ -183,7 +183,7 @@
           <!-- Empty state hint inside the card footer -->
           <template v-if="salesEntries.length === 0 && !salesLoading" #footer>
             <div class="w-full text-center py-2">
-              <p class="text-xs text-gray-400 dark:text-gray-500">No sales recorded yet. Use the <strong>Log Sale</strong> button to record your first sale.</p>
+              <p class="text-xs text-gray-400 dark:text-gray-500">{{ $t('financial.no_sales_recorded') }}</p>
             </div>
           </template>
         </AgriCard>
@@ -206,12 +206,12 @@
             <template #header>
               <div class="flex items-center gap-2">
                 <span class="material-icons-outlined text-amber-500 text-lg">receipt_long</span>
-                <h2 class="text-sm font-bold text-gray-800 dark:text-white">Expense Log</h2>
-                <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">({{ expenseEntries.length }} records)</span>
+                <h2 class="text-sm font-bold text-gray-800 dark:text-white">{{ $t('financial.expense_log') }}</h2>
+                <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">{{ $t('financial.records_count', { count: expenseEntries.length }) }}</span>
               </div>
               <AgriButton variant="primary" size="sm" @click="showExpenseModal = true">
                 <span class="material-icons-outlined text-sm mr-1">add</span>
-                Add Expense
+                {{ $t('financial.add_expense') }}
               </AgriButton>
             </template>
 
@@ -247,17 +247,17 @@
 
             <template v-if="expenseEntries.length === 0 && !expensesLoading" #footer>
               <div class="w-full text-center py-2">
-                <p class="text-xs text-gray-400 dark:text-gray-500">No expenses logged yet. Use <strong>Add Expense</strong> to start tracking costs.</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">{{ $t('financial.no_expenses_recorded') }}</p>
               </div>
             </template>
           </AgriCard>
 
-          <!-- Expense Breakdown Chart -->
+          <!-- {{ $t('financial.expense_breakdown') }} Chart -->
           <AgriCard class="animate-fade-in-up delay-400">
             <template #header>
               <div class="flex items-center gap-2">
                 <span class="material-icons-outlined text-violet-500 text-lg">donut_small</span>
-                <h2 class="text-sm font-bold text-gray-800 dark:text-white">By Category</h2>
+                <h2 class="text-sm font-bold text-gray-800 dark:text-white">{{ $t('financial.by_category') }}</h2>
               </div>
             </template>
             <div class="flex items-center justify-center px-4 pb-2">
@@ -266,7 +266,7 @@
               </div>
               <div v-else class="py-12 text-center w-full">
                 <span class="material-icons-outlined text-3xl text-gray-300 dark:text-gray-700 block mb-2">pie_chart</span>
-                <p class="text-xs text-gray-400 dark:text-gray-500">Expense data will appear here once logged.</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">{{ $t('financial.expense_data_empty') }}</p>
               </div>
             </div>
             <!-- Category legend -->
@@ -293,7 +293,7 @@
               <div class="flex items-center gap-2">
                 <span class="material-icons-outlined text-primary-500 dark:text-primary-400">trending_up</span>
                 <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">
-                  Revenue vs Expenses Trend
+                  {{ $t('financial.revenue_vs_expenses') }}
                 </h3>
               </div>
             </div>
@@ -303,7 +303,7 @@
             v-if="salesEntries.length === 0 && expenseEntries.length === 0"
             class="h-48 flex items-center justify-center text-sm text-gray-400 dark:text-gray-600 italic"
           >
-            No sales or expense data recorded yet
+            {{ $t('financial.no_financial_trend_data') }}
           </div>
           <div v-else class="relative h-64">
             <canvas ref="trendChartCanvas"></canvas>
@@ -313,7 +313,7 @@
         <!-- Add Expense Modal -->
         <AgriModal
           :show="showExpenseModal"
-          title="Log Expense"
+          :title="$t('financial.log_expense_modal')"
           @close="showExpenseModal = false"
         >
           <form @submit.prevent="handleExpenseSubmit" class="space-y-4">
@@ -321,16 +321,16 @@
               <AgriInput
                 v-model="expenseForm.date"
                 type="date"
-                label="Date"
+                :label="$t('common.date')"
                 required
                 icon="calendar_today"
               />
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('common.category') }}</label>
                 <AgriSelect
                   v-model="expenseForm.category"
                   :options="expenseCategoryOptions"
-                  placeholder="Select category..."
+                  :placeholder="$t('batches.select_category')"
                 />
               </div>
             </div>
@@ -338,19 +338,19 @@
             <AgriInput
               v-model="expenseForm.description"
               type="text"
-              label="Description (Optional)"
-              placeholder="e.g. 50kg Broiler Starter Feed"
+              :label="$t('financial.description_optional')"
+              :placeholder="$t('financial.description_placeholder')"
               icon="notes"
             />
 
             <AgriInput
               v-model.number="expenseForm.amount_zmw"
               type="number"
-              label="Amount (ZMW)"
+              :label="$t('financial.amount_zmw')"
               required
               min="0.01"
               step="0.01"
-              placeholder="e.g. 450.00"
+              :placeholder="$t('financial.amount_placeholder')"
               icon="payments"
             />
 
@@ -359,8 +359,8 @@
             </div>
 
             <div class="flex space-x-3 pt-4 border-t border-gray-150 dark:border-gray-800">
-              <AgriButton type="button" variant="outline" class="flex-1" @click="showExpenseModal = false">Cancel</AgriButton>
-              <AgriButton type="submit" variant="primary" class="flex-1" :loading="expenseSubmitting">Save Expense</AgriButton>
+              <AgriButton type="button" variant="outline" class="flex-1" @click="showExpenseModal = false">{{ $t('common.cancel') }}</AgriButton>
+              <AgriButton type="submit" variant="primary" class="flex-1" :loading="expenseSubmitting">{{ $t('financial.save_expense') }}</AgriButton>
             </div>
           </form>
         </AgriModal>
@@ -373,12 +373,12 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2">
               <div class="flex items-center gap-2">
                 <span class="material-icons-outlined text-primary-500 text-lg">insights</span>
-                <h2 class="text-sm font-bold text-gray-800 dark:text-white">Income Forecast</h2>
-                <span class="text-xs text-gray-400 dark:text-gray-500">(Mortality-Adjusted Projection)</span>
+                <h2 class="text-sm font-bold text-gray-800 dark:text-white">{{ $t('financial.income_forecast') }}</h2>
+                <span class="text-xs text-gray-400 dark:text-gray-500">{{ $t('financial.mortality_adjusted') }}</span>
               </div>
               <div class="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-900/30 font-medium">
                 <span class="material-icons-outlined text-sm">info</span>
-                Estimate based on current mortality trend
+                {{ $t('financial.mortality_trend_estimate') }}
               </div>
             </div>
           </template>
@@ -389,7 +389,7 @@
               <AgriInput
                 v-model.number="forecastPrice"
                 type="number"
-                label="Expected Price per Bird (ZMW)"
+                :label="$t('financial.expected_price_per_bird')"
                 min="0.01"
                 step="0.5"
                 placeholder="e.g. 85.00"
@@ -402,34 +402,34 @@
             <div v-if="forecastData" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <!-- Live Count -->
               <div class="bg-gray-50 dark:bg-darkbg-100/40 p-4 rounded-xl border border-gray-150 dark:border-gray-800">
-                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Current Live Birds</span>
+                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">{{ $t('financial.current_live_birds') }}</span>
                 <div class="flex items-baseline gap-1">
                   <span class="text-2xl font-black text-gray-900 dark:text-white tabular-nums">{{ forecastData.current_live_count }}</span>
-                  <span class="text-xs text-gray-500">birds</span>
+                  <span class="text-xs text-gray-500">{{ $t('common.birds') }}</span>
                 </div>
               </div>
 
               <!-- Projected 30-Day Mortality -->
               <div class="bg-gray-50 dark:bg-darkbg-100/40 p-4 rounded-xl border border-gray-150 dark:border-gray-800">
-                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Projected 30d Mortality</span>
+                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">{{ $t('financial.projected_30d_mortality') }}</span>
                 <div class="flex items-baseline gap-1">
                   <span class="text-2xl font-black text-red-600 dark:text-red-400 tabular-nums">-{{ forecastData.projected_30d_mortality }}</span>
-                  <span class="text-xs text-gray-500">birds</span>
+                  <span class="text-xs text-gray-500">{{ $t('common.birds') }}</span>
                 </div>
               </div>
 
               <!-- Projected Sellable -->
               <div class="bg-gray-50 dark:bg-darkbg-100/40 p-4 rounded-xl border border-gray-150 dark:border-gray-800">
-                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Projected Sellable</span>
+                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">{{ $t('financial.projected_sellable') }}</span>
                 <div class="flex items-baseline gap-1">
                   <span class="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums">{{ forecastData.projected_sellable_birds }}</span>
-                  <span class="text-xs text-gray-500">birds</span>
+                  <span class="text-xs text-gray-500">{{ $t('common.birds') }}</span>
                 </div>
               </div>
 
               <!-- Expected Income -->
               <div class="bg-emerald-50/60 dark:bg-emerald-950/20 p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/30">
-                <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block mb-1">Expected Income</span>
+                <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block mb-1">{{ $t('financial.expected_income') }}</span>
                 <div class="flex items-baseline gap-1">
                   <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">K {{ forecastData.expected_income_zmw.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
                 </div>
@@ -449,8 +449,8 @@
           <template #header>
             <div class="flex items-center gap-2">
               <span class="material-icons-outlined text-amber-500 text-lg">calculate</span>
-              <h2 class="text-sm font-bold text-gray-800 dark:text-white">Break-Even & Target Profitability Simulator</h2>
-              <span class="text-xs text-gray-400 dark:text-gray-500">(Cost Coverage & Target Margin Engine)</span>
+              <h2 class="text-sm font-bold text-gray-800 dark:text-white">{{ $t('financial.break_even_simulator') }}</h2>
+              <span class="text-xs text-gray-400 dark:text-gray-500">{{ $t('financial.cost_coverage_engine') }}</span>
             </div>
           </template>
 
@@ -461,26 +461,26 @@
               <div class="bg-gray-50 dark:bg-darkbg-100/40 p-5 rounded-xl border border-gray-150 dark:border-gray-800 flex flex-col justify-between">
                 <div>
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Break-Even Price / Bird</span>
+                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $t('financial.break_even_price') }}</span>
                     <span class="material-icons-outlined text-amber-500 text-sm">shield</span>
                   </div>
                   <div class="flex items-baseline gap-1">
                     <span class="text-3xl font-black text-gray-900 dark:text-white tabular-nums">K {{ breakEvenPrice.toFixed(2) }}</span>
-                    <span class="text-xs text-gray-400 font-medium">/ bird</span>
+                    <span class="text-xs text-gray-400 font-medium">{{ $t('financial.per_bird') }}</span>
                   </div>
                   <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                    Minimum price required per bird to recover total expenses of <strong class="text-gray-700 dark:text-gray-300">K {{ (summary.total_expenses_zmw || 0).toFixed(2) }}</strong>.
+                    {{ $t('financial.min_price_required') }} <strong class="text-gray-700 dark:text-gray-300">K {{ (summary.total_expenses_zmw || 0).toFixed(2) }}</strong>.
                   </p>
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-gray-200/60 dark:border-gray-800">
                   <div v-if="forecastPrice >= breakEvenPrice" class="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     <span class="material-icons-outlined text-sm">check_circle</span>
-                    <span>Target Price (+K {{ (forecastPrice - breakEvenPrice).toFixed(2) }}/bird margin)</span>
+                    <span>{{ $t('financial.target_price_margin', { margin: (forecastPrice - breakEvenPrice).toFixed(2) }) }}</span>
                   </div>
                   <div v-else class="flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400">
                     <span class="material-icons-outlined text-sm">warning</span>
-                    <span>Below Break-Even (-K {{ (breakEvenPrice - forecastPrice).toFixed(2) }}/bird loss)</span>
+                    <span>{{ $t('financial.below_break_even_loss', { loss: (breakEvenPrice - forecastPrice).toFixed(2) }) }}</span>
                   </div>
                 </div>
               </div>
@@ -489,7 +489,7 @@
               <div class="bg-primary-50/40 dark:bg-primary-950/20 p-5 rounded-xl border border-primary-200/60 dark:border-primary-900/40 flex flex-col justify-between">
                 <div>
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-primary-700 dark:text-primary-400 uppercase tracking-wider">Target Profit Goal</span>
+                    <span class="text-xs font-bold text-primary-700 dark:text-primary-400 uppercase tracking-wider">{{ $t('financial.target_profit_goal') }}</span>
                     <span class="material-icons-outlined text-primary-500 text-sm">flag</span>
                   </div>
                   <div class="max-w-[200px]">
@@ -498,22 +498,22 @@
                       type="number"
                       min="0"
                       step="100"
-                      placeholder="Goal (ZMW)"
+                      :placeholder="$t('financial.goal_placeholder')"
                       icon="payments"
                     />
                   </div>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Desired net profit target across the remaining sellable flock.
+                    {{ $t('financial.desired_profit_desc') }}
                   </p>
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-primary-200/50 dark:border-primary-900/50 flex justify-between items-center">
                   <div>
-                    <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase block">Required Sale Price</span>
-                    <span class="text-lg font-black text-primary-700 dark:text-primary-300 tabular-nums">K {{ requiredPriceForGoal.toFixed(2) }} <span class="text-xs text-gray-400 font-normal">/ bird</span></span>
+                    <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase block">{{ $t('financial.required_sale_price') }}</span>
+                    <span class="text-lg font-black text-primary-700 dark:text-primary-300 tabular-nums">K {{ requiredPriceForGoal.toFixed(2) }} <span class="text-xs text-gray-400 font-normal">{{ $t('financial.per_bird') }}</span></span>
                   </div>
                   <div class="text-right">
-                    <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase block">Target ROI</span>
+                    <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase block">{{ $t('financial.target_roi') }}</span>
                     <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">+{{ projectedROI.toFixed(1) }}%</span>
                   </div>
                 </div>
@@ -523,20 +523,20 @@
               <div class="bg-gray-50 dark:bg-darkbg-100/40 p-5 rounded-xl border border-gray-150 dark:border-gray-800 flex flex-col justify-between">
                 <div>
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Feed Cost Share</span>
+                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $t('financial.feed_cost_share') }}</span>
                     <span class="material-icons-outlined text-amber-500 text-sm">grass</span>
                   </div>
                   <div class="flex items-baseline gap-1">
                     <span class="text-3xl font-black text-amber-600 dark:text-amber-400 tabular-nums">{{ feedExpenseSharePct.toFixed(1) }}%</span>
-                    <span class="text-xs text-gray-400 font-medium">of total costs</span>
+                    <span class="text-xs text-gray-400 font-medium">{{ $t('financial.of_total_costs') }}</span>
                   </div>
                   <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                    Total Feed Expense: <strong class="text-gray-700 dark:text-gray-300">K {{ feedExpenseAmount.toFixed(2) }}</strong>
+                    {{ $t('financial.total_feed_expense') }} <strong class="text-gray-700 dark:text-gray-300">K {{ feedExpenseAmount.toFixed(2) }}</strong>
                   </p>
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-gray-200/60 dark:border-gray-800 flex justify-between items-center">
-                  <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Feed Cost / Live Bird</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ $t('financial.feed_cost_per_bird') }}</span>
                   <span class="text-sm font-bold text-gray-900 dark:text-white tabular-nums">K {{ feedCostPerBird.toFixed(2) }}</span>
                 </div>
               </div>
@@ -553,8 +553,8 @@
             <div class="flex items-center justify-between w-full">
               <div class="flex items-center gap-2">
                 <span class="material-icons-outlined text-purple-500 text-lg">assessment</span>
-                <h2 class="text-sm font-bold text-gray-800 dark:text-white">Profit & Loss Statement</h2>
-                <span class="text-xs text-gray-400 dark:text-gray-500">(Comprehensive Financial Breakdown)</span>
+                <h2 class="text-sm font-bold text-gray-800 dark:text-white">{{ $t('financial.pl_statement') }}</h2>
+                <span class="text-xs text-gray-400 dark:text-gray-500">{{ $t('financial.comprehensive_breakdown') }}</span>
               </div>
               <span
                 v-if="plSummary"
@@ -564,7 +564,7 @@
                   : 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400 border border-red-200 dark:border-red-900/30'"
               >
                 <span class="material-icons-outlined text-sm">{{ plSummary.is_profitable ? 'trending_up' : 'trending_down' }}</span>
-                {{ plSummary.is_profitable ? 'Net Profitable' : 'Net Loss' }}
+                {{ plSummary.is_profitable ? $t('financial.net_profitable') : $t('financial.net_loss') }}
               </span>
             </div>
           </template>
@@ -577,10 +577,10 @@
                 <div class="flex items-center justify-between">
                   <h3 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
                     <span class="material-icons-outlined text-emerald-500 text-sm">arrow_upward</span>
-                    Revenue Breakdown (Sales)
+                    {{ $t('financial.revenue_breakdown') }}
                   </h3>
                   <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                    Total: K {{ summary.total_revenue_zmw.toFixed(2) }}
+                    {{ $t('common.total') }}: K {{ summary.total_revenue_zmw.toFixed(2) }}
                   </span>
                 </div>
                 <AgriTable
@@ -618,10 +618,10 @@
                 <div class="flex items-center justify-between">
                   <h3 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
                     <span class="material-icons-outlined text-amber-500 text-sm">arrow_downward</span>
-                    Expense Breakdown
+                    {{ $t('financial.expense_breakdown') }}
                   </h3>
                   <span class="text-xs font-bold text-amber-600 dark:text-amber-400 tabular-nums">
-                    Total: K {{ summary.total_expenses_zmw.toFixed(2) }}
+                    {{ $t('common.total') }}: K {{ summary.total_expenses_zmw.toFixed(2) }}
                   </span>
                 </div>
                 <AgriTable
@@ -673,7 +673,7 @@
                   </span>
                 </div>
                 <div>
-                  <span class="text-xs font-bold uppercase tracking-wider opacity-75 block">Net Batch {{ plSummary.is_profitable ? 'Profit' : 'Loss' }}</span>
+                  <span class="text-xs font-bold uppercase tracking-wider opacity-75 block">Net Batch {{ plSummary.is_profitable ? $t('financial.gross_profit') : $t('financial.loss') }}</span>
                   <div class="text-3xl font-black tabular-nums tracking-tight">
                     K {{ Math.abs(plSummary.net_profit_zmw).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
                   </div>
@@ -683,16 +683,16 @@
               <!-- Sub-metrics pill grid -->
               <div class="flex flex-wrap items-center gap-4 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-800 pt-3 md:pt-0 md:pl-6 w-full md:w-auto">
                 <div>
-                  <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Profit Per Bird Sold</span>
+                  <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">{{ $t('financial.profit_per_bird_sold') }}</span>
                   <span class="text-lg font-extrabold text-gray-900 dark:text-white tabular-nums">
                     K {{ plSummary.profit_per_bird_zmw.toFixed(2) }} / bird
                   </span>
                 </div>
                 <div class="h-8 w-px bg-gray-200 dark:border-gray-800 hidden sm:block"></div>
                 <div>
-                  <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Total Birds Sold</span>
+                  <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">{{ $t('financial.total_birds_sold') }}</span>
                   <span class="text-lg font-extrabold text-gray-900 dark:text-white tabular-nums">
-                    {{ plSummary.total_birds_sold }} birds
+                    {{ plSummary.total_birds_sold }} {{ $t('common.birds') }}
                   </span>
                 </div>
               </div>
@@ -707,6 +707,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, nextTick, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import logoFullUrl from '../assets/logo_full.png'
@@ -729,6 +730,7 @@ import AgriInput from '../components/ui/AgriInput.vue'
 import FlockInventoryModal from '../components/FlockInventoryModal.vue'
 
 const { getStaggerDelayClass } = useAnimations()
+const { t } = useI18n()
 
 // ── State ──────────────────────────────────
 const selectedBatchId = ref(null)
@@ -750,13 +752,13 @@ const summary = ref({
 const showSaleModal = ref(false)
 const salesLoading = ref(false)
 const salesEntries = ref([])
-const salesHeaders = [
-  { text: 'Date', value: 'date', sortable: true },
-  { text: 'Birds Sold', value: 'birds_sold', align: 'right', sortable: true },
-  { text: 'Unit Price', value: 'unit_price_zmw', align: 'right', sortable: true },
-  { text: 'Total (ZMW)', value: 'total_zmw', align: 'right', sortable: true },
-  { text: 'Buyer', value: 'buyer' }
-]
+const salesHeaders = computed(() => [
+  { text: t('common.date'), value: 'date', sortable: true },
+  { text: t('financial.birds_sold_header'), value: 'birds_sold', align: 'right', sortable: true },
+  { text: t('financial.unit_price_header'), value: 'unit_price_zmw', align: 'right', sortable: true },
+  { text: t('financial.total_zmw_header'), value: 'total_zmw', align: 'right', sortable: true },
+  { text: t('financial.buyer_header'), value: 'buyer' }
+])
 
 // Section 3 — Expenses
 const showExpenseModal = ref(false)
@@ -769,20 +771,20 @@ let expenseChartInstance = null
 const trendChartCanvas = ref(null)
 let trendChartInstance = null
 
-const expenseHeaders = [
-  { text: 'Date', value: 'date', sortable: true },
-  { text: 'Category', value: 'category', sortable: true },
-  { text: 'Description', value: 'description' },
-  { text: 'Amount (ZMW)', value: 'amount_zmw', align: 'right', sortable: true }
-]
+const expenseHeaders = computed(() => [
+  { text: t('common.date'), value: 'date', sortable: true },
+  { text: t('common.category'), value: 'category', sortable: true },
+  { text: t('common.description'), value: 'description' },
+  { text: t('financial.amount_zmw'), value: 'amount_zmw', align: 'right', sortable: true }
+])
 
-const expenseCategoryOptions = [
-  { value: 'feed', label: 'Feed' },
-  { value: 'medication', label: 'Medication' },
-  { value: 'equipment', label: 'Equipment' },
-  { value: 'labour', label: 'Labour' },
-  { value: 'other', label: 'Other' }
-]
+const expenseCategoryOptions = computed(() => [
+  { value: 'feed', label: t('financial.cat_feed') },
+  { value: 'medication', label: t('financial.cat_medication') },
+  { value: 'equipment', label: t('financial.cat_equipment') },
+  { value: 'labour', label: t('financial.cat_labour') },
+  { value: 'other', label: t('financial.cat_other') }
+])
 
 const expenseForm = ref({
   date: new Date().toISOString().split('T')[0],
@@ -851,8 +853,8 @@ const batchOptions = computed(() => {
 const expenseCategorySummary = computed(() => {
   const cats = summary.value.expenses_by_category
   const keys = Object.keys(cats)
-  if (keys.length === 0) return 'No expenses logged'
-  return keys.map(k => `${k}: K${cats[k].toFixed(0)}`).join(', ')
+  if (keys.length === 0) return t('financial.no_expenses_logged')
+  return keys.map(k => `${t('financial.cat_' + k) || k}: K${cats[k].toFixed(0)}`).join(', ')
 })
 
 const hasExpenseData = computed(() => {
@@ -861,11 +863,11 @@ const hasExpenseData = computed(() => {
 
 // ── Helpers ────────────────────────────────
 const getMarginLabel = (pct) => {
-  if (pct >= 30) return 'Excellent'
-  if (pct >= 20) return 'Healthy'
-  if (pct >= 10) return 'Moderate'
-  if (pct >= 0) return 'Low'
-  return 'Negative'
+  if (pct >= 30) return t('financial.margin_excellent')
+  if (pct >= 20) return t('financial.margin_healthy')
+  if (pct >= 10) return t('financial.margin_moderate')
+  if (pct >= 0) return t('financial.margin_low')
+  return t('financial.margin_negative')
 }
 
 const CATEGORY_COLORS = {
