@@ -86,7 +86,7 @@
             :aria-checked="enableReminder"
             @click="toggleReminder"
           >
-            <span class="sr-only">Enable reminder</span>
+            <span class="sr-only">{{ $t('calendar.set_reminder') }}</span>
             <span aria-hidden="true" class="pointer-events-none absolute h-full w-full rounded-md bg-white dark:bg-darkbg-50"></span>
             <span aria-hidden="true" class="pointer-events-none absolute mx-auto h-4 w-9 rounded-full transition-colors duration-200 ease-in-out" :class="enableReminder ? 'bg-primary-500' : 'bg-gray-200 dark:bg-gray-700'"></span>
             <span aria-hidden="true" class="pointer-events-none absolute left-0 inline-block h-5 w-5 transform rounded-full border border-gray-200 dark:border-gray-700 bg-white shadow ring-0 transition-transform duration-200 ease-in-out" :class="enableReminder ? 'translate-x-4' : 'translate-x-0'"></span>
