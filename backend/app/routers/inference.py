@@ -19,6 +19,13 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/inference", tags=["Inference"])
 
+
+@router.get("/camera-config")
+def get_camera_config(current_user: User = Depends(get_current_user)):
+    """Return the phone-webcam (Ivideon) embed URL from server-side config (authenticated only)."""
+    return {"embed_url": settings.IVIDEON_EMBED_URL or None}
+
+
 @router.post("/video", response_model=MediaClipResponse, status_code=status.HTTP_201_CREATED)
 async def upload_video_for_inference(
     batch_id: int = Form(...),

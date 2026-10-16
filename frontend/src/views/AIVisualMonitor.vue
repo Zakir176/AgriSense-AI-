@@ -503,7 +503,16 @@
             <div class="p-5 space-y-4">
               <!-- Canvas frame renderer -->
               <div class="relative bg-black rounded-xl overflow-hidden aspect-video max-h-[440px] w-full border border-gray-150 dark:border-gray-850 flex items-center justify-center shadow-inner">
+                <iframe
+                  v-if="cameraEmbedUrl"
+                  id="ai-phone-webcam-iframe"
+                  :src="cameraEmbedUrl"
+                  class="absolute inset-0 w-full h-full border-0"
+                  allow="autoplay; fullscreen; clipboard-write; picture-in-picture"
+                  referrerpolicy="no-referrer"
+                ></iframe>
                 <canvas 
+                  v-show="!cameraEmbedUrl"
                   ref="liveCanvas"
                   class="w-full h-full object-contain"
                 ></canvas>
@@ -618,6 +627,16 @@ let progressInterval = null
 
 // ── Live Mode State ─────────────────────────
 const liveMode = ref(false)
+// Phone webcam embed URL is a server-side secret, fetched after login (never bundled).
+const cameraEmbedUrl = ref(null)
+const loadCameraConfig = async () => {
+  try {
+    const cfg = await api.inference.getCameraConfig()
+    cameraEmbedUrl.value = cfg?.embed_url || null
+  } catch (err) {
+    cameraEmbedUrl.value = null
+  }
+}
 const liveCanvas = ref(null)
 const connectionStatus = ref('disconnected')
 const liveTelemetry = reactive({
@@ -1171,6 +1190,7 @@ const drawLiveFrame = (base64Jpeg) => {
 
 // ── Live Mode Watchers ──────────────────────
 watch(liveMode, async (isLive) => {
+  if (isLive && cameraEmbedUrl.value === null) loadCameraConfig()
   if (isLive && selectedBatchId.value) {
     await nextTick()
     connectLiveStream()
