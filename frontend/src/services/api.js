@@ -393,6 +393,9 @@ export const api = {
 
   // AI Visual Monitor / Inference
   inference: {
+    getCameraConfig() {
+      return request('/inference/camera-config')
+    },
     uploadVideo(batchId, file) {
       const formData = new FormData()
       formData.append('batch_id', batchId)
