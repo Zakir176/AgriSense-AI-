@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "uploads"
     UPLOAD_MAX_MB: int = 100  # Maximum upload file size in megabytes
     ALLOWED_VIDEO_EXTENSIONS: frozenset = frozenset({".mp4", ".avi", ".mov", ".mkv", ".webm"})
+    IVIDEON_EMBED_URL: str = ""  # Phone webcam embed URL (https://open.ivideon.com/embed/v3/<id>/) — set via env/secret
     DAHUA_CAMERA_RTSP_URL: str = ""  # e.g. rtsp://admin:Password123@192.168.1.120:554/cam/realmonitor?channel=1&subtype=1
 
 
