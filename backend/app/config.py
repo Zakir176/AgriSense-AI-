@@ -19,6 +19,22 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "uploads"
     UPLOAD_MAX_MB: int = 100  # Maximum upload file size in megabytes
     ALLOWED_VIDEO_EXTENSIONS: frozenset = frozenset({".mp4", ".avi", ".mov", ".mkv", ".webm"})
+    DAHUA_CAMERA_RTSP_URL: str = ""  # e.g. rtsp://admin:Password123@192.168.1.120:554/cam/realmonitor?channel=1&subtype=1
+
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def validate_database_url(cls, v: str) -> str:
+        # Render (and older Heroku-style) connection strings use the legacy
+        # "postgres://" scheme — normalise to "postgresql://" first.
+        if v and v.startswith("postgres://"):
+            v = v.replace("postgres://", "postgresql://", 1)
+        # SQLAlchemy 2.x maps the bare "postgresql://" scheme to the psycopg v3
+        # driver ("import psycopg").  This project installs psycopg2-binary, so
+        # we must use the explicit "postgresql+psycopg2://" dialect prefix.
+        if v and v.startswith("postgresql://"):
+            v = v.replace("postgresql://", "postgresql+psycopg2://", 1)
+        return v
 
     @field_validator("SECRET_KEY")
     @classmethod
