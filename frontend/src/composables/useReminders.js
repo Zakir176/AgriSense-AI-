@@ -2,12 +2,26 @@ import { ref } from 'vue'
 import { useToast } from './useToast'
 import { addReminder, getReminders, removeReminder } from '../services/db'
 import api from '../services/api'
+import i18n from '../i18n'
+import { useVoicePrompts } from './useVoicePrompts'
 
 export function useReminders() {
   const toast = useToast()
-  const permissionGranted = ref(Notification.permission === 'granted')
+  const permissionGranted = ref(typeof Notification !== 'undefined' && Notification.permission === 'granted')
+  const { speak, voiceEnabled } = useVoicePrompts()
   
   const activeTimers = new Map() // track setTimeout IDs
+
+  const t = (key, params) => {
+    try {
+      if (i18n.global.t) {
+        return i18n.global.t(key, params)
+      }
+    } catch (e) {
+      // fallback
+    }
+    return key
+  }
 
   const requestPermission = async () => {
     if (!('Notification' in window)) return false
@@ -20,15 +34,19 @@ export function useReminders() {
     return permissionGranted.value
   }
 
-  const triggerNotification = (title, body) => {
-    if (permissionGranted.value) {
+  const triggerNotification = (title, body, speakText = null) => {
+    if (permissionGranted.value && 'Notification' in window) {
       new Notification(title, {
         body,
-        icon: '/pwa-192x192.png' // using PWA icon
+        icon: '/favicon.ico'
       })
     } else {
       // Fallback to in-app toast
       toast.info(`${title}: ${body}`)
+    }
+
+    if (voiceEnabled.value && (speakText || body || title)) {
+      speak(speakText || `${title}. ${body}`)
     }
   }
 
@@ -40,16 +58,13 @@ export function useReminders() {
     await addReminder({ id, title, body, remindAt })
 
     if (remindTime <= now) {
-      // Past due, trigger immediately (if missed while offline/closed)
+      // Past due, trigger immediately
       triggerNotification(title, body)
       await removeReminder(id)
       return
     }
 
-    // Schedule within current session
     const delay = remindTime - now
-    
-    // Max setTimeout is ~24.8 days
     if (delay > 2147483647) return
 
     const timerId = setTimeout(async () => {
@@ -69,7 +84,6 @@ export function useReminders() {
     }
   }
 
-  // Called once on app mount to re-hydrate missed or upcoming reminders
   const checkPendingReminders = async () => {
     const pending = await getReminders()
     for (const reminder of pending) {
@@ -88,19 +102,34 @@ export function useReminders() {
         if (notifiedServerIds.has(treatment.id)) continue
 
         const isOverdue = new Date(treatment.scheduled_date) < new Date()
-        const title = isOverdue
-          ? `⚠️ Overdue Treatment: ${treatment.title}`
-          : `💊 Treatment Due Today: ${treatment.title}`
+        const titleKey = isOverdue ? 'reminders.overdue_title' : 'reminders.due_today_title'
+        let title = t(titleKey, { title: treatment.title })
+        if (title.startsWith('reminders.')) {
+          title = isOverdue ? `⚠️ Overdue Treatment: ${treatment.title}` : `💊 Treatment Due Today: ${treatment.title}`
+        }
 
-        const body = [
-          `Type: ${treatment.treatment_type}`,
-          treatment.dosage ? `Dosage: ${treatment.dosage}` : null,
-          isOverdue
-            ? `Was due: ${new Date(treatment.scheduled_date).toLocaleDateString()}`
-            : 'Due: Today'
-        ].filter(Boolean).join('\n')
+        const typeStr = t('reminders.type', { type: treatment.treatment_type }) || `Type: ${treatment.treatment_type}`
+        const dosageStr = treatment.dosage ? (t('reminders.dosage', { dosage: treatment.dosage }) || `Dosage: ${treatment.dosage}`) : null
+        const dateStr = isOverdue
+          ? (t('reminders.was_due', { date: new Date(treatment.scheduled_date).toLocaleDateString() }) || `Was due: ${new Date(treatment.scheduled_date).toLocaleDateString()}`)
+          : (t('reminders.due_today') || 'Due: Today')
 
-        triggerNotification(title, body)
+        const body = [typeStr, dosageStr, dateStr].filter(Boolean).join('\n')
+
+        const speechKey = isOverdue ? 'reminders.speech_overdue' : 'reminders.speech_due_today'
+        let speakText = t(speechKey, {
+          title: treatment.title,
+          type: treatment.treatment_type || '',
+          dosage: treatment.dosage || ''
+        })
+
+        if (speakText.startsWith('reminders.')) {
+          speakText = isOverdue
+            ? `Attention. Overdue treatment for ${treatment.title}.`
+            : `Reminder. Treatment due today: ${treatment.title}.`
+        }
+
+        triggerNotification(title, body, speakText)
         notifiedServerIds.add(treatment.id)
       }
 
