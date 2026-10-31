@@ -10,7 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# System dependencies required by psycopg2-binary and librosa/opencv
+# System dependencies required by psycopg[binary] (v3) and librosa/opencv
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libpq-dev \
